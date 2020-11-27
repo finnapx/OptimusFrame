@@ -285,11 +285,54 @@ def vn(fc, nu, b, h, dp, avs):
 def phiVn(vn, phiV):
     return round(vn * phiV, 2)
 
+def cosL(b, h, nS, dS, nL, dL, nI, dI, cH, cS):
+    aS = (nS * aCir(dS) + 2 * nL * aCir(dL) + nI * aCir(dI))
+    aH = (b * h - aS)
+    costo = (aS * cS + aH * cH)/10000
+    return costo
+
+def minBar(b, h, dp):
+    hBar = (b - 2 * dp) / 10
+    hRed = hBar - int(hBar)
+    if hRed > 0:
+        hBar = int(hBar)+1
+    vBar = (h - 2 * dp) / 10
+    vRed = vBar - int(vBar)
+    if vRed > 0:
+        vBar = int(vBar)+1
+    return [hBar, vBar]
+
+def maxBar(b, h, dp):
+    hBar = int((b - 2 * dp) / 15)
+    vBar = int((h - 2 * dp) / 15)
+    return [hBar, vBar]
+
+def rangBar(b, h, dp):
+    maxB = maxBar(b, h, dp)
+    minB = minBar(b, h, dp)
+    nS = [minB[0]]
+    tempH = minB[0]
+    while tempH <= maxB[0]:
+        tempH += 1
+        nS.append(tempH)
+    nI = nS
+    nL = [minB[0]-2]
+    tempV = minB[0] - 2
+    while tempV <= (maxB[0]-2):
+        tempV += 1
+        nL.append(tempV)
+    return [nI, nL, nS]
+
+def rangCuan():
+    pass
+
+
+
 tinicial = time()
 mu = 30
 pu = 144
-b = 40
-h = 60
+b = [30, 40, 50, 60, 70, 80, 90, 100, 110, 120]
+h = b
 dp = 5
 es = 2100000
 fc = 250
@@ -297,12 +340,15 @@ fy = 4200
 ey = 0.002
 eu = 0.003
 b1 = b1(fc)
-dI = 25
-dL = 25
-dS = 25
+dI = [16, 18, 22, 25, 28, 32, 36]
+dL = dI
+dS = dI
 nI = 4
-nL = 2
+nL = 0
 nS = 4
+cH = 60000
+cS = 23550000
+# costo = cosL(b, h, nS, dS, nL, dL, nI, dI, cH, cS)
 dE = 10
 nr = 2
 s = 15
@@ -322,16 +368,11 @@ tiempo = round(time() - tinicial, 5)
 print("tiempo de ejecución = " + str(tiempo) + " segundos")
 cumin = cuanMin(fc, fy)
 cumax = cuanMax(b1, eu, ey, fc, fy)
-print(cumin*400, cumax*400)
+# print(costo)
 
-dList = [16, 18, 22, 25, 28, 32, 36]
-areas = []
-for i in dList:
-    areas.append(aCir(i))
-print(areas)
-
-hList = [30, 40, 50, 60, 70, 80, 90, 100, 110, 120]
-bList = [30, 40, 50, 60, 70, 80, 90, 100, 110, 120]
-
-# for i in hList:
-#     for j in bList:
+#
+# dList = [16, 18, 22, 25, 28, 32, 36]
+# areas = []
+# for i in dList:
+#     areas.append(aCir(i))
+# print(areas)
