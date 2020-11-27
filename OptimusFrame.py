@@ -292,19 +292,21 @@ def cosL(b, h, nS, dS, nL, dL, nI, dI, cH, cS):
     return costo
 
 def minBar(b, h, dp):
-    hBar = (b - 2 * dp) / 10
+    hBar = (b - 2 * dp) / 15
     hRed = hBar - int(hBar)
     if hRed > 0:
         hBar = int(hBar)+1
-    vBar = (h - 2 * dp) / 10
+    vBar = (h - 2 * dp) / 15
     vRed = vBar - int(vBar)
     if vRed > 0:
         vBar = int(vBar)+1
+    print("minH = ", str(hBar), "minV = ", str(vBar))
     return [hBar, vBar]
 
 def maxBar(b, h, dp):
-    hBar = int((b - 2 * dp) / 15)
-    vBar = int((h - 2 * dp) / 15)
+    hBar = int((b - 2 * dp) / 10)
+    vBar = int((h - 2 * dp) / 10)
+    print("maxH = ", str(hBar), "maxV = ", str(vBar))
     return [hBar, vBar]
 
 def rangBar(b, h, dp):
@@ -312,15 +314,17 @@ def rangBar(b, h, dp):
     minB = minBar(b, h, dp)
     nS = [minB[0]]
     tempH = minB[0]
-    while tempH <= maxB[0]:
+    while tempH < maxB[0]:
         tempH += 1
         nS.append(tempH)
+    print(nS)
     nI = nS
-    nL = [minB[0]-2]
-    tempV = minB[0] - 2
-    while tempV <= (maxB[0]-2):
+    nL = [minB[1]-2]
+    tempV = minB[1] - 2
+    while tempV < (maxB[0]-2):
         tempV += 1
         nL.append(tempV)
+    print(nL)
     return [nI, nL, nS]
 
 def rangCuan():
