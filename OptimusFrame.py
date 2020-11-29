@@ -285,58 +285,68 @@ def vn(fc, nu, b, h, dp, avs):
 def phiVn(vn, phiV):
     return round(vn * phiV, 2)
 
-def cosL(b, h, nS, dS, nL, dL, nI, dI, cH, cS):
+def aS(nS, dS, nL, dL, nI, dI):
     aS = (nS * aCir(dS) + 2 * nL * aCir(dL) + nI * aCir(dI))
-    aH = (b * h - aS)
-    costo = (aS * cS + aH * cH)/10000
+    return aS
+
+def aH(b, h, nS, dS, nL, dL, nI, dI):
+    ah = b * h - aS(nS, dS, nL, dL, nI, dI)
+    return ah
+
+def cosL(b, h, nS, dS, nL, dL, nI, dI, cH, cS):
+    costo = (aS(nS, dS, nL, dL, nI, dI) * cS +
+             aH(b, h, nS, dS, nL, dL, nI, dI) * cH)/10000
     return costo
 
-def minBar(b, h, dp):
-    hBar = (b - 2 * dp) / 15
-    hRed = hBar - int(hBar)
-    if hRed > 0:
-        hBar = int(hBar)+1
-    vBar = (h - 2 * dp) / 15
-    vRed = vBar - int(vBar)
-    if vRed > 0:
-        vBar = int(vBar)+1
-    print("minH = ", str(hBar), "minV = ", str(vBar))
-    return [hBar, vBar]
-
-def maxBar(b, h, dp):
-    hBar = int((b - 2 * dp) / 10)
-    vBar = int((h - 2 * dp) / 10)
-    print("maxH = ", str(hBar), "maxV = ", str(vBar))
-    return [hBar, vBar]
+def cuantia(b, h, nS, dS, nL, dL, nI, dI):
+    cuantia = aS(nS, dS, nL, dL, nI, dI) / aH(b, h, nS, dS, nL, dL, nI, dI)
+    return round(cuantia, 5)
 
 def rangBar(b, h, dp):
-    maxB = maxBar(b, h, dp)
-    minB = minBar(b, h, dp)
-    nS = [minB[0]]
-    tempH = minB[0]
-    while tempH < maxB[0]:
-        tempH += 1
-        nS.append(tempH)
-    print(nS)
-    nI = nS
-    nL = [minB[1]-2]
-    tempV = minB[1] - 2
-    while tempV < (maxB[0]-2):
-        tempV += 1
-        nL.append(tempV)
-    print(nL)
-    return [nI, nL, nS]
+    hMin = int(1 + (h - 2 * dp) / 15)
+    hMax = int(round(1 + (h - 2 * dp) / 10, 0))
+    vMin = int(1 + (b - 2 * dp) / 15)
+    vMax = int(round(1 + (b - 2 * dp) / 10, 0))
+    return [hMin, hMax, vMin, vMax]
 
-def rangCuan():
+def diamList(fc, fy, b1, eu, ey, b, h, dp, dList):
+    rang = rangBar(b, h, dp)
+    cumin = cuanMin(fc, fy)
+    cumax = cuanMax(b1, eu, ey, fc, fy)
+    nBMin = rang[0] * 2 + (rang[2] - 2) * 2
+    nBMax = rang[1] * 2 + (rang[3] - 2) * 2
+    # entrada b y h en cm, salida diámetro en mm
+    dMax = int(
+        ((cumax * b * h * 127.324) / (nBMin * (1 + cumax))) ** 0.5)
+    # coeficiente 127.324 = 4 * 100 / pi()
+    dMin = int(round(
+        ((cumin * b * h * 127.324) / (nBMax * (1 + cumin))) ** 0.5, 0))
+    i = 0
+    list = []
+    while dList[i] < dMax:
+        if dList[i] >= dMin:
+            list.append(dList[i])
+            if i < len(dList):
+                i += 1
+            else:
+                break
+        else:
+            i += 1
+    return list
+
+def supList(b, h, dp):
+
     pass
 
+def latList(lista):
 
+    pass
 
 tinicial = time()
 mu = 30
 pu = 144
-b = [30, 40, 50, 60, 70, 80, 90, 100, 110, 120]
-h = b
+b = 30
+h = 110
 dp = 5
 es = 2100000
 fc = 250
@@ -344,7 +354,10 @@ fy = 4200
 ey = 0.002
 eu = 0.003
 b1 = b1(fc)
-dI = [16, 18, 22, 25, 28, 32, 36]
+dI = 25
+lList = [30, 40, 50, 60, 70, 80, 90, 100, 110]
+dList = [16, 18, 22, 25, 28, 32, 36]
+dList.append(dList[-1] * 9)
 dL = dI
 dS = dI
 nI = 4
@@ -352,28 +365,41 @@ nL = 0
 nS = 4
 cH = 60000
 cS = 23550000
+
+# rang = rangBar(b, h, dp)
+# diam = diamList(fc, fy, b1, eu, ey, b, h, dp, dList)
+
+sumRang = 0
+diam = 0
+for i in lList:
+    for j in lList:
+        if i <= j:
+            rang = rangBar(i, j, dp)
+            sumRang += (rang[1] - rang[0] + 1) * (rang[3] - rang[2] + 1)
+            diam += len(diamList(fc, fy, b1, eu, ey, i, j, dp, dList))
+print(diam, sumRang, diam * sumRang)
+
 # costo = cosL(b, h, nS, dS, nL, dL, nI, dI, cH, cS)
-dE = 10
-nr = 2
-s = 15
-nu = 0
-avs = avs(dE, nr, s)
-vn = vn(fc, nu, b, h, dp, avs)
-phiV = 0.6
-phiVn = phiVn(vn, phiV)
-aLst = aLst(dI, dL, dS, nI, nL, nS)
-yLst = yLst(dp, h, nL)
-cFound = cFind(aLst, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, yLst)
-print(cFound)
-FU = FU(pu, mu, cFound)
-print(FU)
-print(phiVn)
+# dE = 10
+# nr = 2
+# s = 15
+# nu = 0
+# avs = avs(dE, nr, s)
+# vn = vn(fc, nu, b, h, dp, avs)
+# phiV = 0.6
+# phiVn = phiVn(vn, phiV)
+# aLst = aLst(dI, dL, dS, nI, nL, nS)
+# yLst = yLst(dp, h, nL)
+# cFound = cFind(aLst, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, yLst)
+# print(cFound)
+# FU = FU(pu, mu, cFound)
+# print(FU)
+# print(phiVn)
 tiempo = round(time() - tinicial, 5)
 print("tiempo de ejecución = " + str(tiempo) + " segundos")
-cumin = cuanMin(fc, fy)
-cumax = cuanMax(b1, eu, ey, fc, fy)
+# cumin = cuanMin(fc, fy)
+# cumax = cuanMax(b1, eu, ey, fc, fy)
 # print(costo)
-
 #
 # dList = [16, 18, 22, 25, 28, 32, 36]
 # areas = []
