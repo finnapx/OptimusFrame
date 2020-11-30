@@ -296,7 +296,7 @@ def aH(b, h, nS, dS, nL, dL, nI, dI):
 def cosL(b, h, nS, dS, nL, dL, nI, dI, cH, cS):
     costo = (aS(nS, dS, nL, dL, nI, dI) * cS +
              aH(b, h, nS, dS, nL, dL, nI, dI) * cH)/10000
-    return costo
+    return round(costo, 0)
 
 def cuantia(b, h, nS, dS, nL, dL, nI, dI):
     cuantia = aS(nS, dS, nL, dL, nI, dI) / aH(b, h, nS, dS, nL, dL, nI, dI)
@@ -323,17 +323,17 @@ def diamList(fc, fy, b1, eu, ey, b, h, dp, dList):
     dMin = int(round(
         ((cumin * b * h * 127.324) / (nBMax * (1 + cumin))) ** 0.5, 0))
     i = 0
-    list = []
+    lista = []
     while dList[i] < dMax:
         if dList[i] >= dMin:
-            list.append(dList[i])
+            lista.append(dList[i])
             if i < len(dList):
                 i += 1
             else:
                 break
         else:
             i += 1
-    return list
+    return lista
 
 def supList(b, h, dp):
     rang = rangBar(b, h, dp)
@@ -360,40 +360,108 @@ ey = 0.002
 eu = 0.003
 b1 = b1(fc)
 lList = [30, 40, 50, 60, 70, 80, 90, 100, 110]
-dList = [16, 18, 22, 25, 28, 32, 36]
-dList.append(dList[-1] * 9)
-b = 40
-h = 120
-nS = supList(b, h, dp)
+dList = [16, 18, 22, 25, 28, 32, 36, 100]
 # for i in nS:
-#     print(i)
-# nL = latList(b, h, dp)
-# for i in nL:
-#     print(i)
+
 
 """ Cálculo de columna óptima"""
 
-def sizeLims(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList):
-    b = h
+def sizeLimsCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList):
+    m1 = 0
     m2 = len(lList)
-    n2 = len(dList) - 1
+    errS = 2
+    while errS > 0.0001:
+        m = int((m2 - m1) / 2)
+        me = m
+        b = lList[m]
+        h = b
+        rang = rangBar(b, h, dp)
+        diam = diamList(fc, fy, b1, eu, ey, b, h, dp, dList)
+        dS = diam[0]
+        dL = dS
+        dI = dS
+        nS = rang[1]
+        nL = rang[3] - 2
+        nI = nS
+        ylist = yLst(dp, h, nL)
+        alist = aLst(dI, dL, dS, nI, nL, nS)
+        cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, ylist)
+        fu = FU(pu, mu, cFound)
+        if fu < 100:
+            m2 = m
+        else:
+            m1 = m
+        errS = abs(me - m)
+    mS = m
+    m2 = mS
+    m1 = 0
+    errI = 2
+    while errI > 0.0001:
+        m = int((m2 - m1) / 2) - 1
+        me = m
+        b = lList[m]
+        rang = rangBar(b, h, dp)
+        diam = diamList(fc, fy, b1, eu, ey, b, h, dp, dList)
+        dS = diam[-1]
+        dL = dS
+        dI = dS
+        nS = rang[0]
+        nL = rang[2]
+        nI = nS
+        ylist = yLst(dp, h, nL)
+        alist = aLst(dI, dL, dS, nI, nL, nS)
+        cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, ylist)
+        fu = FU(pu, mu, cFound)
+        if fu < 100:
+            m2 = m
+        else:
+            m1 = m
+        errI = abs(me - m)
+    mI = m
+    l = range(lList[mI], lList[mS] + 10, 10)
+    list = []
+    for i in l:
+        list.append(i)
+    return list
 
-    # cFound = cFind(aLst, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, yLst)
-    # fu = FU(pu, mu, cFound)
-    # print(fu)
+def optimusCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
+    lims = sizeLimsCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList)
+    minor = 9999999
+    for i in lims:
+        b = i
+        h = b
+        nS = supList(b, h, dp)
+        nL = latList(b, h, dp)
+        dS = diamList(fc, fy, b1, eu, ey, b, h, dp, dList)
+        dL = dS
+        for j in nS:
+            for k in nL:
+                for l in dS:
+                    for m in dL:
+                        ylist = yLst(dp, i, k)
+                        alist = aLst(l, m, l, j, k, j)
+                        cFound = cFind(alist, i, b1, dp, es, eu, ey, fc, fy, i, mu, pu, ylist)
+                        fu = FU(pu, mu, cFound)
+                        cuan = cuantia(b, h, j, l, k, m, j, k)
+                        cumin = cuanMin(fc, fy)
+                        cumax = cuanMax(b1, eu, ey, fc, fy)
+                        if cumax >= cuan >= cumin:
+                            cuant = 1
+                        else:
+                            cuant = 0
+                        if fu < 100 and cuant == 1:
+                            costo = cosL(b, h, j, l, k, m, j, k, cH, cS)
+                            if costo < minor:
+                                minor = costo
+                                optimo = [costo, i, j, k, l, m, fu, cuan]
+    return optimo
 
-    return 0
 
-sizeLims(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList)
+opt = optimusCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS)
 
-# sumRang = 0
-# diam = 0
-# for i in lList:
-#     for j in lList:
-#         if i <= j:
-#             rang = rangBar(i, j, dp)
-#             sumRang += (rang[1] - rang[0] + 1) * (rang[3] - rang[2] + 1)
-#             diam += len(diamList(fc, fy, b1, eu, ey, i, j, dp, dList))
+print(opt)
+
+
 # costo = cosL(b, h, nS, dS, nL, dL, nI, dI, cH, cS)
 # dE = 10
 # nr = 2
