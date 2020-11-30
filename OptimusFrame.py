@@ -303,10 +303,11 @@ def cuantia(b, h, nS, dS, nL, dL, nI, dI):
     return round(cuantia, 5)
 
 def rangBar(b, h, dp):
-    hMin = int(1 + (h - 2 * dp) / 15)
-    hMax = int(round(1 + (h - 2 * dp) / 10, 0))
-    vMin = int(1 + (b - 2 * dp) / 15)
-    vMax = int(round(1 + (b - 2 * dp) / 10, 0))
+    hMin = int(1 + (b - 2 * dp) / 15)
+    hMax = int(round(1 + (b - 2 * dp) / 10, 0))
+    vMin = int(1 + (h - 2 * dp) / 15)
+    vMax = int(round(1 + (h - 2 * dp) / 10, 0))
+    # print(hMin, hMax, vMin, vMax)
     return [hMin, hMax, vMin, vMax]
 
 def diamList(fc, fy, b1, eu, ey, b, h, dp, dList):
@@ -335,50 +336,64 @@ def diamList(fc, fy, b1, eu, ey, b, h, dp, dList):
     return list
 
 def supList(b, h, dp):
+    rang = rangBar(b, h, dp)
+    nS = range(rang[0], rang[1] + 1, 1)
+    return nS
 
-    pass
-
-def latList(lista):
-
-    pass
+def latList(b, h, dp):
+    rang = rangBar(b, h, dp)
+    nL = range(rang[2] - 2, rang[3] - 1, 1)
+    return nL
 
 tinicial = time()
+# mu = input('ingrese momento último')
+# pu = input('ingrese carga última')
 mu = 30
 pu = 144
-b = 30
-h = 110
 dp = 5
 es = 2100000
 fc = 250
 fy = 4200
+cH = 60000
+cS = 23550000
 ey = 0.002
 eu = 0.003
 b1 = b1(fc)
-dI = 25
 lList = [30, 40, 50, 60, 70, 80, 90, 100, 110]
 dList = [16, 18, 22, 25, 28, 32, 36]
 dList.append(dList[-1] * 9)
-dL = dI
-dS = dI
-nI = 4
-nL = 0
-nS = 4
-cH = 60000
-cS = 23550000
+b = 40
+h = 120
+nS = supList(b, h, dp)
+# for i in nS:
+#     print(i)
+# nL = latList(b, h, dp)
+# for i in nL:
+#     print(i)
 
-# rang = rangBar(b, h, dp)
-# diam = diamList(fc, fy, b1, eu, ey, b, h, dp, dList)
+""" Cálculo de columna óptima"""
 
-sumRang = 0
-diam = 0
-for i in lList:
-    for j in lList:
-        if i <= j:
-            rang = rangBar(i, j, dp)
-            sumRang += (rang[1] - rang[0] + 1) * (rang[3] - rang[2] + 1)
-            diam += len(diamList(fc, fy, b1, eu, ey, i, j, dp, dList))
-print(diam, sumRang, diam * sumRang)
+def sizeLims(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList):
+    b = h
+    m2 = len(lList)
+    n2 = len(dList) - 1
 
+    # cFound = cFind(aLst, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, yLst)
+    # fu = FU(pu, mu, cFound)
+    # print(fu)
+
+    return 0
+
+sizeLims(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList)
+
+# sumRang = 0
+# diam = 0
+# for i in lList:
+#     for j in lList:
+#         if i <= j:
+#             rang = rangBar(i, j, dp)
+#             sumRang += (rang[1] - rang[0] + 1) * (rang[3] - rang[2] + 1)
+#             diam += len(diamList(fc, fy, b1, eu, ey, i, j, dp, dList))
 # costo = cosL(b, h, nS, dS, nL, dL, nI, dI, cH, cS)
 # dE = 10
 # nr = 2
