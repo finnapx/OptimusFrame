@@ -352,8 +352,10 @@ def latList(b, h, dp):
 tinicial = time()
 # mu = input('ingrese momento último')
 # pu = input('ingrese carga última')
-mu = 70
-pu = 5
+mu = [15, 30, 55, 80, 125, 180]
+pu = [10, 250, 550, 900, 1300]
+# mu = [10]
+# pu = [10]
 dp = 5
 es = 2100000
 fc = 250
@@ -363,7 +365,7 @@ cS = 23550000
 ey = 0.002
 eu = 0.003
 b1 = b1(fc)
-lList = [30, 40, 50, 60, 70, 80, 90, 100, 110]
+lList = [30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130]
 dList = [16, 18, 22, 25, 28, 32, 36, 100]
 # for i in nS:
 
@@ -446,7 +448,7 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
                     for m in dL:
                         ylist = yLst(dp, i, k)
                         alist = aLst(l, m, l, j, k, j)
-                        cFound = cFind(alist, i, b1, dp, es, eu, ey, fc, fy, i, mu, pu, ylist)
+                        cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, ylist)
                         fu = FU(pu, mu, cFound)
                         cuan = cuantia(b, h, j, l, k, m, j, k)
                         cumin = cuanMin(fc, fy)
@@ -456,51 +458,68 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
                         else:
                             cuant = 0
                         if fu < 100 and cuant == 1 and 10 <= espB <= 15 and 10 <= espH <= 15:
-                            costo = cosL(b, h, j, l, k, m, j, k, cH, cS)
+                            costo = cosL(b, h, j, l, k, m, j, l, cH, cS)
                             if costo < minor:
                                 minor = costo
-                                optimo = [costo, i, j, k, l, m, fu, cuan]
+                                optimo = [costo, i, j, k, l, m, fu, cuan, cFound[0]]
     return optimo
 
 """cálculo de viga óptima"""
 
 def optimusVig(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
     minor = 9999999
-    for a in lList:
-        h = a
-        for i in lList:
-            b = i
-            nS = supList(b, h, dp)
-            nL = latList(b, h, dp)
-            for j in nS:
-                for k in nL:
-                    espB = (b - 2 * dp) / (k + 1)
-                    espH = (b - 2 * dp) / (k + 1)
-                    for l in dList:
-                        for m in dList:
-                            ylist = yLst(dp, i, k)
-                            alist = aLst(l, m, l, j, k, j)
-                            cFound = cFind(alist, i, b1, dp, es, eu, ey, fc, fy, i, mu, pu, ylist)
-                            fu = FU(pu, mu, cFound)
-                            cuan = cuantia(b, h, j, l, k, m, j, k)
-                            cumin = cuanMin(fc, fy)
-                            cumax = cuanMax(b1, eu, ey, fc, fy)
-                            if cumax >= cuan >= cumin:
-                                cuant = 1
-                            else:
-                                cuant = 0
-                            if fu < 100 and cuant == 1 and 10 <= espB <= 15 and 10 <= espH <= 15:
-                                costo = cosL(b, h, j, l, k, m, j, k, cH, cS)
-                                if costo < minor:
-                                    minor = costo
-                                    optimo = [costo, a, i, j, k, l, m, fu, cuan]
+    cumin = cuanMin(fc, fy)
+    cumax = cuanMax(b1, eu, ey, fc, fy)
+    bo = sizeLimsCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList)
+    for i in lList:
+        b = i
+        for a in lList:
+            h = a
+            if b <= h:
+                nS = supList(b, h, dp)
+                nL = latList(b, h, dp)
+                for j in nS:
+                    espB = (b - 2 * dp) / (j + 1)
+                    for k in nL:
+                        ylist = yLst(dp, h, k)
+                        espH = (b - 2 * dp) / (k + 1)
+                        for l in dList:
+                            for m in dList:
+                                alist = aLst(l, m, l, j, k, j)
+                                cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, ylist)
+                                fu = FU(pu, mu, cFound)
+                                cuan = cuantia(b, h, j, l, k, m, j, k)
+                                if cumax >= cuan >= cumin:
+                                    cuant = 1
+                                else:
+                                    cuant = 0
+                                if fu < 100 and cuant == 1 and 10 <= espB <= 15 and 10 <= espH <= 15:
+                                    costo = cosL(b, h, j, l, k, m, j, l, cH, cS)
+                                    if costo < minor:
+                                        minor = costo
+                                        optimo = [costo, h, b, j, k, l, m, fu, cuan, cFound[0], cFound[1], cFound[2], mu, pu]
+                                        file.write("\n\n el valor óptimo es " + str(optimo) + "\n\n")
     return optimo
+file = open("C:/p/asdf.txt", 'w')
+file = open("C:/p/asdf.txt", 'a')
 
-optC = optimusCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS)
-optV = optimusVig(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS)
-print(optC)
-print(optV)
+for i in mu:
+    for j in pu:
+        optV = optimusVig(b1, dp, es, eu, ey, fc, fy, i, j, dList, lList, cH, cS)
+
+# b = 40
+# h = 60
+# nS = 3
+# dS = 16
+# nL = 2
+# dL = 16
+# nI = 3
+# dI = 16
 # costo = cosL(b, h, nS, dS, nL, dL, nI, dI, cH, cS)
+# print(costo)
+
+
+
 # dE = 10
 # nr = 2
 # s = 15
@@ -521,7 +540,6 @@ print("tiempo de ejecución = " + str(tiempo) + " segundos")
 # cumin = cuanMin(fc, fy)
 # cumax = cuanMax(b1, eu, ey, fc, fy)
 # print(costo)
-#
 # dList = [16, 18, 22, 25, 28, 32, 36]
 # areas = []
 # for i in dList:
