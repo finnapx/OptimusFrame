@@ -45,7 +45,6 @@ def yLst(dp, h, nL):
     yLst.append(h - dp)
     return yLst
 
-
 def eiLst(c, eu, yLst):
     eiLst = []
     for i in yLst:
@@ -139,7 +138,7 @@ def cuanMax(b1, eu, ey, fc, fy):
 
 
 def cPn(aLst, b, b1, es, eu, ey, fc, fy, h, pnB, yLst):
-    c1 = 0.1
+    c1 = 0
     c2 = 4 * h
     pnB = round(pnB, 1)
     Pn = abs(pnB) + 0.1
@@ -454,46 +453,9 @@ def sizeLimsCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList):
 
 
 def optimusCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
-    lims = sizeLimsCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList)
-    minor = 9999999
-    for i in lims:
-        b = i
-        h = b
-        nS = supList(b, h, dp)
-        nL = latList(b, h, dp)
-        dS = diamList(fc, fy, b1, eu, ey, b, h, dp, dList)
-        dL = dS
-        for j in nS:
-            for k in nL:
-                espB = (b - 2 * dp) / (k + 1)
-                espH = (b - 2 * dp) / (k + 1)
-                for l in dS:
-                    for m in dL:
-                        ylist = yLst(dp, i, k)
-                        alist = aLst(l, m, l, j, k, j)
-                        cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, ylist)
-                        fu = FU(pu, mu, cFound)
-                        cuan = cuantia(b, h, j, l, k, m, j, k)
-                        cumin = cuanMin(fc, fy)
-                        cumax = cuanMax(b1, eu, ey, fc, fy)
-                        if cumax >= cuan >= cumin:
-                            cuant = 1
-                        else:
-                            cuant = 0
-                        if fu < 100 and cuant == 1 and 10 <= espB <= 15 and 10 <= espH <= 15:
-                            costo = cosL(b, h, j, l, k, m, j, l, cH, cS)
-                            if costo < minor:
-                                minor = costo
-                                optimo = [costo, i, j, k, l, m, fu, cuan, cFound[0]]
-    return optimo
-
-"""cálculo de viga óptima"""
-
-
-def optimusVig(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
     minor = 9999999
     bo = sizeLimsCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList)
-    lista = ([i, a] for i in bo for a in lList if a >= i)
+    lista = ([i, a] for i in bo for a in lList if a == i)
     for i, a in lista:
         b = i
         h = a
@@ -501,8 +463,8 @@ def optimusVig(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
         nL = latList(b, h, dp)
         dS = diamList(fc, fy, b1, eu, ey, b, h, dp, dList)
         dL = dS
-        listaND = ([j, k] for j in nS for k in nL if 10 <= (b - 2 * dp) / (j + 1) <= 15 and
-                   10 <= (b - 2 * dp) / (k + 1) <= 15)
+        listaND = ([j, k] for j in nS for k in nL if 10 <= (b - 2 * dp) / (j - 1) <= 15 and
+                   10 <= (h - 2 * dp) / (k + 1) <= 15)
         for j, k in listaND:
             ylist = yLst(dp, h, k)
             listaDm = ([l, m] for l in dS for m in dL if m <= l)
@@ -519,14 +481,48 @@ def optimusVig(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
                                   cuan, cFound[0], cFound[1], cFound[2], mu, pu]
     return optimo
 
+
+"""cálculo de viga óptima"""
+
+
+def optimusVig(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
+    minor = 9999999
+    bo = sizeLimsCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList)
+    lista = ([i, a] for i in bo for a in lList if a >= i)
+    for i, a in lista:
+        b = i
+        h = a
+        nS = supList(b, h, dp)
+        nL = latList(b, h, dp)
+        dS = diamList(fc, fy, b1, eu, ey, b, h, dp, dList)
+        dL = dS
+        listaND = ([j, k] for j in nS for k in nL if 10 <= (b - 2 * dp) / (j - 1) <= 15 and
+                   10 <= (h - 2 * dp) / (k + 1) <= 15)
+        for j, k in listaND:
+            ylist = yLst(dp, h, k)
+            listaDm = ([l, m] for l in dS for m in dL if m <= l)
+            for l, m in listaDm:
+                alist = aLst(l, m, l, j, k, j)
+                cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, ylist)
+                fu = FU(pu, mu, cFound)
+                cuan = cuantia(b, h, j, l, k, m, j, k)
+                if fu < 100:
+                    costo = cosL(b, h, j, l, k, m, j, l, cH, cS)
+                    if costo < minor:
+                        minor = costo
+                        optimo = [costo, h, b, j, k, l, m, fu,
+                                  cuan, cFound[0], cFound[1], cFound[2], mu, pu]
+    return optimo
+
+
 from time import time
-tinicial = time()
 # mu = input('ingrese momento último')
 # pu = input('ingrese carga última')
 # mu = [15, 30, 55, 80, 125, 180]
 # pu = [10, 250, 550, 900, 1300]
-mu = 60
-pu = 11
+mu = int(input('ingrese mu:'))
+pu = int(input('ingrese pu:'))
+tinicial = time()
 dp = 5
 es = 2100000
 fc = 250
@@ -537,9 +533,11 @@ ey = 0.002
 eu = 0.003
 b1 = b1(fc)
 lList = range(30, 110, 10)
-dList = [16, 18, 22, 25, 28, 32, 36, 100]
+dList = [16, 18, 22, 25, 28, 32, 36]
 optV = optimusVig(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS)
 print(optV)
+optC = optimusCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS)
+print(optC)
 tiempo = round(time() - tinicial, 5)
 print("tiempo de ejecución = " + str(tiempo) + " segundos")
 # for i in mu:
@@ -570,7 +568,6 @@ print("tiempo de ejecución = " + str(tiempo) + " segundos")
 # FU = FU(pu, mu, cFound)
 # print(FU)
 # print(phiVn)
-
 # cumin = cuanMin(fc, fy)
 # cumax = cuanMax(b1, eu, ey, fc, fy)
 # print(costo)
