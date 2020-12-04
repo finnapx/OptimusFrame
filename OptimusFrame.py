@@ -505,30 +505,28 @@ def optimusVig(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
         nL = latList(b, h, dp)
         dS = diamList(fc, fy, b1, eu, ey, b, h, dp, dList)
         dL = dS
-        # listaDm = ([j, k] for j in nS for k in nL if 10 <= espB <= 15 and 10 <= espH <= 15
-        for j in nS:
-            espB = (b - 2 * dp) / (j + 1)
-            for k in nL:
-                ylist = yLst(dp, h, k)
-                espH = (b - 2 * dp) / (k + 1)
-
-                for l in dS:
-                    for m in dL:
-                        if m <= l:
-                            alist = aLst(l, m, l, j, k, j)
-                            cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, ylist)
-                            fu = FU(pu, mu, cFound)
-                            cuan = cuantia(b, h, j, l, k, m, j, k)
-                            if cumax >= cuan >= cumin:
-                                cuant = 1
-                            else:
-                                cuant = 0
-                            if fu < 100 and cuant == 1 and 10 <= espB <= 15 and 10 <= espH <= 15:
-                                costo = cosL(b, h, j, l, k, m, j, l, cH, cS)
-                                if costo < minor:
-                                    minor = costo
-                                    optimo = [costo, h, b, j, k, l, m, fu,
-                                              cuan, cFound[0], cFound[1], cFound[2], mu, pu]
+        listaND = ([j, k] for j in nS for k in nL if 10 <= (b - 2 * dp) / (j + 1) <= 15 and
+                   10 <= (b - 2 * dp) / (k + 1) <= 15)
+        for j, k in listaND:
+            ylist = yLst(dp, h, k)
+            
+            for l in dS:
+                for m in dL:
+                    if m <= l:
+                        alist = aLst(l, m, l, j, k, j)
+                        cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, ylist)
+                        fu = FU(pu, mu, cFound)
+                        cuan = cuantia(b, h, j, l, k, m, j, k)
+                        if cumax >= cuan >= cumin:
+                            cuant = 1
+                        else:
+                            cuant = 0
+                        if fu < 100:
+                            costo = cosL(b, h, j, l, k, m, j, l, cH, cS)
+                            if costo < minor:
+                                minor = costo
+                                optimo = [costo, h, b, j, k, l, m, fu,
+                                          cuan, cFound[0], cFound[1], cFound[2], mu, pu]
     return optimo
 
 from time import time
@@ -537,8 +535,8 @@ tinicial = time()
 # pu = input('ingrese carga última')
 # mu = [15, 30, 55, 80, 125, 180]
 # pu = [10, 250, 550, 900, 1300]
-mu = 50
-pu = 244
+mu = 60
+pu = 11
 dp = 5
 es = 2100000
 fc = 250
