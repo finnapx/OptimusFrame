@@ -1,4 +1,5 @@
-from time import time
+from numba import jit
+
 
 def b1(fc):
     if fc < 280:
@@ -9,8 +10,10 @@ def b1(fc):
         b1 = 0.65
     return round(b1, 3)
 
+
 def et(c, dp, eu, h):
     return round(eu * abs(h - dp - c) / c, 4)
+
 
 def phi(eu, et, ey):
     if et < ey:
@@ -21,8 +24,10 @@ def phi(eu, et, ey):
         phi = 0.9
     return round(phi, 3)
 
+
 def aCir(d):
     return round(0.007854 * d ** 2, 3)
+
 
 def aLst(dI, dL, dS, nI, nL, nS):
     aS = aCir(dS) * nS
@@ -42,11 +47,13 @@ def yLst(dp, h, nL):
     yLst.append(h - dp)
     return yLst
 
+
 def eiLst(c, eu, yLst):
     eiLst = []
     for i in yLst:
         eiLst.append(round(eu * (c - i) / c, 5))
     return eiLst
+
 
 def fsLst(eiLst, es, ey, fy):
     fsLst = []
@@ -60,11 +67,13 @@ def fsLst(eiLst, es, ey, fy):
         fsLst.append(round(fs, 2))
     return fsLst
 
+
 def psLst(aLst, fsLst):
     psLst = []
     for i in range(len(fsLst)):
         psLst.append(fsLst[i] * aLst[i])
     return psLst
+
 
 def ps(aLst, fsLst):
     psSum = 0
@@ -72,29 +81,38 @@ def ps(aLst, fsLst):
         psSum += fsLst[i] * aLst[i]
     return round(psSum / 1000, 2)
 
+
 def pc(b, b1, c, fc):
     return round(0.85 * b1 * fc * b * c / 1000, 2)
+
 
 def pn(pc, ps):
     return round(pc + ps, 2)
 
+
 def phiPn(phi, pn):
     return round(phi * pn, 2)
+
 
 def pnMax(aLst, b, fc, fy, h):
     return round((0.85 * fc * h * b + sum(aLst) * fy) / 1000, 2)
 
+
 def phiPnMax(phi, pnMax):
     return round(phi * pnMax, 2)
+
 
 def pnMin(aLst, fy):
     return round((-sum(aLst) * fy) / 1000, 2)
 
+
 def phiPnMin(phi, pnMin):
     return round(phi * pnMin, 2)
 
+
 def mc(c, pc, h):
     return round(pc / 2 * (h - 0.85 * c) / 100, 2)
+
 
 def ms(fsLst, h, psLst, yLst):
     ms = 0
@@ -102,20 +120,25 @@ def ms(fsLst, h, psLst, yLst):
         ms = ms + psLst[i] * (h / 2 - yLst[i])
     return round(ms / 100000, 2)
 
+
 def mn(mc, ms):
     mn = mc + ms
     if mn < 0:
         mn = 0
     return round(mn, 2)
 
+
 def phiMn(mn, phi):
     return round(phi * mn, 2)
+
 
 def cuanMin(fc, fy):
     return round(max((fc * 0.1) ** 0.5 / (4 * fy), 14 / fy), 5)
 
+
 def cuanMax(b1, eu, ey, fc, fy):
     return round(0.75 * 0.85 * b1 * eu / (eu + ey) * fc / fy, 5)
+
 
 def cPn(aLst, b, b1, es, eu, ey, fc, fy, h, pnB, yLst):
     c1 = 0.1
@@ -149,8 +172,10 @@ def cPn(aLst, b, b1, es, eu, ey, fc, fy, h, pnB, yLst):
             break
     return c
 
+
 def cPnMax(b1, dp, h):
     return max(h / b1, 3 * (h - dp))
+
 
 def resumen(aLst, b, b1, c, dp, es, eu, ey, fc, fy, h, yLst):
     if c < 0.1:
@@ -186,25 +211,31 @@ def resumen(aLst, b, b1, c, dp, es, eu, ey, fc, fy, h, yLst):
     e = round((Mn/Pn), 3)
     return [c, e, eT, Phi, Ppr, Pn, PhiPn, Mpr, Mn, PhiMn]
 
+
 def cP(aLst, b, b1, dp, es, eu, ey, fc, fy, h, yLst):
     pnB = pnMax(aLst, b, fc, fy, h)
     c = cPn(aLst, b, b1, es, eu, ey, fc, fy, h, pnB, yLst)
     return resumen(aLst, b, b1, c, dp, es, eu, ey, fc, fy, h, yLst)
 
+
 def cB(aLst, b, b1, dp, es, eu, ey, fc, fy, h, yLst):
     c = eu * (h - dp) / (eu + ey)
     return resumen(aLst, b, b1, c, dp, es, eu, ey, fc, fy, h, yLst)
+
 
 def e5(aLst, b, b1, dp, es, eu, ey, fc, fy, h, yLst):
     c = eu * (h - dp) / (eu + 0.005)
     return resumen(aLst, b, b1, c, dp, es, eu, ey, fc, fy, h, yLst)
 
+
 def fS(aLst, b, b1, dp, es, eu, ey, fc, fy, h, yLst):
     c = cPn(aLst, b, b1, es, eu, ey, fc, fy, h, 0, yLst)
     return resumen(aLst, b, b1, c, dp, es, eu, ey, fc, fy, h, yLst)
 
+
 def tR(aLst, b, b1, dp, es, eu, ey, fc, fy, h, yLst):
     return resumen(aLst, b, b1, 0, dp, es, eu, ey, fc, fy, h, yLst)
+
 
 def cFind(aLst, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, yLst):
     if pu == 0:
@@ -249,6 +280,7 @@ def cFind(aLst, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, yLst):
         res = resumen(aLst, b, b1, c, dp, es, eu, ey, fc, fy, h, yLst)
     return res
 
+
 def FU(pu, mu, cFound):
     if abs(mu) < 1:
         FU = abs(pu / cFound[6])
@@ -256,9 +288,11 @@ def FU(pu, mu, cFound):
         FU = max(abs(pu / cFound[6]), abs(mu / cFound[9]))
     return round(FU * 100, 1)
 
+
 def avs(dE, nRam, s):
     avs = aCir(dE) * nRam / s
     return avs
+
 
 def vn(fc, nu, b, h, dp, avs):
     d = h - dp
@@ -282,25 +316,31 @@ def vn(fc, nu, b, h, dp, avs):
         vs = vsLim
     return round((vc + vs) / 1000, 3)
 
+
 def phiVn(vn, phiV):
     return round(vn * phiV, 2)
+
 
 def aS(nS, dS, nL, dL, nI, dI):
     aS = (nS * aCir(dS) + 2 * nL * aCir(dL) + nI * aCir(dI))
     return aS
 
+
 def aH(b, h, nS, dS, nL, dL, nI, dI):
     ah = b * h - aS(nS, dS, nL, dL, nI, dI)
     return ah
+
 
 def cosL(b, h, nS, dS, nL, dL, nI, dI, cH, cS):
     costo = (aS(nS, dS, nL, dL, nI, dI) * cS +
              aH(b, h, nS, dS, nL, dL, nI, dI) * cH)/10000
     return round(costo, 0)
 
+
 def cuantia(b, h, nS, dS, nL, dL, nI, dI):
     cuantia = aS(nS, dS, nL, dL, nI, dI) / aH(b, h, nS, dS, nL, dL, nI, dI)
     return round(cuantia, 5)
+
 
 def rangBar(b, h, dp):
     hMin = int(1 + (b - 2 * dp) / 15)
@@ -309,6 +349,7 @@ def rangBar(b, h, dp):
     vMax = int(round(1 + (h - 2 * dp) / 10, 0))
     #print(hMin, hMax, vMin, vMax)
     return [hMin, hMax, vMin, vMax]
+
 
 def diamList(fc, fy, b1, eu, ey, b, h, dp, dList):
     rang = rangBar(b, h, dp)
@@ -335,12 +376,14 @@ def diamList(fc, fy, b1, eu, ey, b, h, dp, dList):
             i += 1
     return lista
 
+
 def supList(b, h, dp):
     rang = rangBar(b, h, dp)
     nS = []
     for i in range(rang[0], rang[1] + 1, 1):
         nS.append(i)
     return nS
+
 
 def latList(b, h, dp):
     rang = rangBar(b, h, dp)
@@ -349,28 +392,9 @@ def latList(b, h, dp):
         nL.append(i)
     return nL
 
-tinicial = time()
-# mu = input('ingrese momento último')
-# pu = input('ingrese carga última')
-mu = [15, 30, 55, 80, 125, 180]
-pu = [10, 250, 550, 900, 1300]
-# mu = [10]
-# pu = [10]
-dp = 5
-es = 2100000
-fc = 250
-fy = 4200
-cH = 60000
-cS = 23550000
-ey = 0.002
-eu = 0.003
-b1 = b1(fc)
-lList = [30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130]
-dList = [16, 18, 22, 25, 28, 32, 36, 100]
-# for i in nS:
-
 
 """ Cálculo de columna óptima"""
+
 
 def sizeLimsCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList):
     m1 = 0
@@ -430,6 +454,7 @@ def sizeLimsCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList):
         list.append(i)
     return list
 
+
 def optimusCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
     lims = sizeLimsCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList)
     minor = 9999999
@@ -466,46 +491,72 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
 
 """cálculo de viga óptima"""
 
+
 def optimusVig(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
     minor = 9999999
     cumin = cuanMin(fc, fy)
     cumax = cuanMax(b1, eu, ey, fc, fy)
     bo = sizeLimsCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList)
-    for i in lList:
+    lista = ([i, a] for i in bo for a in lList if a >= i)
+    for i, a in lista:
         b = i
-        for a in lList:
-            h = a
-            if b <= h:
-                nS = supList(b, h, dp)
-                nL = latList(b, h, dp)
-                for j in nS:
-                    espB = (b - 2 * dp) / (j + 1)
-                    for k in nL:
-                        ylist = yLst(dp, h, k)
-                        espH = (b - 2 * dp) / (k + 1)
-                        for l in dList:
-                            for m in dList:
-                                alist = aLst(l, m, l, j, k, j)
-                                cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, ylist)
-                                fu = FU(pu, mu, cFound)
-                                cuan = cuantia(b, h, j, l, k, m, j, k)
-                                if cumax >= cuan >= cumin:
-                                    cuant = 1
-                                else:
-                                    cuant = 0
-                                if fu < 100 and cuant == 1 and 10 <= espB <= 15 and 10 <= espH <= 15:
-                                    costo = cosL(b, h, j, l, k, m, j, l, cH, cS)
-                                    if costo < minor:
-                                        minor = costo
-                                        optimo = [costo, h, b, j, k, l, m, fu, cuan, cFound[0], cFound[1], cFound[2], mu, pu]
-                                        file.write("\n\n el valor óptimo es " + str(optimo) + "\n\n")
-    return optimo
-file = open("C:/p/asdf.txt", 'w')
-file = open("C:/p/asdf.txt", 'a')
+        h = a
+        nS = supList(b, h, dp)
+        nL = latList(b, h, dp)
+        dS = diamList(fc, fy, b1, eu, ey, b, h, dp, dList)
+        dL = dS
+        # listaDm = ([j, k] for j in nS for k in nL if 10 <= espB <= 15 and 10 <= espH <= 15
+        for j in nS:
+            espB = (b - 2 * dp) / (j + 1)
+            for k in nL:
+                ylist = yLst(dp, h, k)
+                espH = (b - 2 * dp) / (k + 1)
 
-for i in mu:
-    for j in pu:
-        optV = optimusVig(b1, dp, es, eu, ey, fc, fy, i, j, dList, lList, cH, cS)
+                for l in dS:
+                    for m in dL:
+                        if m <= l:
+                            alist = aLst(l, m, l, j, k, j)
+                            cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, ylist)
+                            fu = FU(pu, mu, cFound)
+                            cuan = cuantia(b, h, j, l, k, m, j, k)
+                            if cumax >= cuan >= cumin:
+                                cuant = 1
+                            else:
+                                cuant = 0
+                            if fu < 100 and cuant == 1 and 10 <= espB <= 15 and 10 <= espH <= 15:
+                                costo = cosL(b, h, j, l, k, m, j, l, cH, cS)
+                                if costo < minor:
+                                    minor = costo
+                                    optimo = [costo, h, b, j, k, l, m, fu,
+                                              cuan, cFound[0], cFound[1], cFound[2], mu, pu]
+    return optimo
+
+from time import time
+tinicial = time()
+# mu = input('ingrese momento último')
+# pu = input('ingrese carga última')
+# mu = [15, 30, 55, 80, 125, 180]
+# pu = [10, 250, 550, 900, 1300]
+mu = 50
+pu = 244
+dp = 5
+es = 2100000
+fc = 250
+fy = 4200
+cH = 60000
+cS = 23550000
+ey = 0.002
+eu = 0.003
+b1 = b1(fc)
+lList = [30, 40, 50, 60, 70, 80, 90, 100, 110]
+dList = [16, 18, 22, 25, 28, 32, 36, 100]
+optV = optimusVig(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS)
+print(optV)
+tiempo = round(time() - tinicial, 5)
+print("tiempo de ejecución = " + str(tiempo) + " segundos")
+# for i in mu:
+#     for j in pu:
+#         optV = optimusVig(b1, dp, es, eu, ey, fc, fy, i, j, dList, lList, cH, cS)
 
 # b = 40
 # h = 60
@@ -517,9 +568,6 @@ for i in mu:
 # dI = 16
 # costo = cosL(b, h, nS, dS, nL, dL, nI, dI, cH, cS)
 # print(costo)
-
-
-
 # dE = 10
 # nr = 2
 # s = 15
@@ -535,8 +583,7 @@ for i in mu:
 # FU = FU(pu, mu, cFound)
 # print(FU)
 # print(phiVn)
-tiempo = round(time() - tinicial, 5)
-print("tiempo de ejecución = " + str(tiempo) + " segundos")
+
 # cumin = cuanMin(fc, fy)
 # cumax = cuanMax(b1, eu, ey, fc, fy)
 # print(costo)
