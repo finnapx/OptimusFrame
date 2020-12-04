@@ -452,9 +452,9 @@ def sizeLimsCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList):
     return list
 
 
-def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, pu, dList, lList, cH, cS):
+def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, lList, cH, cS):
     minor = 9999999
-    bo = sizeLimsCol(b1, dp, es, eu, ey, fc, fy, muC, pu, dList, lList)
+    bo = sizeLimsCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, lList)
     lista = ([i, a] for i in bo for a in lList if a == i)
     for i, a in lista:
         b = i
@@ -467,27 +467,27 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, pu, dList, lList, cH, cS):
                    10 <= (h - 2 * dp) / (k + 1) <= 15)
         for j, k in listaND:
             ylist = yLst(dp, h, k)
-            listaDm = ([l, m] for l in dS for m in dL if m <= l)
+            listaDm = ([l, m] for l in dS for m in dL if m == l)
             for l, m in listaDm:
                 alist = aLst(l, m, l, j, k, j)
-                cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, muC, pu, ylist)
-                fu = FU(pu, muC, cFound)
+                cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, muC, puC, ylist)
+                fu = FU(puC, muC, cFound)
                 cuan = cuantia(b, h, j, l, k, m, j, k)
                 if fu < 100:
                     costo = cosL(b, h, j, l, k, m, j, l, cH, cS)
                     if costo < minor:
                         minor = costo
                         optimo = [costo, h, b, j, k, l, m, fu,
-                                  cuan, cFound[0], cFound[1], cFound[2], muC, pu]
+                                  cuan, cFound[0], cFound[1], cFound[2], muC, puC]
     return optimo
 
 
 """cálculo de viga óptima"""
 
 
-def optimusVig(b1, dp, es, eu, ey, fc, fy, muV, pu, dList, lList, cH, cS):
+def optimusVig(b1, dp, es, eu, ey, fc, fy, muV, puV, dList, lList, cH, cS):
     minor = 9999999
-    bo = sizeLimsCol(b1, dp, es, eu, ey, fc, fy, muV, pu, dList, lList)
+    bo = sizeLimsCol(b1, dp, es, eu, ey, fc, fy, muV, puV, dList, lList)
     lista = ([i, a] for i in bo for a in lList if a >= i)
     for i, a in lista:
         b = i
@@ -503,15 +503,15 @@ def optimusVig(b1, dp, es, eu, ey, fc, fy, muV, pu, dList, lList, cH, cS):
             listaDm = ([l, m] for l in dS for m in dL if m <= l)
             for l, m in listaDm:
                 alist = aLst(l, m, l, j, k, j)
-                cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, muV, pu, ylist)
-                fu = FU(pu, muV, cFound)
+                cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, muV, puV, ylist)
+                fu = FU(puV, muV, cFound)
                 cuan = cuantia(b, h, j, l, k, m, j, k)
-                if fu < 100:
+                if fu < 100 and cFound[2] >= 0.005:
                     costo = cosL(b, h, j, l, k, m, j, l, cH, cS)
                     if costo < minor:
                         minor = costo
                         optimo = [costo, h, b, j, k, l, m, fu,
-                                  cuan, cFound[0], cFound[1], cFound[2], muV, pu]
+                                  cuan, cFound[0], cFound[1], cFound[2], muV, puV]
     return optimo
 
 
@@ -520,8 +520,10 @@ from time import time
 # pu = input('ingrese carga última')
 # mu = [15, 30, 55, 80, 125, 180]
 # pu = [10, 250, 550, 900, 1300]
-muV = int(input('ingrese mu:'))
-pu = int(input('ingrese pu:'))
+muV = int(round(float(input('ingrese mu de viga (en Tf-m): ')), 0))
+puV = int(round(float(input('ingrese pu de viga (en Tf): ')), 0))
+muC0 = int(round(float(input('ingrese mu de columna (en Tf-m): ')), 0))
+puC = int(round(float(input('ingrese pu de columna (en Tf): ')), 0))
 dp = 5
 es = 2100000
 fc = 250
@@ -534,14 +536,41 @@ b1 = b1(fc)
 lList = range(30, 130, 10)
 dList = [16, 18, 22, 25, 28, 32, 36]
 tinicial = time()
-print("[ costo  , h,  b,nS,nL, dS, dL,  FU , cuantía,   C  ,  e   ,   et  , mu, pu ]")
-optV = optimusVig(b1, dp, es, eu, ey, fc, fy, muV, pu, dList, lList, cH, cS)
-print(optV)
-muC = int(round(muV / optV[7] * 100 * 1.25, 0))
-optC = optimusCol(b1, dp, es, eu, ey, fc, fy, muC, pu, dList, lList, cH, cS)
-print(optC)
+optV = optimusVig(b1, dp, es, eu, ey, fc, fy, muV, puV, dList, lList, cH, cS)
+print("\nLos parámetros óptimos de diseño para la viga son: ")
+print("\nCosto por metro lineal: $", str(int(optV[0])))
+print("Altura del perfil:", str(optV[1]), "cm")
+print("Ancho del perfil:", str(optV[2]), "cm")
+print("Número de barras superiores e inferiores:", str(optV[3]))
+print("Diámetro de barras superiores e inferiores:", str(optV[5]), "mm")
+print("Número de pares de barras laterales:", str(optV[4]))
+print("Diámetro de pares de barras laterales:", str(optV[6]), "mm")
+print("Factor de utilización mayor:", str(optV[7]), "%")
+print("Cuantía de acero:", str(optV[8]))
+print("Profundidad de la línea neutra (c):", str(optV[9]), "cm")
+print("Excentricidad:", str(round(optV[10]*100, 2)), "cm")
+print("Deformación unitaria del acero:", str(optV[11]))
+print("Momento último solicitado:", str(optV[12]), "Tf-m")
+print("Carga última solicitada:", str(optV[13]), "Tf")
+muC = max(int(round(muV / optV[7] * 100 * 1.25, 0)), muC0)
+optC = optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, lList, cH, cS)
+print("\n\n\nLos parámetros óptimos de diseño para la columna son:")
+print("\nCosto por metro lineal:$", str(int(optC[0])))
+print("Altura del perfil:", str(optC[1]), "cm")
+print("Ancho del perfil:", str(optC[2]), "cm")
+print("Número de barras superiores e inferiores:", str(optC[3]))
+print("Diámetro de barras superiores e inferiores:", str(optC[5]), "mm")
+print("Número de pares de barras laterales:", str(optC[4]))
+print("Diámetro de pares de barras laterales:", str(optC[6]), "mm")
+print("Factor de utilización mayor:", str(optC[7]), "%")
+print("Cuantía de acero:", str(optC[8]))
+print("Profundidad de la línea neutra (c):", str(optC[9]), "cm")
+print("Excentricidad:", str(round(optC[10]*100, 2)), "cm")
+print("Deformación unitaria del acero:", str(optC[11]))
+print("Momento último solicitado:", str(optC[12]), "Tf-m")
+print("Carga última solicitada:", str(optC[13]), "Tf")
 tiempo = round(time() - tinicial, 5)
-print("tiempo de ejecución = " + str(tiempo) + " segundos")
+print("tiempo de ejecución =", str(tiempo), "segundos")
 
 # dE = 10
 # nr = 2
