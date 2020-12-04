@@ -1,5 +1,3 @@
-from numba import jit
-
 
 def b1(fc):
     if fc < 280:
@@ -494,8 +492,6 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
 
 def optimusVig(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
     minor = 9999999
-    cumin = cuanMin(fc, fy)
-    cumax = cuanMax(b1, eu, ey, fc, fy)
     bo = sizeLimsCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList)
     lista = ([i, a] for i in bo for a in lList if a >= i)
     for i, a in lista:
@@ -509,24 +505,18 @@ def optimusVig(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
                    10 <= (b - 2 * dp) / (k + 1) <= 15)
         for j, k in listaND:
             ylist = yLst(dp, h, k)
-            
-            for l in dS:
-                for m in dL:
-                    if m <= l:
-                        alist = aLst(l, m, l, j, k, j)
-                        cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, ylist)
-                        fu = FU(pu, mu, cFound)
-                        cuan = cuantia(b, h, j, l, k, m, j, k)
-                        if cumax >= cuan >= cumin:
-                            cuant = 1
-                        else:
-                            cuant = 0
-                        if fu < 100:
-                            costo = cosL(b, h, j, l, k, m, j, l, cH, cS)
-                            if costo < minor:
-                                minor = costo
-                                optimo = [costo, h, b, j, k, l, m, fu,
-                                          cuan, cFound[0], cFound[1], cFound[2], mu, pu]
+            listaDm = ([l, m] for l in dS for m in dL if m <= l)
+            for l, m in listaDm:
+                alist = aLst(l, m, l, j, k, j)
+                cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, ylist)
+                fu = FU(pu, mu, cFound)
+                cuan = cuantia(b, h, j, l, k, m, j, k)
+                if fu < 100:
+                    costo = cosL(b, h, j, l, k, m, j, l, cH, cS)
+                    if costo < minor:
+                        minor = costo
+                        optimo = [costo, h, b, j, k, l, m, fu,
+                                  cuan, cFound[0], cFound[1], cFound[2], mu, pu]
     return optimo
 
 from time import time
@@ -546,7 +536,7 @@ cS = 23550000
 ey = 0.002
 eu = 0.003
 b1 = b1(fc)
-lList = [30, 40, 50, 60, 70, 80, 90, 100, 110]
+lList = range(30, 110, 10)
 dList = [16, 18, 22, 25, 28, 32, 36, 100]
 optV = optimusVig(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS)
 print(optV)
@@ -555,7 +545,6 @@ print("tiempo de ejecución = " + str(tiempo) + " segundos")
 # for i in mu:
 #     for j in pu:
 #         optV = optimusVig(b1, dp, es, eu, ey, fc, fy, i, j, dList, lList, cH, cS)
-
 # b = 40
 # h = 60
 # nS = 3
