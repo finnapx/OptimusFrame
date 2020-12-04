@@ -452,9 +452,9 @@ def sizeLimsCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList):
     return list
 
 
-def optimusCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
+def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, pu, dList, lList, cH, cS):
     minor = 9999999
-    bo = sizeLimsCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList)
+    bo = sizeLimsCol(b1, dp, es, eu, ey, fc, fy, muC, pu, dList, lList)
     lista = ([i, a] for i in bo for a in lList if a == i)
     for i, a in lista:
         b = i
@@ -470,24 +470,24 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
             listaDm = ([l, m] for l in dS for m in dL if m <= l)
             for l, m in listaDm:
                 alist = aLst(l, m, l, j, k, j)
-                cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, ylist)
-                fu = FU(pu, mu, cFound)
+                cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, muC, pu, ylist)
+                fu = FU(pu, muC, cFound)
                 cuan = cuantia(b, h, j, l, k, m, j, k)
                 if fu < 100:
                     costo = cosL(b, h, j, l, k, m, j, l, cH, cS)
                     if costo < minor:
                         minor = costo
                         optimo = [costo, h, b, j, k, l, m, fu,
-                                  cuan, cFound[0], cFound[1], cFound[2], mu, pu]
+                                  cuan, cFound[0], cFound[1], cFound[2], muC, pu]
     return optimo
 
 
 """cálculo de viga óptima"""
 
 
-def optimusVig(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
+def optimusVig(b1, dp, es, eu, ey, fc, fy, muV, pu, dList, lList, cH, cS):
     minor = 9999999
-    bo = sizeLimsCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList)
+    bo = sizeLimsCol(b1, dp, es, eu, ey, fc, fy, muV, pu, dList, lList)
     lista = ([i, a] for i in bo for a in lList if a >= i)
     for i, a in lista:
         b = i
@@ -503,15 +503,15 @@ def optimusVig(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS):
             listaDm = ([l, m] for l in dS for m in dL if m <= l)
             for l, m in listaDm:
                 alist = aLst(l, m, l, j, k, j)
-                cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, ylist)
-                fu = FU(pu, mu, cFound)
+                cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, muV, pu, ylist)
+                fu = FU(pu, muV, cFound)
                 cuan = cuantia(b, h, j, l, k, m, j, k)
                 if fu < 100:
                     costo = cosL(b, h, j, l, k, m, j, l, cH, cS)
                     if costo < minor:
                         minor = costo
                         optimo = [costo, h, b, j, k, l, m, fu,
-                                  cuan, cFound[0], cFound[1], cFound[2], mu, pu]
+                                  cuan, cFound[0], cFound[1], cFound[2], muV, pu]
     return optimo
 
 
@@ -520,9 +520,8 @@ from time import time
 # pu = input('ingrese carga última')
 # mu = [15, 30, 55, 80, 125, 180]
 # pu = [10, 250, 550, 900, 1300]
-mu = int(input('ingrese mu:'))
+muV = int(input('ingrese mu:'))
 pu = int(input('ingrese pu:'))
-tinicial = time()
 dp = 5
 es = 2100000
 fc = 250
@@ -532,27 +531,18 @@ cS = 23550000
 ey = 0.002
 eu = 0.003
 b1 = b1(fc)
-lList = range(30, 110, 10)
+lList = range(30, 130, 10)
 dList = [16, 18, 22, 25, 28, 32, 36]
-optV = optimusVig(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS)
+tinicial = time()
+print("[ costo  , h,  b,nS,nL, dS, dL,  FU , cuantía,   C  ,  e   ,   et  , mu, pu ]")
+optV = optimusVig(b1, dp, es, eu, ey, fc, fy, muV, pu, dList, lList, cH, cS)
 print(optV)
-optC = optimusCol(b1, dp, es, eu, ey, fc, fy, mu, pu, dList, lList, cH, cS)
+muC = int(round(muV / optV[7] * 100 * 1.25, 0))
+optC = optimusCol(b1, dp, es, eu, ey, fc, fy, muC, pu, dList, lList, cH, cS)
 print(optC)
 tiempo = round(time() - tinicial, 5)
 print("tiempo de ejecución = " + str(tiempo) + " segundos")
-# for i in mu:
-#     for j in pu:
-#         optV = optimusVig(b1, dp, es, eu, ey, fc, fy, i, j, dList, lList, cH, cS)
-# b = 40
-# h = 60
-# nS = 3
-# dS = 16
-# nL = 2
-# dL = 16
-# nI = 3
-# dI = 16
-# costo = cosL(b, h, nS, dS, nL, dL, nI, dI, cH, cS)
-# print(costo)
+
 # dE = 10
 # nr = 2
 # s = 15
