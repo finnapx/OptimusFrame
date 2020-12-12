@@ -286,38 +286,6 @@ def FU(pu, mu, cFound):
     return round(FU * 100, 1)
 
 
-def avs(dE, nRam, s):
-    avs = aCir(dE) * nRam / s
-    return avs
-
-
-def vn(fc, nu, b, h, dp, avs):
-    d = h - dp
-    ag = b * h
-    if nu == 0:
-        vc = (fc / 10) ** 0.5 * 10 / 6 * b * d
-    elif nu > 0:
-        fact = (1 + (nu / (14 * ag * 10)))
-        factLim = (1 + 0.29 * nu / (ag * 10)) ** 0.5
-        if fact > factLim:
-            fact = factLim
-        vc = (fc / 10) ** 0.5 * 10 / 6 * b * d * fact
-    else:
-        fact = 1 + 0.29 * nu / (ag * 10)
-        vc = (fc / 10) ** 0.5 * 10 / 6 * b * d * fact
-        if vc < 0:
-            vc = 0
-    vs = avs * fy * d
-    vsLim = 4 * (fc / 10) ** 0.5 * 10 / 6 * b * d
-    if vs > vsLim:
-        vs = vsLim
-    return round((vc + vs) / 1000, 3)
-
-
-def phiVn(vn, phiV):
-    return round(vn * phiV, 2)
-
-
 def aS(nS, dS, nL, dL, nI, dI):
     aS = (nS * aCir(dS) + 2 * nL * aCir(dL) + nI * aCir(dI))
     return aS
@@ -477,8 +445,7 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, lList, cH, cS):
                     costo = cosL(b, h, j, l, k, m, j, l, cH, cS)
                     if costo < minor:
                         minor = costo
-                        optimo = [costo, h, b, j, k, l, m, fu,
-                                  cuan, cFound[0], cFound[1], cFound[2], muC, puC]
+                optimo = [minor, h, b, j, k, l, m, fu, cuan, cFound[0], cFound[1], cFound[2], muC, puC]
     return optimo
 
 
@@ -500,30 +467,82 @@ def optimusVig(b1, dp, es, eu, ey, fc, fy, muV, puV, dList, lList, cH, cS):
                    10 <= (h - 2 * dp) / (k + 1) <= 15)
         for j, k in listaND:
             ylist = yLst(dp, h, k)
-            listaDm = ([l, m] for l in dS for m in dL if m <= l)
+            listaDm = ([l, m] for l in dS for m in dL if l >= 16 and m <= l)
             for l, m in listaDm:
                 alist = aLst(l, m, l, j, k, j)
                 cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, muV, puV, ylist)
                 fu = FU(puV, muV, cFound)
                 cuan = cuantia(b, h, j, l, k, m, j, k)
-                if fu < 100 and cFound[2] >= 0.005:
+                if fu < 100:
                     costo = cosL(b, h, j, l, k, m, j, l, cH, cS)
                     if costo < minor:
                         minor = costo
-                        optimo = [costo, h, b, j, k, l, m, fu,
-                                  cuan, cFound[0], cFound[1], cFound[2], muV, puV]
+                        optimo = [minor, h, b, j, k, l, m, fu, cuan, cFound[0], cFound[1], cFound[2], muV, puV]
     return optimo
 
 
+def avs(dE, nRam, s):
+    avs = aCir(dE) * nRam / s
+    return avs
+
+
+def vn(fc, nu, b, h, dp, avs):
+    d = h - dp
+    ag = b * h
+    if nu == 0:
+        vc = (fc / 10) ** 0.5 * 10 / 6 * b * d
+    elif nu > 0:
+        fact = (1 + (nu / (14 * ag * 10)))
+        factLim = (1 + 0.29 * nu / (ag * 10)) ** 0.5
+        if fact > factLim:
+            fact = factLim
+        vc = (fc / 10) ** 0.5 * 10 / 6 * b * d * fact
+    else:
+        fact = 1 + 0.29 * nu / (ag * 10)
+        vc = (fc / 10) ** 0.5 * 10 / 6 * b * d * fact
+        if vc < 0:
+            vc = 0
+    vs = avs * fy * d
+    vsLim = 4 * (fc / 10) ** 0.5 * 10 / 6 * b * d
+    if vs > vsLim:
+        vs = vsLim
+    return round((vc + vs) / 1000, 3)
+
+
+def phiVn(vn, phiV):
+    return round(vn * phiV, 2)
+
+
+# def cortVig():
+#     dE = 10
+#     nr = 2
+#     s = 15
+#     avs = avs(dE, nr, s)
+#     vn = vn(fc, nu, b, h, dp, avs)
+#     phiV = 0.6
+#     phiVn = phiVn(vn, phiV)
+#     return 0
+#
+#
+# def cortCol():
+#     dE = 10
+#     nr = 2
+#     s = 15
+#     avs = avs(dE, nr, s)
+#     vn = vn(fc, nu, b, h, dp, avs)
+#     phiV = 0.6
+#     phiVn = phiVn(vn, phiV)
+#     return 0
+
+
 from time import time
-# mu = input('ingrese momento último')
-# pu = input('ingrese carga última')
-# mu = [15, 30, 55, 80, 125, 180]
-# pu = [10, 250, 550, 900, 1300]
+
 muV = int(round(float(input('ingrese mu de viga (en Tf-m): ')), 0))
 puV = int(round(float(input('ingrese pu de viga (en Tf): ')), 0))
+VuV = int(round(float(input('ingrese vu de viga (en Tf): ')), 0))
 muC0 = int(round(float(input('ingrese mu de columna (en Tf-m): ')), 0))
 puC = int(round(float(input('ingrese pu de columna (en Tf): ')), 0))
+VuC = int(round(float(input('ingrese vu de viga (en Tf): ')), 0))
 dp = 5
 es = 2100000
 fc = 250
@@ -533,10 +552,11 @@ cS = 23550000
 ey = 0.002
 eu = 0.003
 b1 = b1(fc)
-lList = range(30, 130, 10)
-dList = [16, 18, 22, 25, 28, 32, 36]
+lList = range(30, 110, 10)
+dList = [8, 10, 12, 16, 18, 22, 25, 28, 32, 36]
 tinicial = time()
 optV = optimusVig(b1, dp, es, eu, ey, fc, fy, muV, puV, dList, lList, cH, cS)
+print(optV)
 print("\nLos parámetros óptimos de diseño para la viga son: ")
 print("\nCosto por metro lineal: $", str(int(optV[0])))
 print("Altura del perfil:", str(optV[1]), "cm")
@@ -552,7 +572,7 @@ print("Excentricidad:", str(round(optV[10]*100, 2)), "cm")
 print("Deformación unitaria del acero:", str(optV[11]))
 print("Momento último solicitado:", str(optV[12]), "Tf-m")
 print("Carga última solicitada:", str(optV[13]), "Tf")
-muC = max(int(round(muV / optV[7] * 100 * 1.25, 0)), muC0)
+muC = max(int(round(muV / optV[7] * 100 * 1.2, 0)), muC0) # considerar excentricidad original de la columna
 optC = optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, lList, cH, cS)
 print("\n\n\nLos parámetros óptimos de diseño para la columna son:")
 print("\nCosto por metro lineal:$", str(int(optC[0])))
@@ -569,29 +589,5 @@ print("Excentricidad:", str(round(optC[10]*100, 2)), "cm")
 print("Deformación unitaria del acero:", str(optC[11]))
 print("Momento último solicitado:", str(optC[12]), "Tf-m")
 print("Carga última solicitada:", str(optC[13]), "Tf")
-tiempo = round(time() - tinicial, 5)
+tiempo = round(time() - tinicial, 1)
 print("tiempo de ejecución =", str(tiempo), "segundos")
-
-# dE = 10
-# nr = 2
-# s = 15
-# nu = 0
-# avs = avs(dE, nr, s)
-# vn = vn(fc, nu, b, h, dp, avs)
-# phiV = 0.6
-# phiVn = phiVn(vn, phiV)
-# aLst = aLst(dI, dL, dS, nI, nL, nS)
-# yLst = yLst(dp, h, nL)
-# cFound = cFind(aLst, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, yLst)
-# print(cFound)
-# FU = FU(pu, mu, cFound)
-# print(FU)
-# print(phiVn)
-# cumin = cuanMin(fc, fy)
-# cumax = cuanMax(b1, eu, ey, fc, fy)
-# print(costo)
-# dList = [16, 18, 22, 25, 28, 32, 36]
-# areas = []
-# for i in dList:
-#     areas.append(aCir(i))
-# print(areas)
