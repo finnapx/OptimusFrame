@@ -1,4 +1,5 @@
 
+
 def b1(fc):
     if fc < 280:
         b1 = 0.85
@@ -137,9 +138,9 @@ def cuanMax(b1, eu, ey, fc, fy):
     return round(0.75 * 0.85 * b1 * eu / (eu + ey) * fc / fy, 5)
 
 
-def cPn(aLst, b, b1, es, eu, ey, fc, fy, h, pnB, yLst):
+def cPn(aLst, b, b1, dp, es, eu, ey, fc, fy, h, pnB, yLst):
     c1 = 0
-    c2 = 4 * h
+    c2 = cPnMax(b1, dp, h)
     pnB = round(pnB, 1)
     Pn = abs(pnB) + 0.1
     PnMax = pnMax(aLst, b, fc, fy, h)
@@ -193,7 +194,7 @@ def resumen(aLst, b, b1, c, dp, es, eu, ey, fc, fy, h, yLst):
     PnMax = pnMax(aLst, b, fc, fy, h)
     if PhiPn > PnMax * 0.65 * 0.8:
         PhiPn = round(PnMax * 0.65 * 0.8, 2)
-    CMax = cPn(aLst, b, b1, es, eu, ey, fc, fy, h, PnMax, yLst)
+    CMax = cPn(aLst, b, b1, dp, es, eu, ey, fc, fy, h, PnMax, yLst)
     if c > CMax:
         c = CMax
     Mc = mc(c, Pc, h)
@@ -211,7 +212,7 @@ def resumen(aLst, b, b1, c, dp, es, eu, ey, fc, fy, h, yLst):
 
 def cP(aLst, b, b1, dp, es, eu, ey, fc, fy, h, yLst):
     pnB = pnMax(aLst, b, fc, fy, h)
-    c = cPn(aLst, b, b1, es, eu, ey, fc, fy, h, pnB, yLst)
+    c = cPn(aLst, b, b1, dp, es, eu, ey, fc, fy, h, pnB, yLst)
     return resumen(aLst, b, b1, c, dp, es, eu, ey, fc, fy, h, yLst)
 
 
@@ -226,7 +227,7 @@ def e5(aLst, b, b1, dp, es, eu, ey, fc, fy, h, yLst):
 
 
 def fS(aLst, b, b1, dp, es, eu, ey, fc, fy, h, yLst):
-    c = cPn(aLst, b, b1, es, eu, ey, fc, fy, h, 0, yLst)
+    c = cPn(aLst, b, b1, dp, es, eu, ey, fc, fy, h, 0, yLst)
     return resumen(aLst, b, b1, c, dp, es, eu, ey, fc, fy, h, yLst)
 
 
@@ -240,11 +241,11 @@ def cFind(aLst, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, yLst):
     if mu == 0:
         mu = 0.01
     e = round(abs(mu)/pu, 3)
-    cfs = cPn(aLst, b, b1, es, eu, ey, fc, fy, h, 0, yLst)
+    cfs = cPn(aLst, b, b1, dp, es, eu, ey, fc, fy, h, 0, yLst)
     ex = 0
     if e >= 0:
         PnMax = pnMax(aLst, b, fc, fy, h)
-        ccp = cPn(aLst, b, b1, es, eu, ey, fc, fy, h, PnMax, yLst)
+        ccp = cPn(aLst, b, b1, dp, es, eu, ey, fc, fy, h, PnMax, yLst)
         if e > 0:
             c1 = ccp
             c2 = cfs
@@ -273,7 +274,7 @@ def cFind(aLst, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, yLst):
         m = round((p2 - p1) / (m2 - m1), 2)
         phimn = round((p1 - m * m1) / (1 / e - m), 2)
         phipn = round(phimn / e, 2)
-        c = cPn(aLst, b, b1, es, eu, ey, fc, fy, h, phipn/0.9, yLst)
+        c = cPn(aLst, b, b1, dp, es, eu, ey, fc, fy, h, phipn/0.9, yLst)
         res = resumen(aLst, b, b1, c, dp, es, eu, ey, fc, fy, h, yLst)
     return res
 
@@ -553,7 +554,7 @@ ey = 0.002
 eu = 0.003
 b1 = b1(fc)
 lList = range(30, 110, 10)
-dList = [8, 10, 12, 16, 18, 22, 25, 28, 32, 36]
+dList = (8, 10, 12, 16, 18, 22, 25, 28, 32, 36)
 tinicial = time()
 optV = optimusVig(b1, dp, es, eu, ey, fc, fy, muV, puV, dList, lList, cH, cS)
 print(optV)
@@ -572,7 +573,7 @@ print("Excentricidad:", str(round(optV[10]*100, 2)), "cm")
 print("Deformación unitaria del acero:", str(optV[11]))
 print("Momento último solicitado:", str(optV[12]), "Tf-m")
 print("Carga última solicitada:", str(optV[13]), "Tf")
-muC = max(int(round(muV / optV[7] * 100 * 1.2, 0)), muC0) # considerar excentricidad original de la columna
+muC = max(int(round(muV / optV[7] * 100 * 1.2, 0)), muC0)
 optC = optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, lList, cH, cS)
 print("\n\n\nLos parámetros óptimos de diseño para la columna son:")
 print("\nCosto por metro lineal:$", str(int(optC[0])))
