@@ -247,9 +247,9 @@ def cFind(aLst, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, yLst):
 
 def FU(pu, mu, cFound):
     if abs(mu) < 0.1:
-        FU = abs(pu / (cFound[2]+0.01))
+        FU = abs(pu / (cFound[2] + 0.01))
     else:
-        FU = max(abs(pu / (cFound[2] + 0.01)), abs(mu / (cFound[1]+0.01)))
+        FU = max(abs(pu / (cFound[2] + 0.01)), abs(mu / (cFound[1] + 0.01)))
     return round(FU * 100, 1)
 
 
@@ -352,8 +352,8 @@ def reverV(A):
 
 def dBarV(A, b, dp, dList):
     sup = supListV(b, dp)
-    minlist = [abs(sup[-1]*i*i/400*3.1416 - A) for i in dList]
-    maxlist = [abs(sup[0]*i*i/400*3.1416 - A) for i in dList]
+    minlist = [abs(sup[-1] * i * i / 400 * 3.1416 - A) for i in dList]
+    maxlist = [abs(sup[0] * i * i / 400 * 3.1416 - A) for i in dList]
     minerr = min(minlist)
     maxerr = min(maxlist)
     ind1 = minlist.index(minerr)
@@ -449,11 +449,11 @@ def areaLstV(mnn, mpp, b, b1, fc, fy, h, dp, dList, ai):
 def ylstRev(h, ylst):
     ylstrev = []
     for i in reversed(ylst):
-        ylstrev.append(h-i)
+        ylstrev.append(h - i)
     return ylstrev
 
 
-def resumen(alst, c, b, h, nH, nV, dEsq, dLat, eu, fy, fc, b1, es, ey, ylst):
+def resumen(alst, c, b, h, eu, fy, fc, b1, es, ey, ylst):
     eiL = eiLst(c, eu, ylst)
     eiL = gen2array(eiL)
     eT = et(c, dp, eu, h)
@@ -486,7 +486,7 @@ def resumen(alst, c, b, h, nH, nV, dEsq, dLat, eu, fy, fc, b1, es, ey, ylst):
     return PhiPn, Pn, Ppr, PhiMn, Mn, Mpr
 
 
-def XYplotCurv(alst, b, h, dp, nH, nV, dEsq, dLat, eu, fy, fc, b1, es, ey, ylst):
+def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst):
     PnMax = round((0.85 * fc * (h * b - sum(alst)) + sum(alst) * fy) / 1000, 2)
     PnMaxPr = round((0.85 * fc * (h * b - sum(alst)) + sum(alst) * fy * 1.25) / 1000, 2)
     phiPnMin = 0.9 * sum(alst) * -fy / 1000
@@ -503,7 +503,7 @@ def XYplotCurv(alst, b, h, dp, nH, nV, dEsq, dLat, eu, fy, fc, b1, es, ey, ylst)
     for i in range(2, 41):
         C.append(i/40 * h)
     for c in C[1::]:
-        res = resumen(alst, c, b, h, nH, nV, dEsq, dLat, eu, fy, fc, b1, es, ey, ylst)
+        res = resumen(alst, c, b, h, eu, fy, fc, b1, es, ey, ylst)
         X1.append(res[3])
         Y1.append(res[0])
         X2.append(res[4])
@@ -516,14 +516,14 @@ def XYplotCurv(alst, b, h, dp, nH, nV, dEsq, dLat, eu, fy, fc, b1, es, ey, ylst)
     Y1.append(Y1[-1])
     Y2.append(PnMax)
     Y3.append(PnMaxPr)
-    plt.plot(X1, Y1, label='ØMn - ØPn', color='blue')
-    plt.plot(X2, Y2, label='Mn - Pn', color='red')
-    plt.plot(X3, Y3, label='Mpr - Ppr', color='green')
+    plt.plot(X1, Y1, label='ØMn - ØPn', color='steelblue')
+    plt.plot(X2, Y2, label='Mn - Pn', color='crimson')
+    plt.plot(X3, Y3, label='Mpr - Ppr', color='forestgreen')
     plt.yticks([i for i in range(int(round(PnMinPr / 100, 0) * 100), int(round(PnMaxPr / 100, 0) * 100) + 100, 100)])
     plt.xticks([i for i in range(0, int(round(max(X3) / 10, 0) * 10) + 10, 10)])
     plt.xlabel('Mn[tonf-m]')
     plt.ylabel('Pn[tonf]')
-    plt.title("Curva de interacción")
+    plt.title("Curvas de interacción")
     plt.legend()
     plt.grid()
     plt.show()
@@ -533,18 +533,19 @@ def XYplotCurv(alst, b, h, dp, nH, nV, dEsq, dLat, eu, fy, fc, b1, es, ey, ylst)
 """ Cálculo de columna óptima"""
 
 
-
 def optimusVig(mpp, mnn, b1, fc, fy, dp, dList, lList, ai, lo, cH, cS):
     min = 99999999
     cont = 0
+    cH = cH/10000
+    cS = cS/10000
     lista = ([i, j] for i in lList if i >= lo / 16 for j in lList if i >= j and j >= 0.4 * i)
     for i, j in lista:
         h = i
         b = j
-        ylst = yLstV(i, dp)
+        ylst = gen2array(yLstV(i, dp))
         ylstrev = ylstRev(i, ylst)
         aLst = areaLstV(mnn, mpp, j, b1, fc, fy, i, dp, dList, ai)
-        aSLst = aLst[3]
+        aSLst = gen2array(aLst[3])
         alstrev = reverV(aSLst)
         aS = round(sum(aSLst), 2)
         aG = i * j - aS
@@ -562,9 +563,9 @@ def optimusVig(mpp, mnn, b1, fc, fy, dp, dList, lList, ai, lo, cH, cS):
             costo = round(aS * cS + aG * cH, 0)
             if costo < min and cond != False:
                 min = costo
-                mpr1 = round(1.25 * fy * 2 * aSLst[0] * 0.95 * (h - dp)/100000, 1)
-                mpr2 = round(1.25 * fy * aSLst[-1] * 0.95 * (h - dp)/100000, 1)
-                listaT = min, h, b, mpr1, mpr2, aLst, ylst, cuan1, cuan2, asdf, asdfrev
+                mpr1 = round(1.25 * fy * 2 * aSLst[0] * 0.95 * (h - dp) / 100000, 1)
+                mpr2 = round(1.25 * fy * aSLst[-1] * 0.95 * (h - dp) / 100000, 1)
+                listaT = min, h, b, mpr1, mpr2, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev
     return listaT
 
 
@@ -598,9 +599,6 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, lList, cH, cS):
     return optimo
 
 
-#variar c para generar curvas de interacción
-
-
 def ramas(b, dp):
     dlibre = b - 2 * dp
     return int(dlibre/35) + 2
@@ -617,6 +615,7 @@ def s(phi, av, fy, h, dp, vu):
 
 from time import time
 
+
 dp = 5
 es = 2100000
 fc = 250
@@ -629,15 +628,16 @@ b1 = 0.85
 lList = range(30, 110, 10)
 dList = [12, 16, 18, 22, 25, 28, 32, 36]
 tinicial = time()
-# asdf = optimusVig(58.7, 30.29, 0.85, 250, 4200, 5, dList, lList, 1, 700, 6, 2355)
-# print(asdf)
+asdf = optimusVig(58.7, 30.29, 0.85, 250, 4200, 5, dList, lList, 1, 700, cH, cS)
+gen2array(asdf)
+print(asdf)
 optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, lList, cH, cS)
 print(optC)
-# print("\ncosto = ", str(optC[0]),"\nancho = ", str(optC[1]),"\nalto = ", str(optC[2]),
-#     "\nnHor = ", str(optC[3]), "\nnVer = ", str(optC[4]), "\ndEsq = ", str(optC[5]), "\ndLat = ", str(optC[6]),
-#       "\nfu = ", str(optC[7]), "\ncuan = ", str(optC[8]), "\nc = ", str(optC[9]), "\ne = ", str(optC[10]))
+print("\ncosto = ", str(optC[0]),"\nancho = ", str(optC[1]),"\nalto = ", str(optC[2]),
+    "\nnHor = ", str(optC[3]), "\nnVer = ", str(optC[4]), "\ndEsq = ", str(optC[5]), "\ndLat = ", str(optC[6]),
+      "\nfu = ", str(optC[7]), "\ncuan = ", str(optC[8]), "\nc = ", str(optC[9]), "\ne = ", str(optC[10]))
 tiempo = round(time() - tinicial, 4)
-# zxcv = XYplotCurv([19.6, 9.8, 9.8, 19.6], 40, 60, 5, 2, 2, 25, 25, 0.003, 4200, 250, 0.85, 2100000, 0.002, [5, 22, 38, 55])
 print("tiempo de ejecución =", str(tiempo), "segundos")
-XYplotCurv(optC[11], optC[1], optC[2], dp, optC[3], optC[4], optC[5], optC[6], eu, fy, fc, b1, es, ey, optC[12])
-#
+XYplotCurv(optC[11], optC[1], optC[2], dp, eu, fy, fc, b1, es, ey, optC[12])
+XYplotCurv(asdf[5], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[6])
+XYplotCurv(asdf[10], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[9])
