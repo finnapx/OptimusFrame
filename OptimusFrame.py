@@ -606,18 +606,18 @@ dp = 5
 es = 2100000
 fc = 250
 fy = 4200
-cH = 60000
-cS = 23550000
+cH = 75000
+cS = 7850000
 ey = 0.002
 eu = 0.003
 b1 = 0.85
 lList = range(30, 110, 10)
 dList = [12, 16, 18, 22, 25, 28, 32, 36]
 tinicial = time()
-asdf = optimusVig(158.7, 130.29, es, eu, ey, b1, fc, fy, dp, dList, lList, 1, 700, cH, cS)
+asdf = optimusVig(58.7, 30.29, es, eu, ey, b1, fc, fy, dp, dList, lList, 1, 700, cH, cS)
 gen2array(asdf)
 print(asdf)
-optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, lList, cH, cS)
+optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 82, 60, dList, lList, cH, cS)
 print(optC)
 tiempo = round(time() - tinicial, 4)
 print("tiempo de ejecución =", str(tiempo), "segundos")
