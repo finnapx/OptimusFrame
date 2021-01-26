@@ -565,7 +565,8 @@ def optimusVig(mpp, mnn, b1, fc, fy, dp, dList, lList, ai, lo, cH, cS):
                 min = costo
                 mpr1 = round(1.25 * fy * 2 * aSLst[0] * 0.95 * (h - dp) / 100000, 1)
                 mpr2 = round(1.25 * fy * aSLst[-1] * 0.95 * (h - dp) / 100000, 1)
-                listaT = min, h, b, mpr1, mpr2, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev
+                FU = round(max(mnn / asdf[1], mpp / asdfrev[1]) * 100, 1)
+                listaT = min, h, b, mpr1, mpr2, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev, FU
     return listaT
 
 
@@ -594,7 +595,6 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, lList, cH, cS):
                     if costo < minor:
                         minor = costo
                         e = round(cFound[1] / (cFound[2] + 0.001), 3)
-                        #        [costo, h, b, nHor, nVer, dEsq, dLat, FU, cuantia, C, e, cont]
                         optimo = [minor, h, b,    j,    k,  l, m, fu, cuan, cFound[0], e, alist, ylist]
     return optimo
 
@@ -633,9 +633,9 @@ gen2array(asdf)
 print(asdf)
 optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, lList, cH, cS)
 print(optC)
-print("\ncosto = ", str(optC[0]),"\nancho = ", str(optC[1]),"\nalto = ", str(optC[2]),
-    "\nnHor = ", str(optC[3]), "\nnVer = ", str(optC[4]), "\ndEsq = ", str(optC[5]), "\ndLat = ", str(optC[6]),
-      "\nfu = ", str(optC[7]), "\ncuan = ", str(optC[8]), "\nc = ", str(optC[9]), "\ne = ", str(optC[10]))
+# print("\ncosto = ", str(optC[0]),"\nancho = ", str(optC[1]),"\nalto = ", str(optC[2]),
+#     "\nnHor = ", str(optC[3]), "\nnVer = ", str(optC[4]), "\ndEsq = ", str(optC[5]), "\ndLat = ", str(optC[6]),
+#       "\nfu = ", str(optC[7]), "\ncuan = ", str(optC[8]), "\nc = ", str(optC[9]), "\ne = ", str(optC[10]))
 tiempo = round(time() - tinicial, 4)
 print("tiempo de ejecución =", str(tiempo), "segundos")
 XYplotCurv(optC[11], optC[1], optC[2], dp, eu, fy, fc, b1, es, ey, optC[12])
