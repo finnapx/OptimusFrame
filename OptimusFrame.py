@@ -186,7 +186,7 @@ def cPn(aLst, b, b1, dp, es, eu, ey, fc, fy, h, pnB, yLst):
         eiL = eiLst(c, eu, yLst)
         fsL = fsLst(eiL, es, ey, fy)
         eT = et(c, dp, eu, h)
-    return round(c, 2), round(PhiMn, 2), round(PhiPn, 2), eT
+    return round(c, 2), round(PhiMn, 2), round(PhiPn, 2), eT, round(Mc + Ms, 2)
 
 
 def cFind(aLst, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, yLst):
@@ -251,19 +251,6 @@ def FU(pu, mu, cFound):
     else:
         FU = max(abs(pu / (cFound[2] + 0.01)), abs(mu / (cFound[1] + 0.01)))
     return round(FU * 100, 1)
-
-
-fc=250
-fy=4200
-b1=b1(fc)
-eu=0.003
-ey=0.002
-es=2100000
-cH=60000
-cS=23550000
-dp=5
-h = 60
-b = 30
 
 
 def cosLC(b, h, dEsq, dLat, nHor, nVer, cH, cS):
@@ -535,36 +522,35 @@ def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst):
 
 def optimusVig(mpp, mnn, b1, fc, fy, dp, dList, lList, ai, lo, cH, cS):
     min = 99999999
-    cont = 0
     cH = cH/10000
     cS = cS/10000
     lista = ([i, j] for i in lList if i >= lo / 16 for j in lList if i >= j and j >= 0.4 * i)
     for i, j in lista:
         h = i
         b = j
-        ylst = gen2array(yLstV(i, dp))
-        ylstrev = ylstRev(i, ylst)
-        aLst = areaLstV(mnn, mpp, j, b1, fc, fy, i, dp, dList, ai)
+        ylst = gen2array(yLstV(h, dp))
+        ylstrev = ylstRev(h, ylst)
+        aLst = areaLstV(mnn, mpp, b, b1, fc, fy, h, dp, dList, ai)
         aSLst = gen2array(aLst[3])
         alstrev = reverV(aSLst)
         aS = round(sum(aSLst), 2)
-        aG = i * j - aS
+        aG = h * b - aS
         cuanT = round(aS / (aG - aS), 4)
         cumin = cuminV(fc, fy)
-        cuan1 = round(2 * aSLst[0] / ((j * (i - dp) - aSLst[0])), 4)
-        cuan2 = round(aSLst[-1] / ((j * (i - dp) - aSLst[1])), 4)
+        cuan1 = round(aSLst[0] / ((b * (h - dp) - aSLst[0])), 4)
+        cuan2 = round(2 * aSLst[-1] / ((b * (h - dp) - aSLst[-1])), 4)
         cond = False
         asdf = cPn(aSLst, b, b1, dp, es, eu, ey, fc, fy, h, 0, ylst)
         asdfrev = cPn(alstrev, b, b1, dp, es, eu, ey, fc, fy, h, 0, ylstrev)
         if 0.025 >= cuan1 >= cumin and\
-                0.025 >= cuan2 >= cumin and asdf[3] >= 0.005\
+                0.025 >= cuan2 >= 2 * cumin and asdf[3] >= 0.005\
                 and asdf[1] >= mnn and asdfrev[1] >= mpp:
             cond = True
             costo = round(aS * cS + aG * cH, 0)
             if costo < min and cond != False:
                 min = costo
-                mpr1 = round(1.25 * fy * 2 * aSLst[0] * 0.95 * (h - dp) / 100000, 1)
-                mpr2 = round(1.25 * fy * aSLst[-1] * 0.95 * (h - dp) / 100000, 1)
+                mpr1 = cPn(alstrev, b, b1, dp, es, eu, ey, fc, 1.25 * fy, h, 0, ylstrev)[4]
+                mpr2 = cPn(aSLst, b, b1, dp, es, eu, ey, fc, 1.25 * fy, h, 0, ylst)[4]
                 FU = round(max(mnn / asdf[1], mpp / asdfrev[1]) * 100, 1)
                 listaT = min, h, b, mpr1, mpr2, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev, FU
     return listaT
@@ -573,7 +559,6 @@ def optimusVig(mpp, mnn, b1, fc, fy, dp, dList, lList, ai, lo, cH, cS):
 def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, lList, cH, cS):
     minor = 9999999
     lista = ([i, a] for i in lList for a in lList if a == i)
-    cont = 0
     for i, a in lista:
         b = i
         h = a
@@ -585,7 +570,6 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, lList, cH, cS):
             ylist = yLstC(dp, h, k)
             listaDm = ([l, m] for l in dList for m in dList if m <= l)
             for l, m in listaDm:
-                cont = 1+cont
                 alist = aLstC(l, m, j, k)
                 cFound = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, muC, puC, ylist)
                 fu = FU(puC, muC, cFound)
@@ -595,13 +579,13 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, lList, cH, cS):
                     if costo < minor:
                         minor = costo
                         e = round(cFound[1] / (cFound[2] + 0.001), 3)
-                        optimo = [minor, h, b,    j,    k,  l, m, fu, cuan, cFound[0], e, alist, ylist]
+                        optimo = [minor, h, b,    j,    k,  l, m, fu, cuan, cFound[0], e, alist, ylist, fu]
     return optimo
 
 
 def ramas(b, dp):
     dlibre = b - 2 * dp
-    return int(dlibre/35) + 2
+    return int(dlibre / 35) + 2
 
 
 def VueV(l, mpr1, mpr2, vug):
