@@ -301,6 +301,22 @@ def supListV(b, dp):
     return nHor
 
 
+def espc(xlist, esp):
+    i=0
+    espacio=0
+    while xlist[i+1]-5<=esp and len(xlist)>i:
+        i+=1
+        espacio = xlist[i]-5
+    return espacio
+
+
+def ramList(xlist, esp):
+    nram = int((xlist[-1] - xlist[0] - 0.01) / esp) + 2
+    if len(xlist) % 2 == 0:
+        nram += 1
+    return nram, len(xlist)
+
+
 def cuminV(fc, fy):
     return round(max(0.8 / fy * (fc ** 0.5), 14 / fy), 4)
 
@@ -523,7 +539,6 @@ def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, lList, ai, lo, cH, c
     cH = cH/10000
     cS = cS/10000
     lista = ([i, j] for i in lList if i >= lo / 16 for j in lList if i >= j and j >= 0.4 * i)
-    cont = 100
     for i, j in lista:
         h = i
         b = j
@@ -547,7 +562,6 @@ def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, lList, ai, lo, cH, c
                 0.0125 >= cuan2 >= cumin and eT >= 0.005\
                 and asdf[1] >= mnn and asdfrev[1] >= mpp:
             cond = True
-            cont = cont - 1
             costo = round(aS * cS + aG * cH, 0)
             if costo < min and cond != False:
                 min = costo
@@ -581,7 +595,7 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, lList, cH, cS):
                     if costo < minor:
                         minor = costo
                         e = round(cFound[1] / (cFound[2] + 0.001), 3)
-                        optimo = [minor, h, b,    j,    k,  l, m, fu, cuan, cFound[0], e, alist, ylist, fu]
+                        optimo = [minor, h, b,    j,    k,  l, m, fu, cuan, cFound[0], e, alist, ylist]
     return optimo
 
 
@@ -590,37 +604,141 @@ def ramas(b, dp):
     return int(dlibre / 35) + 2
 
 
-def VueV(l, mpr1, mpr2, vug):
+def vueV(l, mpr1, mpr2):
     vue = (mpr1 + mpr2) / l
-    return vue + vug
+    return vue
 
 
-def s(phi, av, fy, h, dp, vu):
-    return phi * av * fy * (h- dp) / vu
+# 'avs' = (Av / s)_nec = Vs / (fy * d)
+def avs(av, fy, h, dp, vu):
+    return vu/(fy * (h - dp))
 
 
-from time import time
+def fest(avs, nRam):
+    return round(100 * avs/nRam, 3)
 
 
-dp = 5
-es = 2100000
-fc = 250
-fy = 4200
-cH = 75000
-cS = 7850000
-ey = 0.002
-eu = 0.003
-b1 = 0.85
-lList = range(30, 110, 10)
-dList = [12, 16, 18, 22, 25, 28, 32, 36]
-tinicial = time()
-asdf = optimusVig(58.7, 30.29, es, eu, ey, b1, fc, fy, dp, dList, lList, 1, 700, cH, cS)
-gen2array(asdf)
-print(asdf)
-optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 82, 60, dList, lList, cH, cS)
-print(optC)
-tiempo = round(time() - tinicial, 4)
-print("tiempo de ejecución =", str(tiempo), "segundos")
-XYplotCurv(optC[11], optC[1], optC[2], dp, eu, fy, fc, b1, es, ey, optC[12])
-XYplotCurv(asdf[5], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[6])
-XYplotCurv(asdf[10], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[9])
+s = [8, 10, 12, 15, 18, 20, 22, 25, 28, 30]
+dEst = [10, 12, 16, 18, 22, 25, 28, 32, 36]
+
+
+def limEst(h, dp, db, s):
+    d = h - dp
+    cond1 = min(d / 4, 0.6 * db, 15)
+    cond2 = min(d / 2, 30)
+    c1 = []
+    c2 = []
+    for i in s:
+        if cond1 >= i:
+            c1.append(i)
+        if cond2 >= i:
+            c2.append(i)
+        else:
+            break
+    return c1, c2
+
+
+xList = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95, 105]
+
+
+def ramLst(xList, b):
+    estLst = [xList[0]]
+    minRam = int(round((xList[-1] - xList[0]) / 30, 0)) + 2
+    nearMid = min([abs(i - b / 2) for i in xList])
+    num = len(xList)
+    if num%2!=0:
+        nearMid = [abs(i - b / 2) for i in xList]
+        minMid = min(nearMid)
+        indMid = nearMid.index(minMid)
+        ramIzq = int(indMid/2)
+        cont, a, c, d = 0, 0, 0, 0
+        while xList[cont]<xList[indMid]:
+            a = [abs(i - xList[cont]) for i in xList if 10 < i - xList[cont] < 30]
+            c = min(a)
+            d = nearMid.index(c)
+            cont += 1
+        estLst.append(xList[d])
+        if b/2 - estLst[-1] > 15:
+            estLst.append(int(b/2))
+        for i in range(len(estLst)):
+            if estLst[i]!=b/2:
+                estLst.append(b - estLst[i])
+        estLst.sort()
+    else:
+        mid = int(num / 2)
+        
+    return estLst
+
+
+
+# def listaram(xList):
+#     mem = xList[0]
+#     lista = [xList[0]]
+#     indices = [0]
+#     for i in range(len(xList)):
+#         if xList[i] - mem >= 35:
+#             if xList[i] - mem == 0:
+#                 mem = xList[i]
+#             else:
+#                 mem = xList[i-1]
+#             lista.append(mem)
+#             indices.append(i-1)
+#     if mem != xList[-1]:
+#         lista.append(xList[-1])
+#         indices.append(len(xList)-1)
+#     mitad = int((len(lista) + 1) / 2)
+#     if mitad % 2 != 0:
+#         median = int(len(xList) / 2)
+#     # asdf = lista.index(35)
+#     lista2 = []
+#     for i in range(len(lista)):
+#         if i < mitad - 1:
+#             lista2.append(lista[i])
+#
+#
+#     return lista, indices, median, xList[median], lista2
+
+b = 110
+print(ramLst(xList, b))
+
+
+
+def vS(fy, nRam, aEst, h, dp, s):
+    return round(fy * nRam * aEst * (h-dp) / s, 2)
+
+
+# se desprecia vc
+def vReqV(vdl, vue):
+    return 0.75 * (vdl + vue)
+
+
+def corteV():
+    pass
+
+#
+# from time import time
+#
+#
+# dp = 5
+# es = 2100000
+# fc = 250
+# fy = 4200
+# cH = 75000
+# cS = 7850000
+# ey = 0.002
+# eu = 0.003
+# b1 = 0.85
+# lList = range(30, 110, 10)
+# dList = [12, 16, 18, 22, 25, 28, 32, 36]
+# estList = [10, 12, 16, 18, 22, 25]
+# tinicial = time()
+# asdf = optimusVig(58.7, 30.29, es, eu, ey, b1, fc, fy, dp, dList, lList, 1, 700, cH, cS)
+# gen2array(asdf)
+# print(asdf)
+# optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, lList, cH, cS)
+# print(optC)
+# tiempo = round(time() - tinicial, 4)
+# print("tiempo de ejecución =", str(tiempo), "segundos")
+# XYplotCurv(optC[11], optC[1], optC[2], dp, eu, fy, fc, b1, es, ey, optC[12])
+# XYplotCurv(asdf[5], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[6])
+# XYplotCurv(asdf[10], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[9])
