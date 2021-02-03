@@ -638,36 +638,107 @@ def limEst(h, dp, db, s):
     return c1, c2
 
 
-xList = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95, 105]
+xList = [5, 20, 35, 50, 65, 80, 95, 110, 125]
+# xList = [5, 15, 25, 35, 45, 55, 65, 75, 85]
 
-
-def ramLst(xList, b):
-    estLst = [xList[0]]
-    minRam = int(round((xList[-1] - xList[0]) / 30, 0)) + 2
-    nearMid = min([abs(i - b / 2) for i in xList])
-    num = len(xList)
-    if num%2!=0:
-        nearMid = [abs(i - b / 2) for i in xList]
-        minMid = min(nearMid)
-        indMid = nearMid.index(minMid)
-        ramIzq = int(indMid/2)
-        cont, a, c, d = 0, 0, 0, 0
-        while xList[cont]<xList[indMid]:
-            a = [abs(i - xList[cont]) for i in xList if 10 < i - xList[cont] < 30]
-            c = min(a)
-            d = nearMid.index(c)
-            cont += 1
-        estLst.append(xList[d])
-        if b/2 - estLst[-1] > 15:
-            estLst.append(int(b/2))
-        for i in range(len(estLst)):
-            if estLst[i]!=b/2:
-                estLst.append(b - estLst[i])
-        estLst.sort()
+def ramLst(xList, dp):
+    b = xList[-1] + dp
+    mid = b / 2
+    dist = mid - dp
+    minRam = int(dist / 30)
+    larg = len(xList)
+    ind = int(larg / 2)
+    rang1 = xList[0:ind]
+    estLst = []
+    if larg % 2 == 0:
+        c = ind-1
+        while mid - xList[c] <= 15:
+            c -= 1
+        c += 1
+        estLst.append(xList[c])
+        for i in range(c, -1, -1):
+            if estLst[0] - xList[i] >= 30:
+                if estLst[0] - xList[i] > 30:
+                    estLst.insert(0, xList[i + 1])
+                else:
+                    estLst.insert(0, xList[i])
+        for i in range(len(estLst) - 1, -1, -1):
+            estLst.append(b - estLst[i])
     else:
-        mid = int(num / 2)
-        
-    return estLst
+        estLst1 = []
+        estLst2 = []
+        c = ind-1
+        while mid - xList[c] <= 15:
+            c -= 1
+        c += 1
+        estLst1.append(xList[c])
+        estLst2.append(xList[ind])
+        for i in range(c, -1, -1):
+            if estLst1[0] - xList[i] >= 30:
+                if estLst1[0] - xList[i] > 30:
+                    estLst1.insert(0, xList[i + 1])
+                else:
+                    estLst1.insert(0, xList[i])
+        for i in range(c, -1, -1):
+            if estLst2[0] - xList[i] >= 30:
+                if estLst2[0] - xList[i] > 30:
+                    estLst2.insert(0, xList[i + 1])
+                else:
+                    estLst2.insert(0, xList[i])
+        for i in range(len(estLst) - 1, -1, -1):
+            estLst1.append(b - estLst[i])
+            estLst2.append(b - estLst[i])
+        estLst1.insert(0, xList[0])
+        if len(estLst1) < len(estLst2):
+            estLst = estLst1
+            for i in range(len(estLst) - 1, -1, -1):
+                estLst.append(b - estLst[i])
+        else:
+            estLst = estLst2
+            for i in range(len(estLst) - 2, -1, -1):
+                estLst.append(b - estLst[i])
+    return b, mid, dp, dist, minRam, rang1, xList[c], estLst
+
+print(ramLst(xList, 5))
+
+
+# def ramLst(xList, b):
+#     estLst = [xList[0]]
+#     minRam = int(round((xList[-1] - xList[0]) / 30, 0)) + 2
+#     nearMid = min([abs(i - b / 2) for i in xList])
+#     num = len(xList)
+#     if xList[0] - xList[-1] <= 30:
+#         estLst = [xList[0], xList[-1]]
+#     else:
+#         if num%2!=0:
+#             nearMid = [abs(i - b / 2) for i in xList]
+#             minMid = min(nearMid)
+#             indMid = nearMid.index(minMid)
+#             ramIzq = int(indMid/2)
+#             cont, a, c, d = 0, 0, 0, 0
+#             while xList[cont]<xList[indMid]:
+#                 a = [abs(i - xList[cont]) for i in xList if 10 < i - xList[cont] < 30]
+#                 c = min(a)
+#                 d = nearMid.index(c)
+#                 cont += 1
+#             estLst.append(xList[d])
+#             if b/2 - estLst[-1] > 15:
+#                 estLst.append(int(b/2))
+#             for i in range(len(estLst)):
+#                 if estLst[i]!=b/2:
+#                     estLst.append(b - estLst[i])
+#             estLst.sort()
+#         else:
+#             estLst = xList[0]
+#             mitad = xList[0:int(len(xList) / 2)]
+#             cont = 0
+#             ramas = int((b / 2 - xList[0]) / 30)
+#             print(ramas)
+#
+#             for i in range(len(mitad)):
+#
+#                 pass
+#     return estLst
 
 
 
@@ -698,8 +769,6 @@ def ramLst(xList, b):
 #
 #     return lista, indices, median, xList[median], lista2
 
-b = 110
-print(ramLst(xList, b))
 
 
 
