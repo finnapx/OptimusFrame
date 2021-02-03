@@ -637,9 +637,13 @@ def limEst(h, dp, db, s):
             break
     return c1, c2
 
+def remrep(a):
+    a.sort()
+    a = list(dict.fromkeys(a))
+    return a
 
-xList = [5, 20, 35, 50, 65, 80, 95, 110, 125]
-# xList = [5, 15, 25, 35, 45, 55, 65, 75, 85]
+xList = [5, 17, 31, 43, 55, 67, 79, 91, 113]
+# xList = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95, 105, 115, 125]
 
 def ramLst(xList, dp):
     b = xList[-1] + dp
@@ -648,7 +652,8 @@ def ramLst(xList, dp):
     minRam = int(dist / 30)
     larg = len(xList)
     ind = int(larg / 2)
-    rang1 = xList[0:ind]
+    rang1 = xList[0:ind-1]
+    rang1.append(xList[ind])
     estLst = []
     if larg % 2 == 0:
         c = ind-1
@@ -659,11 +664,15 @@ def ramLst(xList, dp):
         for i in range(c, -1, -1):
             if estLst[0] - xList[i] >= 30:
                 if estLst[0] - xList[i] > 30:
-                    estLst.insert(0, xList[i + 1])
+                    estLst.insert(0, xList[i+1])
                 else:
                     estLst.insert(0, xList[i])
         for i in range(len(estLst) - 1, -1, -1):
-            estLst.append(b - estLst[i])
+            indx = len(xList)-1-xList.index(estLst[i])
+            estLst.append(xList[indx])
+        estLst.insert(0,xList[0])
+        estLst.append(xList[-1])
+        estLst = remrep(estLst)
     else:
         estLst1 = []
         estLst2 = []
@@ -686,18 +695,29 @@ def ramLst(xList, dp):
                 else:
                     estLst2.insert(0, xList[i])
         for i in range(len(estLst) - 1, -1, -1):
-            estLst1.append(b - estLst[i])
-            estLst2.append(b - estLst[i])
-        estLst1.insert(0, xList[0])
+            indx = len(xList)-1-xList.index(estLst[i])
+            estLst1.append(xList[indx])
+            estLst2.append(xList[indx])
         if len(estLst1) < len(estLst2):
+            for i in range(len(estLst1)-1, -1, -1):
+                indx = len(xList) - 1 - xList.index(estLst1[i])
+                estLst1.append(xList[indx])
+            estLst1.insert(0, xList[0])
+            estLst1.append(xList[-1])
+            estLst1 = remrep(estLst1)
             estLst = estLst1
-            for i in range(len(estLst) - 1, -1, -1):
-                estLst.append(b - estLst[i])
+            estLst1 = remrep(estLst1)
         else:
+            print(estLst2)
+            for i in range(len(estLst2)-2, -1, -1):
+                indx = len(xList) - 1 - xList.index(estLst2[i])
+                estLst2.append(xList[indx])
+            estLst2.insert(0, xList[0])
+            estLst2.append(xList[-1])
+            estLst2 = remrep(estLst2)
             estLst = estLst2
-            for i in range(len(estLst) - 2, -1, -1):
-                estLst.append(b - estLst[i])
-    return b, mid, dp, dist, minRam, rang1, xList[c], estLst
+
+    return estLst
 
 
 print(ramLst(xList, 5))
@@ -716,10 +736,10 @@ def vReqV(vdl, vue):
 def corteV():
     pass
 
-#
+
 # from time import time
-#
-#
+
+
 # dp = 5
 # es = 2100000
 # fc = 250
