@@ -699,76 +699,8 @@ def ramLst(xList, dp):
                 estLst.append(b - estLst[i])
     return b, mid, dp, dist, minRam, rang1, xList[c], estLst
 
+
 print(ramLst(xList, 5))
-
-
-# def ramLst(xList, b):
-#     estLst = [xList[0]]
-#     minRam = int(round((xList[-1] - xList[0]) / 30, 0)) + 2
-#     nearMid = min([abs(i - b / 2) for i in xList])
-#     num = len(xList)
-#     if xList[0] - xList[-1] <= 30:
-#         estLst = [xList[0], xList[-1]]
-#     else:
-#         if num%2!=0:
-#             nearMid = [abs(i - b / 2) for i in xList]
-#             minMid = min(nearMid)
-#             indMid = nearMid.index(minMid)
-#             ramIzq = int(indMid/2)
-#             cont, a, c, d = 0, 0, 0, 0
-#             while xList[cont]<xList[indMid]:
-#                 a = [abs(i - xList[cont]) for i in xList if 10 < i - xList[cont] < 30]
-#                 c = min(a)
-#                 d = nearMid.index(c)
-#                 cont += 1
-#             estLst.append(xList[d])
-#             if b/2 - estLst[-1] > 15:
-#                 estLst.append(int(b/2))
-#             for i in range(len(estLst)):
-#                 if estLst[i]!=b/2:
-#                     estLst.append(b - estLst[i])
-#             estLst.sort()
-#         else:
-#             estLst = xList[0]
-#             mitad = xList[0:int(len(xList) / 2)]
-#             cont = 0
-#             ramas = int((b / 2 - xList[0]) / 30)
-#             print(ramas)
-#
-#             for i in range(len(mitad)):
-#
-#                 pass
-#     return estLst
-
-
-
-# def listaram(xList):
-#     mem = xList[0]
-#     lista = [xList[0]]
-#     indices = [0]
-#     for i in range(len(xList)):
-#         if xList[i] - mem >= 35:
-#             if xList[i] - mem == 0:
-#                 mem = xList[i]
-#             else:
-#                 mem = xList[i-1]
-#             lista.append(mem)
-#             indices.append(i-1)
-#     if mem != xList[-1]:
-#         lista.append(xList[-1])
-#         indices.append(len(xList)-1)
-#     mitad = int((len(lista) + 1) / 2)
-#     if mitad % 2 != 0:
-#         median = int(len(xList) / 2)
-#     # asdf = lista.index(35)
-#     lista2 = []
-#     for i in range(len(lista)):
-#         if i < mitad - 1:
-#             lista2.append(lista[i])
-#
-#
-#     return lista, indices, median, xList[median], lista2
-
 
 
 
