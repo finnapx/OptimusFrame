@@ -1,13 +1,6 @@
 import matplotlib.pyplot as plt
 
 
-def gen2array(a):
-    b = []
-    for i in a:
-        b.append(i)
-    return b
-
-
 def b1(fc):
     if fc < 280:
         b1 = 0.85
@@ -163,6 +156,10 @@ def cPn(aLst, b, b1, dp, es, eu, ey, fc, fy, h, pnB, yLst):
             Pc = pc(b, b1, c, fc)
             Ps = ps(aLst, fsL)
             PhiPn = pn(Pc, Ps) * Phi
+            psL = psLst(aLst, fsL)
+            Mc = mc(c, Pc, h)
+            Ms = ms(fsL, h, psL, yLst)
+            PhiMn = (Mc + Ms) * Phi
             if PhiPn > pnB:
                 c2 = c
             else:
@@ -170,10 +167,6 @@ def cPn(aLst, b, b1, dp, es, eu, ey, fc, fy, h, pnB, yLst):
             i += 1
             if i == 20:
                 break
-            Mc = mc(c, Pc, h)
-            psL = psLst(aLst, fsL)
-            Ms = ms(fsL, h, psL, yLst)
-            PhiMn = (Mc + Ms) * Phi
     else:
         PhiPn = PnMin * 0.9
         c = 0
@@ -347,12 +340,6 @@ def aLstV(a1, a2, ai, a3, yv):
     return A
 
 
-def reverV(A):
-    B = A
-    B.reverse()
-    return B
-
-
 def dBarV(A, b, dp, dList):
     sup = supListV(b, dp)
     minlist = [abs(sup[-1] * i * i / 400 * 3.1416 - A) for i in dList]
@@ -458,7 +445,7 @@ def ylstRev(h, ylst):
 
 def resumen(alst, c, b, h, eu, fy, fc, b1, es, ey, ylst):
     eiL = eiLst(c, eu, ylst)
-    eiL = gen2array(eiL)
+    eiL = list(eiL)
     eT = et(c, dp, eu, h)
     fsL = fsLst(eiL, es, ey, fy)
     fsLpr = fsLst(eiL, es, ey, fy * 1.25)
@@ -492,9 +479,9 @@ def resumen(alst, c, b, h, eu, fy, fc, b1, es, ey, ylst):
 def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst):
     PnMax = round((0.85 * fc * (h * b - sum(alst)) + sum(alst) * fy) / 1000, 2)
     PnMaxPr = round((0.85 * fc * (h * b - sum(alst)) + sum(alst) * fy * 1.25) / 1000, 2)
-    phiPnMin = 0.9 * sum(alst) * -fy / 1000
     PnMin = sum(alst) * -fy / 1000
-    PnMinPr = 1.25 * sum(alst) * -fy / 1000
+    phiPnMin = 0.9 * PnMin
+    PnMinPr = 1.25 * PnMin
     C = [0]
     X1 = [0]
     Y1 = [phiPnMin]
@@ -542,11 +529,12 @@ def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, lList, ai, lo, cH, c
     for i, j in lista:
         h = i
         b = j
-        ylst = gen2array(yLstV(h, dp))
+        ylst = list(yLstV(h, dp))
         ylstrev = ylstRev(h, ylst)
         aLst = areaLstV(mnn, mpp, b, b1, fc, fy, h, dp, dList, ai)
-        aSLst = gen2array(aLst[3])
-        alstrev = reverV(aSLst)
+        aSLst = list(aLst[3])
+        alstrev = aSLst
+        alstrev.reverse()
         aS = round(sum(aSLst), 2)
         aG = h * b - aS
         cuanT = round(aS / (aG - aS), 4)
@@ -637,19 +625,23 @@ def limEst(h, dp, db, s):
             break
     return c1, c2
 
+
 def remrep(a):
     a.sort()
     a = list(dict.fromkeys(a))
     return a
 
-xList = [5, 17, 31, 43, 55, 67, 79, 91, 113]
+
+xList = [5, 15, 25, 35, 45]
 # xList = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95, 105, 115, 125]
 
-def ramLst(xList, dp):
-    b = xList[-1] + dp
+
+def ramLst(xList):
+    if xList[-1]-xList[0] <=30:
+        return [xList[0], xList[-1]]
+    b = xList[-1] + xList[0]
     mid = b / 2
-    dist = mid - dp
-    minRam = int(dist / 30)
+    dist = mid - xList[0]
     larg = len(xList)
     ind = int(larg / 2)
     rang1 = xList[0:ind-1]
@@ -708,7 +700,6 @@ def ramLst(xList, dp):
             estLst = estLst1
             estLst1 = remrep(estLst1)
         else:
-            print(estLst2)
             for i in range(len(estLst2)-2, -1, -1):
                 indx = len(xList) - 1 - xList.index(estLst2[i])
                 estLst2.append(xList[indx])
@@ -716,13 +707,9 @@ def ramLst(xList, dp):
             estLst2.append(xList[-1])
             estLst2 = remrep(estLst2)
             estLst = estLst2
-
     return estLst
 
-
-print(ramLst(xList, 5))
-
-
+print(ramLst(xList))
 
 def vS(fy, nRam, aEst, h, dp, s):
     return round(fy * nRam * aEst * (h-dp) / s, 2)
@@ -737,29 +724,29 @@ def corteV():
     pass
 
 
-# from time import time
+from time import time
 
 
-# dp = 5
-# es = 2100000
-# fc = 250
-# fy = 4200
-# cH = 75000
-# cS = 7850000
-# ey = 0.002
-# eu = 0.003
-# b1 = 0.85
-# lList = range(30, 110, 10)
-# dList = [12, 16, 18, 22, 25, 28, 32, 36]
-# estList = [10, 12, 16, 18, 22, 25]
-# tinicial = time()
-# asdf = optimusVig(58.7, 30.29, es, eu, ey, b1, fc, fy, dp, dList, lList, 1, 700, cH, cS)
-# gen2array(asdf)
-# print(asdf)
-# optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, lList, cH, cS)
-# print(optC)
-# tiempo = round(time() - tinicial, 4)
-# print("tiempo de ejecución =", str(tiempo), "segundos")
-# XYplotCurv(optC[11], optC[1], optC[2], dp, eu, fy, fc, b1, es, ey, optC[12])
-# XYplotCurv(asdf[5], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[6])
-# XYplotCurv(asdf[10], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[9])
+dp = 5
+es = 2100000
+fc = 250
+fy = 4200
+cH = 75000
+cS = 7850000
+ey = 0.002
+eu = 0.003
+b1 = 0.85
+lList = range(30, 110, 10)
+dList = [12, 16, 18, 22, 25, 28, 32, 36]
+estList = [10, 12, 16, 18, 22, 25]
+tinicial = time()
+asdf = optimusVig(58.7, 30.29, es, eu, ey, b1, fc, fy, dp, dList, lList, 1, 700, cH, cS)
+list(asdf)
+print(asdf)
+optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, lList, cH, cS)
+print(optC)
+tiempo = round(time() - tinicial, 4)
+print("tiempo de ejecución =", str(tiempo), "segundos")
+XYplotCurv(optC[11], optC[1], optC[2], dp, eu, fy, fc, b1, es, ey, optC[12])
+XYplotCurv(asdf[5], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[6])
+XYplotCurv(asdf[10], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[9])
