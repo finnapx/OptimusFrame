@@ -127,14 +127,9 @@ def yLstV(h, dp):
     Y = [dp, 2*dp]
     for i in range(blat):
         Y.append(round(Y[-1]+(h-3*dp)/(blat+1), 0))
-    Y += [h - dp] if Y[-1] < (h-dp) else []
-    return Y
+    return Y + [h - dp] if Y[-1] < (h-dp) else []
 
-def aLstV(a1, a2, ai, a3, yv):
-    A = [a1, a2]
-    for i in range(len(yv) - 3):
-        A.append(ai)
-    return A + [a3]
+def aLstV(a1, a2, ai, a3, yv):return [a1, a2]+[ai for i in range(len(yv)-3)]+[a3]
 
 def dBarV(A, b, dp, dList):
     sup = [i for i in range(int(1+(b-2*dp)/15), int(round(1+(b-2*dp)/10, 0))+1, 1)]
@@ -157,7 +152,7 @@ def diamBarV(A, b, fc, fy, dp, h, lista):
             area = round(n1*aCir(j)+n2*aCir(k), 2)
             if abs(A-area):
                 minim = abs(A-area)
-                d1, d1 = j, k
+                d1, d2 = j, k
     return n1, d1, n2, d2, area
 
 def areaV(mu, b, b1, h, fc, fy, dp, dList):
@@ -180,7 +175,7 @@ def areaLstV(mnn, mpp, b, b1, fc, fy, h, dp, dList, ai):
     return dlistN, dlistP, Y, alist, aN, aP
 
 def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, lList, ai, lo, cH, cS):
-    min = 99999999
+    minim = 99999999
     cH = cH/10000
     cS = cS/10000
     lista = ([i, j] for i in lList if i >= lo/16 for j in lList if i >= j and j >= 0.4*i)
@@ -198,54 +193,32 @@ def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, lList, ai, lo, cH, c
         cumin = round(max(0.8/fy*(fc**0.5), 14/fy), 4)
         cuan1 = round(aSLst[0]/((b*(h-dp)-aSLst[0])), 4)
         cuan2 = round(2*aSLst[-1]/((b * (h - dp) - aSLst[-1])), 4)
-        cond = False
         asdf = cPn(aSLst, b, b1, dp, es, eu, ey, fc, fy, h, 0, ylst)
         asdfrev = cPn(alstrev, b, b1, dp, es, eu, ey, fc, fy, h, 0, ylstrev)
-        c = asdf[0]
+        c, cond = asdf[0], False
         eT = round(eu * abs(h - dp - c) / c, 4)
         if 0.025 >= cuan1 >= cumin and\
                 0.0125 >= cuan2 >= cumin and eT >= 0.005\
                 and asdf[1] >= mnn and asdfrev[1] >= mpp:
             cond = True
             costo = round(aS * cS + aG * cH, 0)
-            if costo < min and cond != False:
-                min = costo
+            if costo < minim and cond != False:
+                minim = costo
                 FU = round(max(mnn / asdf[1], mpp / asdfrev[1]) * 100, 1)
-                listaT = min, h, b, aSLst, ylst, cuan1, cuan2*2, ylstrev, alstrev, FU, aLst[0], aLst[1]
+                listaT = minim, h, b, aSLst, ylst, cuan1, cuan2*2, ylstrev, alstrev, FU, aLst[0], aLst[1]
     return listaT
-
-def espc(xlist, esp):
-    i=0
-    espacio=0
-    while xlist[i+1]-5<=esp and len(xlist)>i:
-        i+=1
-        espacio = xlist[i]-5
-    return espacio
-
-def ramList(xlist, esp):
-    nram = int((xlist[-1] - xlist[0] - 0.01) / esp) + 2
-    if len(xlist) % 2 == 0:
-        nram += 1
-    return nram, len(xlist)
 
 def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst):
     PnMax = round((0.85 * fc * (h * b - sum(alst)) + sum(alst) * fy) / 1000, 2)
     PnMaxPr = round((0.85 * fc * (h * b - sum(alst)) + sum(alst) * fy * 1.25) / 1000, 2)
     PnMin = sum(alst) * -fy / 1000
-    phiPnMin = 0.9 * PnMin
-    PnMinPr = 1.25 * PnMin
-    C = [0]
-    X1 = [0]
-    Y1 = [phiPnMin]
-    X2 = [0]
-    Y2 = [PnMin]
-    X3 = [0]
-    Y3 = [PnMinPr]
+    phiPnMin, PnMinPr = 0.9 * PnMin, 1.25 * PnMin
+    C, X1, X2, X3, Y1, Y2, Y3 = [0], [0], [0], [0], [phiPnMin], [PnMin], [PnMinPr]
     CMax = cPn(alst, b, b1, dp, es, eu, ey, fc, fy, h, PnMax, ylst)
     for i in range(2, 41):
-        C.append(i/40 * h)
+        C.append(i/40*h)
     for c in C[1::]:
-        res = resumen(alst, c, b, h, eu, fy, fc, b1, es, ey, ylst)
+        res = resumen(alst, c, b, dp, h, eu, fy, fc, b1, es, ey, ylst)
         X1.append(res[3])
         Y1.append(res[0])
         X2.append(res[4])
@@ -268,6 +241,22 @@ def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst):
     plt.grid()
     plt.show()
     return 0
+
+
+def espc(xlist, esp):
+    i=0
+    espacio=0
+    while xlist[i+1]-5<=esp and len(xlist)>i:
+        i+=1
+        espacio = xlist[i]-5
+    return espacio
+
+def ramList(xlist, esp):
+    nram = int((xlist[-1] - xlist[0] - 0.01) / esp) + 2
+    if len(xlist) % 2 == 0:
+        nram += 1
+    return nram, len(xlist)
+
 
 def ramas(b, dp):
     dlibre = b - 2 * dp
@@ -412,6 +401,6 @@ optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, lList, cH, cS)
 print(optC)
 tiempo = round(time() - tinicial, 4)
 print("tiempo de ejecución =", str(tiempo), "segundos")
-# XYplotCurv(optC[11], optC[1], optC[2], dp, eu, fy, fc, b1, es, ey, optC[12])
-# XYplotCurv(asdf[5], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[6])
-# XYplotCurv(asdf[10], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[9])
+XYplotCurv(optC[11], optC[1], optC[2], dp, eu, fy, fc, b1, es, ey, optC[12])
+XYplotCurv(asdf[3], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[4])
+XYplotCurv(asdf[8], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[7])
