@@ -102,10 +102,10 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, lList, cH, cS):
     minor = 9999999
     lista = ([b, h] for b in lList for h in lList if b == h)
     for b, h in lista:
-        nH = [i for i in range(int((b-2*dp)/15)-1, int(round((b-2*dp)/10, 0)), 1)]
-        nV = [i for i in range(int((h-2*dp)/15)-1, int(round((h-2*dp)/10, 0)), 1)]
-        listaND = ([j, k] for j in nH for k in nV if 10 <= (b-2*dp)/(j+1) <= 15 and
-                   10 <= (h-2*dp)/(k+1) <= 15)
+        nH = [i for i in range(int((b - 2 * dp) / 15) - 1, int(round((b - 2 * dp) / 10, 0)), 1)]
+        nV = [i for i in range(int((h - 2 * dp) / 15) - 1, int(round((h - 2 * dp) / 10, 0)), 1)]
+        listaND = ([j, k] for j in nH for k in nV if 10 <= (b - 2 * dp) / (j + 1) <= 15 and
+                   10 <= (h - 2 * dp) / (k + 1) <= 15)
         for j, k in listaND:
             ylist = yLstC(dp, h, k)
             listaDm = ([l, m] for l in dList for m in dList if m <= l)
@@ -113,13 +113,14 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, lList, cH, cS):
                 alist = aLstC(l, m, j, k)
                 cF = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, muC, puC, ylist)
                 fu = FU(puC, muC, cF[1], cF[2])
-                aS = aCir(l)*4+aCir(m)*(2*j+2*k)
-                cuan = round(aS/(b*h-aS), 5)
+                aS = aCir(l) * 4 + aCir(m) * (2 * j + 2 * k)
+                cuan = round(aS / (b * h - aS), 5)
                 if fu < 90 and 0.01 <= cuan <= 0.06:
                     costo = round((aS*cS+(b*h-aS)*cH)/10000, 0)
                     if costo < minor:
-                        minor, e = costo, round(cF[1]/(cF[2]+0.001), 3)
-    return [minor, h, b,    j,    k,  l, m, fu, cuan, cF[0], e, alist, ylist]
+                        minor, e = costo, round(cF[1] / (cF[2] + 0.001), 3)
+                        optimo = [minor, h, b,    j,    k,  l, m, fu, cuan, cF[0], e, alist, ylist]
+    return optimo
 
 def yLstV(h, dp):
     blat = min(int((h-3*dp)/25), int((h-3*dp)/20)+1)
