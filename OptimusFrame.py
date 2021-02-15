@@ -131,7 +131,10 @@ def yLstV(h, dp):
     return Y
 
 def aLstV(a1, a2, ai, a3, yv):
-    return [a1, a2]+[i for i in range(len(yv)-3)]+[a3]
+    A = [a1, a2]
+    for i in range(len(yv) - 3):
+        A.append(ai)
+    return A + [a3]
 
 def dBarV(A, b, dp, dList):
     sup = [i for i in range(int(1+(b-2*dp)/15), int(round(1+(b-2*dp)/10, 0))+1, 1)]
@@ -166,9 +169,12 @@ def areaV(mu, b, b1, h, fc, fy, dp, dList):
     return round(w*0.85*fc*b*(h-dp)/fy, 2)
 
 def areaLstV(mnn, mpp, b, b1, fc, fy, h, dp, dList, ai):
-    aN, aP = areaV(mnn, b, b1, h, fc, fy, dp, dList)/2, areaV(mpp, b, b1, h, fc, fy, dp, dList)
-    dBarN, dBarP = dBarV(aN, b, dp, dList), dBarV(aP, b, dp, dList)
-    dlistN, dlistP = diamBarV(aN, b, fc, fy, dp, h, dBarN), diamBarV(aP, b, fc, fy, dp, h, dBarP)
+    aN = areaV(mnn, b, b1, h, fc, fy, dp, dList)/2
+    aP = areaV(mpp, b, b1, h, fc, fy, dp, dList)
+    dBarN = dBarV(aN, b, dp, dList)
+    dBarP = dBarV(aP, b, dp, dList)
+    dlistN = diamBarV(aN, b, fc, fy, dp, h, dBarN)
+    dlistP = diamBarV(aP, b, fc, fy, dp, h, dBarP)
     Y = yLstV(h, dp)
     alist = aLstV(round(dlistN[4], 3), round(dlistN[4], 3), 1, round(dlistP[4], 3), Y)
     return dlistN, dlistP, Y, alist, aN, aP
