@@ -69,7 +69,7 @@ def cFind(aLst, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, yLst):
             ex = round((abs(PMC[1])) / (PMC[0]), 3)
             c1 = c if ex < e else c1
             c2 = c if ex > e else c2
-        eT = round(eu * abs(h - dp - c) / c, 4)
+        eT = round(eu*abs(h-dp-c)/c, 4)
         Phi = phi(eu, eT, ey)
         phipn, phimn = PMC[1]*Phi, PMC[0]*Phi
     elif pu < PnMin:
@@ -79,7 +79,7 @@ def cFind(aLst, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, yLst):
     elif e == 0:
         Pn = round((0.85*fc*(h*b-sum(aLst))+sum(aLst)*fy)/1000, 2)
         C = cPn(aLst, b, b1, dp, es, eu, ey, fc, fy, h, Pn, yLst)
-        eT = round(eu * abs(h - dp - c) / c, 4)
+        eT = round(eu*abs(h-dp-c)/c, 4)
         Phi = phi(eu, eT, ey)
         c, phipn, phimn = C[0], C[2]*Phi, 0
     return c, round(phimn, 1), round(phipn, 1)
@@ -121,21 +121,91 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, lList, cH, cS):
                         minor, e = costo, round(cF[1]/(cF[2]+0.001), 3)
     return [minor, h, b,    j,    k,  l, m, fu, cuan, cF[0], e, alist, ylist]
 
-def latListV(h, dp):
-    vMin = int(1 + (h - 2 * dp) / 15)
-    vMax = int(round(1 + (h - 2 * dp) / 10, 0))
-    nVer = []
-    for i in range(vMin, vMax + 1, 1):
-        nVer.append(i)
-    return nVer
+def yLstV(h, dp):
+    blat = min(int((h-3*dp)/25), int((h-3*dp)/20)+1)
+    Y = [dp, 2*dp]
+    for i in range(blat):
+        Y.append(round(Y[-1]+(h-3*dp)/(blat+1), 0))
+    Y += [h - dp] if Y[-1] < (h-dp) else []
+    return Y
 
-def supListV(b, dp):
-    hMin = int(1 + (b - 2 * dp) / 15)
-    hMax = int(round(1 + (b - 2 * dp) / 10, 0))
-    nHor = []
-    for i in range(hMin, hMax + 1, 1):
-        nHor.append(i)
-    return nHor
+def aLstV(a1, a2, ai, a3, yv):
+    return [a1, a2]+[i for i in range(len(yv)-3)]+[a3]
+
+def dBarV(A, b, dp, dList):
+    sup = [i for i in range(int(1+(b-2*dp)/15), int(round(1+(b-2*dp)/10, 0))+1, 1)]
+    minlist = [abs(sup[-1]*i*i/400*3.1416-A) for i in dList]
+    maxlist = [abs(sup[0]*i*i/400*3.1416-A) for i in dList]
+    minerr, maxerr = min(minlist), min(maxlist)
+    ind1, ind2 = minlist.index(minerr), maxlist.index(maxerr)
+    ind1, ind2 = max(ind1-2, 0) if ind1 > 1 else ind1, min(ind2+2, 7) if ind2 < 6 else ind2
+    listad = [dList[i] for i in range(ind1, ind2+1)]
+    return listad, sup
+
+def diamBarV(A, b, fc, fy, dp, h, lista):
+    minim, d1, d2 = 10*A, 0, 0
+    alist = ([j, k] for j in lista[0] for k in lista[0] if j>=k)
+    cumin = round(max(0.8/fy*(fc**0.5), 14/fy), 4)
+    for i in lista[1]:
+        n1, n2 = int(i/2), int(i/2)+1 if i-2*int(i/2) > 0 else int(i/2)
+        for j, k in alist:
+            j = k if n1+n2 <= 2 else j
+            area = round(n1*aCir(j)+n2*aCir(k), 2)
+            if abs(A-area):
+                minim = abs(A-area)
+                d1, d1 = j, k
+    return n1, d1, n2, d2, area
+
+def areaV(mu, b, b1, h, fc, fy, dp, dList):
+    muu = round(mu/(0.9*0.85/100000*fc*b*(h-dp)**2), 3)
+    muu = 0.5 if muu > 0.5 else muu
+    ulim = round(0.375 * b1 * (1 - 0.1875 * b1), 3)
+    wp = 0 if muu < ulim else round((muu-ulim)/(1-dp/(h-dp)), 3)
+    w = 0.375+wp if wp > 0 else round(1-(1-2*muu)**0.5, 3)
+    return round(w*0.85*fc*b*(h-dp)/fy, 2)
+
+def areaLstV(mnn, mpp, b, b1, fc, fy, h, dp, dList, ai):
+    aN, aP = areaV(mnn, b, b1, h, fc, fy, dp, dList)/2, areaV(mpp, b, b1, h, fc, fy, dp, dList)
+    dBarN, dBarP = dBarV(aN, b, dp, dList), dBarV(aP, b, dp, dList)
+    dlistN, dlistP = diamBarV(aN, b, fc, fy, dp, h, dBarN), diamBarV(aP, b, fc, fy, dp, h, dBarP)
+    Y = yLstV(h, dp)
+    alist = aLstV(round(dlistN[4], 3), round(dlistN[4], 3), 1, round(dlistP[4], 3), Y)
+    return dlistN, dlistP, Y, alist, aN, aP
+
+def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, lList, ai, lo, cH, cS):
+    min = 99999999
+    cH = cH/10000
+    cS = cS/10000
+    lista = ([i, j] for i in lList if i >= lo/16 for j in lList if i >= j and j >= 0.4*i)
+    for i, j in lista:
+        h, b = i, j
+        ylst = list(yLstV(h, dp))
+        ylstrev = [(h-i) for i in reversed(ylst)]
+        aLst = areaLstV(mnn, mpp, b, b1, fc, fy, h, dp, dList, ai)
+        aSLst = list(aLst[3])
+        alstrev = aSLst
+        alstrev.reverse()
+        aS = round(sum(aSLst), 2)
+        aG = h*b-aS
+        cuanT = round(aS/(aG-aS), 4)
+        cumin = round(max(0.8/fy*(fc**0.5), 14/fy), 4)
+        cuan1 = round(aSLst[0]/((b*(h-dp)-aSLst[0])), 4)
+        cuan2 = round(2*aSLst[-1]/((b * (h - dp) - aSLst[-1])), 4)
+        cond = False
+        asdf = cPn(aSLst, b, b1, dp, es, eu, ey, fc, fy, h, 0, ylst)
+        asdfrev = cPn(alstrev, b, b1, dp, es, eu, ey, fc, fy, h, 0, ylstrev)
+        c = asdf[0]
+        eT = round(eu * abs(h - dp - c) / c, 4)
+        if 0.025 >= cuan1 >= cumin and\
+                0.0125 >= cuan2 >= cumin and eT >= 0.005\
+                and asdf[1] >= mnn and asdfrev[1] >= mpp:
+            cond = True
+            costo = round(aS * cS + aG * cH, 0)
+            if costo < min and cond != False:
+                min = costo
+                FU = round(max(mnn / asdf[1], mpp / asdfrev[1]) * 100, 1)
+                listaT = min, h, b, aSLst, ylst, cuan1, cuan2*2, ylstrev, alstrev, FU, aLst[0], aLst[1]
+    return listaT
 
 def espc(xlist, esp):
     i=0
@@ -150,124 +220,6 @@ def ramList(xlist, esp):
     if len(xlist) % 2 == 0:
         nram += 1
     return nram, len(xlist)
-
-def cuminV(fc, fy):
-    return round(max(0.8 / fy * (fc ** 0.5), 14 / fy), 4)
-
-def cuantNiv(b, h, aS, dp):
-    return round(aS / (b * (h - dp) - aS), 4)
-
-def cuantiaV(b, h, aS):
-    return round(aS / (b * h - aS), 4)
-
-def yLstV(h, dp):
-    blat = min(int((h - 3 * dp) / 25), int((h - 3 * dp) / 20) + 1)
-    Y = [dp, 2 * dp]
-    for i in range(blat):
-        Y.append(round(Y[-1] + (h - 3 * dp) / (blat + 1), 0))
-    if Y[-1] < h - dp:
-        Y.append(h - dp)
-    return Y
-
-def aLstV(a1, a2, ai, a3, yv):
-    A = [a1, a2]
-    for i in range(len(yv) - 3):
-        A.append(ai)
-    A.append(a3)
-    return A
-
-def dBarV(A, b, dp, dList):
-    sup = supListV(b, dp)
-    minlist = [abs(sup[-1] * i * i / 400 * 3.1416 - A) for i in dList]
-    maxlist = [abs(sup[0] * i * i / 400 * 3.1416 - A) for i in dList]
-    minerr = min(minlist)
-    maxerr = min(maxlist)
-    ind1 = minlist.index(minerr)
-    ind2 = maxlist.index(maxerr)
-    if ind1 > 1:
-        ind1 = max(ind1 - 2, 0)
-    if ind2 < 6:
-        ind2 = min(ind2 + 2, 7)
-    listad = []
-    for i in range(ind1, ind2 + 1):
-        listad.append(dList[i])
-    return listad, sup
-
-def diamBarV(A, b, fc, fy, dp, h, lista):
-    min = 10 * A
-    d1 = 0
-    d2 = 0
-    alist = ([j, k] for j in lista[0] for k in lista[0] if j>=k)
-    cumin = cuminV(fc, fy)
-    for i in lista[1]:
-        if i - 2 * int(i / 2) > 0:
-            n1 = int(i / 2)
-            n2 = n1 + 1
-        else:
-            n1 = int(i / 2)
-            n2 = int(i / 2)
-        for j, k in alist:
-            if n1 + n2 <= 2:
-                j = k
-            area = round(n1 * aCir(j) + n2 * aCir(k), 2)
-            if abs(A - area):
-                min = abs(A - area)
-                d1 = j
-                d2 = k
-            diamlist = n1, d1, n2, d2, area
-    return diamlist
-
-def uLim(b1):
-    return round(0.375 * b1 * (1 - 0.1875 * b1), 3)
-
-def U(mu, fc, b, h, dp):
-    d = h - dp
-    # 0.00000765=0.9*0.85/100000
-    muu = round(mu / (7.65e-06 * fc * b * d * d), 3)
-    if muu > 0.5:
-        muu = 0.5
-    return muu
-
-def delP(h, dp):
-    return round(dp/(h - dp), 3)
-
-def wP(ulim, u, delta):
-    wp = round((u - ulim) / (1 - delta), 3)
-    if u<ulim:
-        wp=0
-    return wp
-
-def W(wp, u):
-    if wp > 0:
-        w = 0.375 + wp
-    else:
-        w = round(1 - (1 - 2 * u) ** 0.5, 3)
-    return w
-
-def areaV(mu, b, b1, h, fc, fy, dp, dList):
-    muu = U(mu, fc, b, h, dp)
-    ulim = uLim(b1)
-    wp = wP(b1, muu, dp / (h - dp))
-    w = W(wp, muu)
-    a = round(w * 0.85 * fc * b * (h - dp) / fy, 2)
-    return a
-
-def areaLstV(mnn, mpp, b, b1, fc, fy, h, dp, dList, ai):
-    aN = areaV(mnn, b, b1, h, fc, fy, dp, dList)/2
-    aP = areaV(mpp, b, b1, h, fc, fy, dp, dList)
-    dBarN = dBarV(aN, b, dp, dList)
-    dBarP = dBarV(aP, b, dp, dList)
-    dlistN = diamBarV(aN, b, fc, fy, dp, h, dBarN)
-    dlistP = diamBarV(aP, b, fc, fy, dp, h, dBarP)
-    Y = yLstV(h, dp)
-    alist = aLstV(round(dlistN[4], 3), round(dlistN[4], 3), 1, round(dlistP[4], 3), Y)
-    return dlistN, dlistP, Y, alist, aN, aP
-
-def ylstRev(h, ylst):
-    ylstrev = []
-    for i in reversed(ylst):
-        ylstrev.append(h - i)
-    return ylstrev
 
 def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst):
     PnMax = round((0.85 * fc * (h * b - sum(alst)) + sum(alst) * fy) / 1000, 2)
@@ -309,44 +261,6 @@ def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst):
     plt.grid()
     plt.show()
     return 0
-
-def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, lList, ai, lo, cH, cS):
-    min = 99999999
-    cH = cH/10000
-    cS = cS/10000
-    lista = ([i, j] for i in lList if i >= lo / 16 for j in lList if i >= j and j >= 0.4 * i)
-    for i, j in lista:
-        h = i
-        b = j
-        ylst = list(yLstV(h, dp))
-        ylstrev = ylstRev(h, ylst)
-        aLst = areaLstV(mnn, mpp, b, b1, fc, fy, h, dp, dList, ai)
-        aSLst = list(aLst[3])
-        alstrev = aSLst
-        alstrev.reverse()
-        aS = round(sum(aSLst), 2)
-        aG = h * b - aS
-        cuanT = round(aS / (aG - aS), 4)
-        cumin = cuminV(fc, fy)
-        cuan1 = round(aSLst[0] / ((b * (h - dp) - aSLst[0])), 4)
-        cuan2 = round(2 * aSLst[-1] / ((b * (h - dp) - aSLst[-1])), 4)
-        cond = False
-        asdf = cPn(aSLst, b, b1, dp, es, eu, ey, fc, fy, h, 0, ylst)
-        asdfrev = cPn(alstrev, b, b1, dp, es, eu, ey, fc, fy, h, 0, ylstrev)
-        c = asdf[0]
-        eT = et(c, dp, eu, h)
-        if 0.025 >= cuan1 >= cumin and\
-                0.0125 >= cuan2 >= cumin and eT >= 0.005\
-                and asdf[1] >= mnn and asdfrev[1] >= mpp:
-            cond = True
-            costo = round(aS * cS + aG * cH, 0)
-            if costo < min and cond != False:
-                min = costo
-                mpr1 = cPn(alstrev, b, b1, dp, es, eu, ey, fc, 1.25 * fy, h, 0, ylstrev)[3]
-                mpr2 = cPn(aSLst, b, b1, dp, es, eu, ey, fc, 1.25 * fy, h, 0, ylst)[3]
-                FU = round(max(mnn / asdf[1], mpp / asdfrev[1]) * 100, 1)
-                listaT = min, h, b, mpr1, mpr2, aSLst, ylst, cuan1, cuan2*2, ylstrev, alstrev, FU, aLst[0], aLst[1]
-    return listaT
 
 def ramas(b, dp):
     dlibre = b - 2 * dp
@@ -484,9 +398,9 @@ lList = range(30, 110, 10)
 dList = [12, 16, 18, 22, 25, 28, 32, 36]
 estList = [10, 12, 16, 18, 22, 25]
 tinicial = time()
-# asdf = optimusVig(58.7, 30.29, es, eu, ey, b1, fc, fy, dp, dList, lList, 1, 700, cH, cS)
-# list(asdf)
-# print(asdf)
+asdf = optimusVig(58.7, 30.29, es, eu, ey, b1, fc, fy, dp, dList, lList, 1, 700, cH, cS)
+list(asdf)
+print(asdf)
 optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, lList, cH, cS)
 print(optC)
 tiempo = round(time() - tinicial, 4)
