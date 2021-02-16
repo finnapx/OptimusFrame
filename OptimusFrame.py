@@ -171,7 +171,8 @@ def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, lList, ai, lo, cH, c
         #1 en la tercera posición corresponde a dos barras de diámetro 8mm
         aSLst = [round(alN[4], 3) for i in range(2)]+\
                 [1 for i in range(len(ylst) - 3)] + [round(alP[4], 3)]
-        alstrev = reversed(aSLst)
+        alstrev = aSLst
+        alstrev.reverse()
         cuanT = round(sum(aSLst)/(h*b-sum(aSLst)), 4)
         cumin = round(max(0.8/fy*(fc**0.5), 14/fy), 4)
         cuan1 = round(aSLst[0]/((b*(h-dp)-aSLst[0])), 4)
@@ -235,11 +236,11 @@ def ramList(xlist, esp):
     return nram, len(xlist)
 
 def ramas(b, dp):
-    dlibre = b-2*dp
-    return int(dlibre/35) + 2
+    dlibre = b - 2 * dp
+    return int(dlibre / 35) + 2
 
 def vueV(l, mpr1, mpr2):
-    vue = (mpr1+mpr2)/l
+    vue = (mpr1 + mpr2) / l
     return vue
 
 # 'avs' = (Av / s)_nec = Vs / (fy * d)
@@ -250,7 +251,7 @@ def fest(avs, nRam):
     return round(100 * avs/nRam, 3)
 
 def limEst(h, dp, db, s):
-    d = h-dp
+    d = h - dp
     cond1 = min(d / 4, 0.6 * db, 15)
     cond2 = min(d / 2, 30)
     c1 = []
@@ -276,8 +277,8 @@ def ramLst(xList):
     if xList[-1]-xList[0] <=30:
         return [xList[0], xList[-1]]
     b = xList[-1] + xList[0]
-    mid = b/2
-    dist = mid-xList[0]
+    mid = b / 2
+    dist = mid - xList[0]
     larg = len(xList)
     ind = int(larg / 2)
     rang1 = xList[0:ind-1]
