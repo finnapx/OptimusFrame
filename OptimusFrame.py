@@ -88,9 +88,11 @@ def FU(pu, mu, pn, mn):
     else: FU = max(abs(pu/(pn+0.01)), abs(mu/(mn+0.01)))
     return round(FU * 100, 1)
 
-def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, lList, cH, cS):
+def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmax, cH, cS):
     minor = 9999999
-    lista = ([b, h] for b in lList for h in lList if b == h)
+    hmax = hmax if hmax>=30 else 30
+    hList = [i for i in range(30, hmax+5,5)]
+    lista = ([b, h] for b in hList for h in hList if b == h)
     cont=0
     for b, h in lista:
         nH = [i for i in range(int((b-2*dp)/15)-1, int(round((b-2*dp)/10, 0)), 1)]
@@ -293,7 +295,7 @@ def remrep(a):
     a.sort()
     return list(dict.fromkeys(a))
 
-xList = [5, 15, 25, 35, 45]
+xList = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95, 105]
 
 def ramLst(xList):
     if xList[-1]-xList[0] <= 30:
@@ -362,7 +364,7 @@ def ramLst(xList):
             estLst = estLst2
     return estLst
 
-# print(ramLst(xList))
+print(ramLst(xList))
 
 def vS(fy, nRam, aEst, h, dp, s):
     return round(fy * nRam * aEst * (h-dp) / s, 2)
@@ -377,16 +379,122 @@ def corteV():
 from time import time
 
 dp, es, fc, fy, ey, eu, b1, cH, cS = 5, 2100000, 250, 4200, 0.002, 0.003, 0.85, 75000, 7850000
-lList, dList, estList = range(30, 110, 10), [12, 16, 18, 22, 25, 28, 32, 36], [10, 12, 16, 18, 22, 25]
+dList, estList = [12, 16, 18, 22, 25, 28, 32, 36], [10, 12, 16]
 tinicial = time()
-asdf = list(optimusVig(58.7, 30.29, 2100000, 0.003, 0.002, 0.85, 250, 4200, 5, dList, 70, 40, 1, 700, cH, cS, 5))
+asdf = list(optimusVig(58.7, 30.29, 2100000, 0.003, 0.002, 0.85, 250, 4200, 5, dList, 80, 50, 1, 700, cH, cS, 5))
 print(asdf)
-optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, lList, cH, cS)
+optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, 70, cH, cS)
 print(optC)
 tiempo = round(time() - tinicial, 4)
 print("tiempo de ejecución =", str(tiempo), "segundos")
 XYplotCurv(optC[11], optC[1], optC[2], dp, eu, fy, fc, b1, es, ey, optC[12], optC[9], optC[16], optC[17], 'Interacción de columna')
 XYplotCurv(asdf[3], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[4], asdf[9], asdf[10], 0, 'Interacción de viga con momento negativo')
 XYplotCurv(asdf[8], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[7], asdf[9], asdf[11], 0, 'Interacción de viga con momento positivo')
-print(cFind([20.36, 18.47, 1, 17.22], 30, 0.85, 5, 2100000, 0.003, 0.002, 250, 4200, 60, 58.8, 0.1, [5, 13, 34, 55]))
-print(cPn([17.22, 1, 18.47, 20.36], 30, 0.85, 5, 2100000, 0.003, 0.002, 250, 4200, 60, 0, [5, 26, 47, 55]))
+
+
+def vuV(mpr1, mpr2, lo, wo, vu1, vu2, fc, b, h, dp, de):
+    ve = (mpr1 + mpr2) / lo + wo * lo / 2
+    vc = 10 * (fc ** 0.5) * b * (h - dp) / 6
+    vu = max(vu1 / .75 - vc, vu2 / .6)
+    lmin = 2 * h
+    vs1min = ve / .75
+
+
+xList = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95, 105]
+
+
+def remrep(a):
+    a.sort()
+    return list(dict.fromkeys(a))
+
+
+def ramLst(xList):
+    if xList[-1] - xList[0] <= 30:
+        return [xList[0], xList[-1]]
+    b = xList[-1] + xList[0]
+    dist, ind = b / 2 - xList[0], int(len(xList) / 2)
+    rang1, estLst = xList[0:ind - 1], []
+    rang1.append(xList[ind])
+    if len(xList) % 2 == 0:
+        c = ind - 1
+        while b / 2 - xList[c] <= 15:
+            c -= 1
+        c += 1
+        estLst.append(xList[c])
+        for i in range(c, -1, -1):
+            if estLst[0] - xList[i] >= 30:
+                if estLst[0] - xList[i] > 30:
+                    estLst.insert(0, xList[i + 1])
+                else:
+                    estLst.insert(0, xList[i])
+        for i in range(len(estLst) - 1, -1, -1):
+            indx = len(xList) - 1 - xList.index(estLst[i])
+            estLst.append(xList[indx])
+        estLst.insert(0, xList[0])
+        estLst.append(xList[-1])
+        estLst = remrep(estLst)
+    else:
+        estLst1, estLst2, c = [], [], ind - 1
+        while b / 2 - xList[c] <= 15:
+            c -= 1
+        c += 1
+        estLst1 += [xList[c]]
+        estLst2 += [xList[ind]]
+        for i in range(c, -1, -1):
+            if estLst1[0] - xList[i] >= 30:
+                if estLst1[0] - xList[i] > 30:
+                    estLst1.insert(0, xList[i + 1])
+                else:
+                    estLst1.insert(0, xList[i])
+        for i in range(c, -1, -1):
+            if estLst2[0] - xList[i] >= 30:
+                if estLst2[0] - xList[i] > 30:
+                    estLst2.insert(0, xList[i + 1])
+                else:
+                    estLst2.insert(0, xList[i])
+        for i in range(len(estLst) - 1, -1, -1):
+            indx = len(xList) - 1 - xList.index(estLst[i])
+            estLst1.append(xList[indx])
+            estLst2.append(xList[indx])
+        if len(estLst1) < len(estLst2):
+            for i in range(len(estLst1) - 1, -1, -1):
+                indx = len(xList) - 1 - xList.index(estLst1[i])
+                estLst1.append(xList[indx])
+            estLst1.insert(0, xList[0])
+            estLst1.append(xList[-1])
+            estLst1 = remrep(estLst1)
+            estLst = estLst1
+            estLst1 = remrep(estLst1)
+        else:
+            for i in range(len(estLst2) - 2, -1, -1):
+                indx = len(xList) - 1 - xList.index(estLst2[i])
+                estLst2.append(xList[indx])
+            estLst2.insert(0, xList[0])
+            estLst2.append(xList[-1])
+            estLst2 = remrep(estLst2)
+            estLst = estLst2
+    return estLst
+
+
+# print(xList)
+# nramL = ramLst(xList)
+# print(nramL)
+# indmid = int(len(nramL) / 2)
+# midvalue = xList[int(len(xList) / 2)]
+# lis1 = nramL[0:indmid]
+# lis2 = nramL[indmid + 1::]
+# print(lis1, lis2)
+# E1 = [lis1[0], lis2[0]]
+# E2 = [lis1[1], lis2[1]]
+# lenram = len(nramL)
+# estribos = int(lenram / 2)
+# pares = int(estribos / 2)
+# traba = 1 if lenram > estribos * 2 else 0
+# 
+# print("n° estribos =", estribos, "\n", "n° trabas =", traba)
+# print("estribo 1 en", E1, "estribo2 en", E2, "traba en", [midvalue] if traba == 1 else none)
+# 
+# # for i in range(pares):
+# # for j in pares:
+# # pass
+
