@@ -270,13 +270,6 @@ def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, asd):
     plt.show()
     return 0
 
-def espc(xlist, esp):
-    i, espacio = 0, 0
-    while xlist[i+1]-5<=esp and len(xlist)>i:
-        i+=1
-        espacio = xlist[i]-5
-    return espacio
-
 def vueV(l, mpr1, mpr2): return (mpr1+mpr2)/l
 
 # 'avs' = (Av / s)_nec = Vs / (fy * d)
@@ -291,80 +284,76 @@ def limEst(h, dp, db, s):
         c2 += [i] if cond2 >= i else []
     return c1, c2
 
-def remrep(a):
-    a.sort()
-    return list(dict.fromkeys(a))
-
-xList = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95, 105]
-
-def ramLst(xList):
-    if xList[-1]-xList[0] <= 30:
-        return [xList[0], xList[-1]]
-    b = xList[-1]+xList[0]
-    dist, ind = b/2-xList[0], int(len(xList)/2)
-    rang1, estLst = xList[0:ind-1], []
-    rang1.append(xList[ind])
-    if len(xList)%2 == 0:
-        c = ind-1
-        while b/2-xList[c] <= 15:
-            c -= 1
-        c += 1
-        estLst.append(xList[c])
-        for i in range(c, -1, -1):
-            if estLst[0]-xList[i] >= 30:
-                if estLst[0]-xList[i] > 30:
-                    estLst.insert(0, xList[i+1])
-                else:
-                    estLst.insert(0, xList[i])
-        for i in range(len(estLst)-1, -1, -1):
-            indx = len(xList)-1-xList.index(estLst[i])
-            estLst.append(xList[indx])
-        estLst.insert(0, xList[0])
-        estLst.append(xList[-1])
-        estLst = remrep(estLst)
+def Lramas(xList, nram=0):
+    lar=len(xList)
+    lista = [xList[0]]
+    if lar%2==0:
+        rango=xList[-1]-xList[0]
+        for i in range(1, len(xList)-1):
+            if xList[i]-lista[-1]==30:
+                lista.append(xList[i])
+            elif xList[i]-lista[-1]>30:
+                lista.append(xList[i-1])
+        lista.append(xList[-1])
+        minram = len(lista)
+        maxram = len(xList)
+        rlist=[i for i in range(minram, maxram+1, 2)]
+        listas=[]
+        for i in rlist:
+            sep = round(rango/(i-1), 1)
+            complist = [xList[0]]
+            for _ in range(i-1):
+                complist.append(sep+complist[-1])
+            lista2 = [xList[0]]
+            for j in range(1, len(complist)-1):
+                dif=999
+                for k in xList:
+                    if abs(k-complist[j])<dif:
+                        dif = abs(k-complist[j])
+                        bar = k
+                lista2.append(bar)
+            lista2.append(xList[-1])
+            listas.append(lista2)
     else:
-        estLst1, estLst2, c = [], [], ind-1
-        while b/2-xList[c] <= 15:
-            c -= 1
-        c += 1
-        estLst1 += [xList[c]]
-        estLst2 += [xList[ind]]
-        for i in range(c, -1, -1):
-            if estLst1[0]-xList[i] >= 30:
-                if estLst1[0]-xList[i] > 30:
-                    estLst1.insert(0, xList[i + 1])
-                else:
-                    estLst1.insert(0, xList[i])
-        for i in range(c, -1, -1):
-            if estLst2[0]-xList[i] >= 30:
-                if estLst2[0]-xList[i] > 30:
-                    estLst2.insert(0, xList[i + 1])
-                else:
-                    estLst2.insert(0, xList[i])
-        for i in range(len(estLst) - 1, -1, -1):
-            indx = len(xList)-1-xList.index(estLst[i])
-            estLst1.append(xList[indx])
-            estLst2.append(xList[indx])
-        if len(estLst1) < len(estLst2):
-            for i in range(len(estLst1)-1, -1, -1):
-                indx = len(xList) - 1 - xList.index(estLst1[i])
-                estLst1.append(xList[indx])
-            estLst1.insert(0, xList[0])
-            estLst1.append(xList[-1])
-            estLst1 = remrep(estLst1)
-            estLst = estLst1
-            estLst1 = remrep(estLst1)
-        else:
-            for i in range(len(estLst2)-2, -1, -1):
-                indx = len(xList) - 1 - xList.index(estLst2[i])
-                estLst2.append(xList[indx])
-            estLst2.insert(0, xList[0])
-            estLst2.append(xList[-1])
-            estLst2 = remrep(estLst2)
-            estLst = estLst2
-    return estLst
-
-print(ramLst(xList))
+        mid = int(lar/2)
+        midL = xList[0:mid+1]
+        rango=midL[-1]-midL[0]
+        for i in range(1, len(midL)-1):
+            if midL[i]-lista[-1]==30:
+                lista.append(midL[i])
+            elif midL[i]-lista[-1]>30:
+                lista.append(midL[i-1])
+        lista.append(midL[-1])
+        if lista[-2]-(xList[0]+xList[-1])/2<=15:
+            lista.remove(lista[-1])
+        lista2 = []
+        for j in reversed(lista):
+            lista2.append(xList[-1]+xList[0]-j)
+        lista+=lista2
+        listas=[lista]
+        minram=len(lista)
+        maxram=len(xList)
+        rlist=[i for i in range(minram, maxram+1)]
+        for i in rlist:
+            sep = round(rango/(i-1), 1)
+            complist = [xList[0]]
+            rango=xList[-1]-xList[0]
+            for _ in range(i-1):
+                complist.append(sep+complist[-1])
+            lista2 = [xList[0]]
+            for j in range(1, len(complist)-1):
+                dif=999
+                for k in xList:
+                    if abs(k-complist[j])<dif:
+                        dif = abs(k-complist[j])
+                        bar = k
+                lista2.append(bar)
+            lista2.append(xList[-1])
+            if rlist[0]==i:
+                continue
+            else:
+                listas.append(lista2)
+    return listas
 
 def vS(fy, nRam, aEst, h, dp, s):
     return round(fy * nRam * aEst * (h-dp) / s, 2)
@@ -381,16 +370,15 @@ from time import time
 dp, es, fc, fy, ey, eu, b1, cH, cS = 5, 2100000, 250, 4200, 0.002, 0.003, 0.85, 75000, 7850000
 dList, estList = [12, 16, 18, 22, 25, 28, 32, 36], [10, 12, 16]
 tinicial = time()
-asdf = list(optimusVig(58.7, 30.29, 2100000, 0.003, 0.002, 0.85, 250, 4200, 5, dList, 80, 50, 1, 700, cH, cS, 5))
+asdf = list(optimusVig(58.7, 30.29, 2100000, 0.003, 0.002, 0.85, 250, 4200, 5, dList, 75, 30, 1, 700, cH, cS, 5))
 print(asdf)
-optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, 70, cH, cS)
+optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, 50, cH, cS)
 print(optC)
 tiempo = round(time() - tinicial, 4)
 print("tiempo de ejecución =", str(tiempo), "segundos")
 XYplotCurv(optC[11], optC[1], optC[2], dp, eu, fy, fc, b1, es, ey, optC[12], optC[9], optC[16], optC[17], 'Interacción de columna')
 XYplotCurv(asdf[3], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[4], asdf[9], asdf[10], 0, 'Interacción de viga con momento negativo')
 XYplotCurv(asdf[8], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[7], asdf[9], asdf[11], 0, 'Interacción de viga con momento positivo')
-
 
 def vuV(mpr1, mpr2, lo, wo, vu1, vu2, fc, b, h, dp, de):
     ve = (mpr1 + mpr2) / lo + wo * lo / 2
@@ -399,86 +387,9 @@ def vuV(mpr1, mpr2, lo, wo, vu1, vu2, fc, b, h, dp, de):
     lmin = 2 * h
     vs1min = ve / .75
 
-
-xList = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95, 105]
-
-
-def remrep(a):
-    a.sort()
-    return list(dict.fromkeys(a))
-
-
-def ramLst(xList):
-    if xList[-1] - xList[0] <= 30:
-        return [xList[0], xList[-1]]
-    b = xList[-1] + xList[0]
-    dist, ind = b / 2 - xList[0], int(len(xList) / 2)
-    rang1, estLst = xList[0:ind - 1], []
-    rang1.append(xList[ind])
-    if len(xList) % 2 == 0:
-        c = ind - 1
-        while b / 2 - xList[c] <= 15:
-            c -= 1
-        c += 1
-        estLst.append(xList[c])
-        for i in range(c, -1, -1):
-            if estLst[0] - xList[i] >= 30:
-                if estLst[0] - xList[i] > 30:
-                    estLst.insert(0, xList[i + 1])
-                else:
-                    estLst.insert(0, xList[i])
-        for i in range(len(estLst) - 1, -1, -1):
-            indx = len(xList) - 1 - xList.index(estLst[i])
-            estLst.append(xList[indx])
-        estLst.insert(0, xList[0])
-        estLst.append(xList[-1])
-        estLst = remrep(estLst)
-    else:
-        estLst1, estLst2, c = [], [], ind - 1
-        while b / 2 - xList[c] <= 15:
-            c -= 1
-        c += 1
-        estLst1 += [xList[c]]
-        estLst2 += [xList[ind]]
-        for i in range(c, -1, -1):
-            if estLst1[0] - xList[i] >= 30:
-                if estLst1[0] - xList[i] > 30:
-                    estLst1.insert(0, xList[i + 1])
-                else:
-                    estLst1.insert(0, xList[i])
-        for i in range(c, -1, -1):
-            if estLst2[0] - xList[i] >= 30:
-                if estLst2[0] - xList[i] > 30:
-                    estLst2.insert(0, xList[i + 1])
-                else:
-                    estLst2.insert(0, xList[i])
-        for i in range(len(estLst) - 1, -1, -1):
-            indx = len(xList) - 1 - xList.index(estLst[i])
-            estLst1.append(xList[indx])
-            estLst2.append(xList[indx])
-        if len(estLst1) < len(estLst2):
-            for i in range(len(estLst1) - 1, -1, -1):
-                indx = len(xList) - 1 - xList.index(estLst1[i])
-                estLst1.append(xList[indx])
-            estLst1.insert(0, xList[0])
-            estLst1.append(xList[-1])
-            estLst1 = remrep(estLst1)
-            estLst = estLst1
-            estLst1 = remrep(estLst1)
-        else:
-            for i in range(len(estLst2) - 2, -1, -1):
-                indx = len(xList) - 1 - xList.index(estLst2[i])
-                estLst2.append(xList[indx])
-            estLst2.insert(0, xList[0])
-            estLst2.append(xList[-1])
-            estLst2 = remrep(estLst2)
-            estLst = estLst2
-    return estLst
-
-
-# print(xList)
-# nramL = ramLst(xList)
-# print(nramL)
+print(xList)
+nramL = ramLst(xList)
+print(nramL)
 # indmid = int(len(nramL) / 2)
 # midvalue = xList[int(len(xList) / 2)]
 # lis1 = nramL[0:indmid]
@@ -490,11 +401,10 @@ def ramLst(xList):
 # estribos = int(lenram / 2)
 # pares = int(estribos / 2)
 # traba = 1 if lenram > estribos * 2 else 0
-# 
+#
 # print("n° estribos =", estribos, "\n", "n° trabas =", traba)
 # print("estribo 1 en", E1, "estribo2 en", E2, "traba en", [midvalue] if traba == 1 else none)
-# 
+#
 # # for i in range(pares):
 # # for j in pares:
 # # pass
-
