@@ -352,8 +352,8 @@ def estribos(xList, ramas):
 
 def Lest(h, b, dp, de, db): return round((2*(h+b-4*dp)+3*3.1416*max(3*de, de+db)+2*max(75, 6*de))/100, 2)
 
-def Ltrab(h, dp, de, db): return round((4*de+3.1416*max(3*de, de+db)+2*max(75, 6*de))/100, 2)  
-
+def Ltrab(h, dp, de, db): return round((4*de+3.1416*max(3*de, de+db)+2*max(75, 6*de))/100, 2)
+#
 def vueV(l, mpr1, mpr2): return (mpr1+mpr2)/l
 
 # 'avs' = (Av / s)_nec = Vs / (fy * d)
