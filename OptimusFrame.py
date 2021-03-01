@@ -270,20 +270,6 @@ def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, asd):
     plt.show()
     return 0
 
-def vueV(l, mpr1, mpr2): return (mpr1+mpr2)/l
-
-# 'avs' = (Av / s)_nec = Vs / (fy * d)
-def avs(av, fy, h, dp, vu): return vu/(fy*(h-dp))
-
-def fest(avs, nRam): return round(100 * avs/nRam, 3)
-
-def limEst(h, dp, db, s):
-    cond1, c1, cond2, c2 = min((h-dp)/4, 0.6*db, 15), [], min((h-dp)/2, 30), []
-    for i in s:
-        c1 += [i] if cond1 >= i else []
-        c2 += [i] if cond2 >= i else []
-    return c1, c2
-
 def Lramas(xList, nram=0):
     lar=len(xList)
     lista = [xList[0]]
@@ -355,6 +341,26 @@ def Lramas(xList, nram=0):
                 listas.append(lista2)
     return listas
 
+def estribos(xList, ramas):
+    mid=int(len(ramas)/2)
+    L1 = ramas[0:mid]
+    L2 = ramas[mid+1:]
+    estribos=[[L1[i],L2[i]] for i in range(len(L1))]
+    if ramas[mid] in xList:
+        estribos+=[ramas[mid]]
+    return estribos
+
+def Lest(h, b, dp, de, db): return round((2*(h+b-4*dp)+3*3.1416*max(3*de, de+db)+2*max(75, 6*de))/100, 2)
+
+def Ltrab(h, dp, de, db): return round((4*de+3.1416*max(3*de, de+db)+2*max(75, 6*de))/100, 2)  
+
+def vueV(l, mpr1, mpr2): return (mpr1+mpr2)/l
+
+# 'avs' = (Av / s)_nec = Vs / (fy * d)
+def avs(av, fy, h, dp, vu): return vu/(fy*(h-dp))
+
+def fest(avs, nRam): return round(100 * avs/nRam, 3)
+
 def vS(fy, nRam, aEst, h, dp, s):
     return round(fy * nRam * aEst * (h-dp) / s, 2)
 
@@ -365,6 +371,16 @@ def vReqV(vdl, vue):
 def corteV():
     pass
 
+def vuV(mpr1, mpr2, lo, wo, vu1, vu2, fc, b, h, dp, de):
+    ve = (mpr1 + mpr2) / lo + wo * lo / 2
+    vc = 10 * (fc ** 0.5) * b * (h - dp) / 6
+    vu = max(vu1 / .75 - vc, vu2 / .6)
+    lmin = 2 * h
+    vs1min = ve / .75
+
+print(xList)
+nramL = ramLst(xList)
+print(nramL)
 from time import time
 
 dp, es, fc, fy, ey, eu, b1, cH, cS = 5, 2100000, 250, 4200, 0.002, 0.003, 0.85, 75000, 7850000
@@ -379,32 +395,3 @@ print("tiempo de ejecución =", str(tiempo), "segundos")
 XYplotCurv(optC[11], optC[1], optC[2], dp, eu, fy, fc, b1, es, ey, optC[12], optC[9], optC[16], optC[17], 'Interacción de columna')
 XYplotCurv(asdf[3], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[4], asdf[9], asdf[10], 0, 'Interacción de viga con momento negativo')
 XYplotCurv(asdf[8], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[7], asdf[9], asdf[11], 0, 'Interacción de viga con momento positivo')
-
-def vuV(mpr1, mpr2, lo, wo, vu1, vu2, fc, b, h, dp, de):
-    ve = (mpr1 + mpr2) / lo + wo * lo / 2
-    vc = 10 * (fc ** 0.5) * b * (h - dp) / 6
-    vu = max(vu1 / .75 - vc, vu2 / .6)
-    lmin = 2 * h
-    vs1min = ve / .75
-
-print(xList)
-nramL = ramLst(xList)
-print(nramL)
-# indmid = int(len(nramL) / 2)
-# midvalue = xList[int(len(xList) / 2)]
-# lis1 = nramL[0:indmid]
-# lis2 = nramL[indmid + 1::]
-# print(lis1, lis2)
-# E1 = [lis1[0], lis2[0]]
-# E2 = [lis1[1], lis2[1]]
-# lenram = len(nramL)
-# estribos = int(lenram / 2)
-# pares = int(estribos / 2)
-# traba = 1 if lenram > estribos * 2 else 0
-#
-# print("n° estribos =", estribos, "\n", "n° trabas =", traba)
-# print("estribo 1 en", E1, "estribo2 en", E2, "traba en", [midvalue] if traba == 1 else none)
-#
-# # for i in range(pares):
-# # for j in pares:
-# # pass
