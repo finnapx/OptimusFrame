@@ -88,7 +88,7 @@ def FU(pu, mu, pn, mn):
     else: FU = max(abs(pu/(pn+0.01)), abs(mu/(mn+0.01)))
     return round(FU * 100, 1)
 
-def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmax, cH, cS):
+def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmax, cH, cS, iguales):
     minor = 9999999
     hmax = hmax if hmax>=30 else 30
     hList = [i for i in range(30, hmax+5,5)]
@@ -100,7 +100,10 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmax, cH, cS):
         listaND = ([j, k] for j in nH for k in nV if 10 <= (b-2*dp)/(j+1) <= 15 and
                    10 <= (h-2*dp)/(k+1) <= 15 and j == k)
         for j, k in listaND:
-            listaDm = ([l, m] for l in dList for m in dList if m <= l >=16)
+            if iguales == 0:
+                listaDm = ([l, m] for l in dList for m in dList if m <= l >=16)
+            else:
+                listaDm = ([l, m] for l in dList for m in dList if m == l >= 16)
             for l, m in listaDm:
                 ylist = yLstC(dp, h, k)
                 alist = aLstC(l, m, j, k)
@@ -113,7 +116,7 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmax, cH, cS):
                     costo = round((aS*cS+(b*h-aS)*cH)/10000, 0)
                     if costo < minor:
                         minor, e = costo, round(cF[1]/(cF[2]+0.001), 3)
-                        optimo = [minor,h,b,j,k,l,m,fu,cuan,cF[0],e,alist,ylist, cont, cF[1], cF[2], muC, puC]
+                        optimo = [minor,h,b,j,k,l,m,fu,cuan,cF[0],e,alist,ylist,cont,cF[1],cF[2],muC,puC]
     return optimo
 
 def yLstV(h, dp):
@@ -270,21 +273,21 @@ def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, asd):
     plt.show()
     return 0
 
-def Lramas(xList, nram=0):
+def Lramas(xList):
     lar=len(xList)
     lista = [xList[0]]
-    if lar%2==0:
-        rango=xList[-1]-xList[0]
-        for i in range(1, len(xList)-1):
+    if lar%2 == 0:
+        rango = xList[-1]-xList[0]
+        for i in range(1, lar-1):
             if xList[i]-lista[-1]==30:
                 lista.append(xList[i])
             elif xList[i]-lista[-1]>30:
                 lista.append(xList[i-1])
         lista.append(xList[-1])
-        minram = len(lista)
+        minram = int((len(lista)+1)/2)*2
         maxram = len(xList)
-        rlist=[i for i in range(minram, maxram+1, 2)]
-        listas=[]
+        rlist = [i for i in range(minram, maxram+1, 2)]
+        listas = []
         for i in rlist:
             sep = round(rango/(i-1), 1)
             complist = [xList[0]]
@@ -339,59 +342,113 @@ def Lramas(xList, nram=0):
                 continue
             else:
                 listas.append(lista2)
+    for i in listas:
+        for j in range(1, len(i)):
+            if i[j]-i[j-1]>30:
+                listas.remove(i)
     return listas
 
-def estribos(xList, ramas):
-    mid=int(len(ramas)/2)
-    L1 = ramas[0:mid]
-    L2 = ramas[mid+1:]
-    estribos=[[L1[i],L2[i]] for i in range(len(L1))]
-    if ramas[mid] in xList:
-        estribos+=[ramas[mid]]
-    return estribos
+def estribosV(xList, ramas):
+    Lestrib = []
+    medio = xList[int(len(xList)/2)]
+    for j in ramas:
+        mid=int(len(j)/2)
+        L1 = j[0:mid]
+        if len(j)%2!=0:
+            L2 = j[mid+1:]
+            cond=1
+        else:
+            L2 = j[mid:]
+            cond=0
+        estribos=[[L1[i],L2[i]] for i in range(len(L1))]
+        if cond==1:
+            estribos+=[[medio]]
+        Lestrib.append(estribos)
+    return Lestrib
 
-def Lest(h, b, dp, de, db): return round((2*(h+b-4*dp)+3*3.1416*max(3*de, de+db)+2*max(75, 6*de))/100, 2)
+def countram(ramas):
+    nramas=[]
+    for i in ramas:
+        nramas+=[len(i)]
+    return nramas
 
-def Ltrab(h, dp, de, db): return round((4*de+3.1416*max(3*de, de+db)+2*max(75, 6*de))/100, 2)
-#
-def vueV(l, mpr1, mpr2): return (mpr1+mpr2)/l
+def Lest(h, b, dp, de): return round((2*(h+b-4*dp+0.2*de)*10+6.75*de*3.1416+2*max(75, 6*de))/10, 2)
 
-# 'avs' = (Av / s)_nec = Vs / (fy * d)
-def avs(av, fy, h, dp, vu): return vu/(fy*(h-dp))
+def Ltrab(h, dp, de): return round((6*de*3.1416+2*max(75, 6*de)+(h+0.2*de-dp)*10)/10, 2)
 
-def fest(avs, nRam): return round(100 * avs/nRam, 3)
+def vc(fc, b, h, dp):
+    return round(0.53*(fc)**0.5*b*(h-dp)/1000, 2)
 
-def vS(fy, nRam, aEst, h, dp, s):
-    return round(fy * nRam * aEst * (h-dp) / s, 2)
+def vsLim(fc, b, h, dp):
+    return round(2.2*(fc)**0.5*b*(h-dp)/1000,2)
 
-# se desprecia vc
-def vReqV(vdl, vue):
-    return 0.75 * (vdl + vue)
+def sRotV(h, dp, db): return round(min(15, 0.6*db, (h-dp)/4), 1)
 
-def corteV():
-    pass
+def sMax(fc, b, h, dp, sm):
+    return min(round((h-dp)/4 if vc(fc, b, h, dp)>0.33*(h-dp)*b*(fc/10)**0.5 else (h-dp)/2, 2), sm)
 
-def vuV(mpr1, mpr2, lo, wo, vu1, vu2, fc, b, h, dp, de):
-    ve = (mpr1 + mpr2) / lo + wo * lo / 2
-    vc = 10 * (fc ** 0.5) * b * (h - dp) / 6
-    vu = max(vu1 / .75 - vc, vu2 / .6)
-    lmin = 2 * h
-    vs1min = ve / .75
+def sEmp(h, dp): return round(min(10, (h-dp)/4), 1)
 
-print(xList)
-nramL = ramLst(xList)
-print(nramL)
+def cubEst(h, dp, de, Le):
+    lista =[]
+    for i in Le:
+        if len(i)%2==0:
+            b = i[1]-i[0]
+            lista+=[Lest(h, b, dp, de)]
+        else:
+            lista+=[Ltrab(h, dp, de)]
+    return round(sum(lista)*aCir(de) ,1)
+
+def minEst(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, x2):
+    Vc = vc(fc, b, h, dp)*1000
+    vupr = round(100*(mpr1+mpr2)/lo, 2)*1000
+    smax = sMax(fc, b, h, dp, 20)
+    srot = int(sRotV(h, dp, db))
+    sL1 = [i for i in range(10, int(srot)+1)]
+    sL2 = [i for i in range(10, int(smax)+1)]
+    vsL = vsLim(fc, b, h, dp)*1000
+    ramas = Lramas(xList)
+    est = estribosV(xList, ramas)
+    nRam = countram(ramas)
+    x1 = 2*h
+    for n in range(x1, x1 + 25, 5):
+        xa1 = n
+        xa2 = (x1+x2)-xa1
+        vsB1 = round(max(vu/0.75-Vc, vupr/0.75, vue/0.6), 2)
+        vupr2 = round(vupr*(1-(2*xa1)/(xa1+xa2)), 2)
+        vsB2 = round(max(vu*(1-(2*xa1)/(xa1+xa2)), (vupr2-Vc)/0.75), 2)
+        lista=([i,j,k,l,m] for i in nRam for j in sL1 for k in deList for l in nRam
+        for m in sL2 if vsB1/(fy*(h-dp))<=i*aCir(k)/j<=vsL/(fy*(h-dp))
+        and vsB2/(fy*(h-dp))<=l*(aCir(k))/m<=vsL/(fy*(h-dp)))
+        minim = 999999999
+        for i in lista:
+            nr1, s1, de, nr2, s2 = i
+            Lest1 = est[nRam.index(nr1)]
+            Lest2 = est[nRam.index(nr2)]
+            ns1=int((xa1)/s1)
+            ns2=int((xa2-0.01)/s2)+1
+            mini = (cubEst(h, dp, de, Lest1)*ns1+cubEst(h, dp, de, Lest2)*ns2)*cS/1000000
+            X1 = xa1-5 if xa1 > 2*h else 2*h
+            X2 = x1+x2-X1
+            if mini < minim:
+                minim = round(mini, 2)
+                Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de]
+    return Lout
+
+minest = minEst(30, 40, 34660, 32330, [5, 15, 25], [10, 12, 16], 28, 60, 30, 700, 5, 4200, 250, 7850000, 318)
+print(minest)
+
 from time import time
 
-dp, es, fc, fy, ey, eu, b1, cH, cS = 5, 2100000, 250, 4200, 0.002, 0.003, 0.85, 75000, 7850000
-dList, estList = [12, 16, 18, 22, 25, 28, 32, 36], [10, 12, 16]
-tinicial = time()
-asdf = list(optimusVig(58.7, 30.29, 2100000, 0.003, 0.002, 0.85, 250, 4200, 5, dList, 75, 30, 1, 700, cH, cS, 5))
-print(asdf)
-optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, 50, cH, cS)
-print(optC)
-tiempo = round(time() - tinicial, 4)
-print("tiempo de ejecución =", str(tiempo), "segundos")
-XYplotCurv(optC[11], optC[1], optC[2], dp, eu, fy, fc, b1, es, ey, optC[12], optC[9], optC[16], optC[17], 'Interacción de columna')
-XYplotCurv(asdf[3], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[4], asdf[9], asdf[10], 0, 'Interacción de viga con momento negativo')
-XYplotCurv(asdf[8], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[7], asdf[9], asdf[11], 0, 'Interacción de viga con momento positivo')
+# dp, es, fc, fy, ey, eu, b1, cH, cS = 5, 2100000, 250, 4200, 0.002, 0.003, 0.85, 75000, 7850000
+# dList, estList = [12, 16, 18, 22, 25, 28, 32, 36], [10, 12, 16]
+# tinicial = time()
+# asdf = list(optimusVig(58.7, 30.29, 2100000, 0.003, 0.002, 0.85, 250, 4200, 5, dList, 60, 30, 1, 700, cH, cS, 5))
+# print(asdf)
+# optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, 70, cH, cS, 1)
+# print(optC)
+# tiempo = round(time() - tinicial, 4)
+# print("tiempo de ejecución =", str(tiempo), "segundos")
+# XYplotCurv(optC[11], optC[1], optC[2], dp, eu, fy, fc, b1, es, ey, optC[12], optC[9], optC[16], optC[17], 'Interacción de columna')
+# XYplotCurv(asdf[3], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[4], asdf[9], asdf[10], 0, 'Interacción de viga con momento negativo')
+# XYplotCurv(asdf[8], asdf[2], asdf[1], dp, eu, fy, fc, b1, es, ey, asdf[7], asdf[9], asdf[11], 0, 'Interacción de viga con momento positivo')
