@@ -19,11 +19,7 @@ def aLstC(dEsq, dLat, nHor, nVer):
     return [a]+[round(aCir(dLat)*2,3) for i in range(nVer)]+[a]
 
 def yLstC(dp, h, nVer):
-    yLst = [dp]
-    for i in range(1, nVer + 1):
-        yi = round((h-yLst[i-1]-dp)/(nVer+2-i)+yLst[i-1], 0)
-        yLst.append(int(yi))
-    return yLst+[h-dp]
+    return [dp]+[round(i*(h-dp)/(nVer+1),1) for i in range(1,nVer+2)]
 
 def xLst(sup, b, dp):
     mid = int(sup[0] / 2)
@@ -174,8 +170,6 @@ def listadiam1(A, b, dp, h, dList, v):
                     continue
     return listadiam
 
-dList=[12, 16, 18, 22, 25, 28, 32, 36]
-
 def listadiam(A, b, dp, h, dList, v):
     amin = 10*A
     A/=2
@@ -230,8 +224,7 @@ def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, ai, lo, 
         ylst = list(yLstV(h, dp))
         ylstrev = [(h-i) for i in reversed(ylst)]
         aSLst = [L1[0][4], L1[1][4]]+[ai for i in range(len(ylst)-3)]+[lis[4]]
-        alstrev = aSLst
-        alstrev.reverse()
+        alstrev = [lis[4]]+[ai for i in range(len(ylst)-3)]+[L1[0][4], L1[1][4]]
         cuanT = round(sum(aSLst)/(h*b-sum(aSLst)), 4)
         cumin = round(max(0.8/fy*(fc**0.5), 14/fy), 4)
         cuan1 = round(aSLst[0]/((b*(h-dp)-aSLst[0])), 4)
@@ -246,7 +239,8 @@ def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, ai, lo, 
             if costo < minim and cond != False:
                 minim = costo
                 FU = round(max(mnn/cpn[1], mpp/cpnrev[1]) * 100, 1)
-                listaT = minim, h, b, aSLst, ylst, cuan1, cuan2*2, ylstrev, alstrev,c , abs(mnn), abs(mpp), L1, lis
+                listaT = minim, h, b, aSLst, ylst, cuan1, cuan2*2, ylstrev, alstrev,c , abs(mnn), abs(mpp), L1, lis,\
+                         cpn[1], cpnrev[1]
     return listaT
 
 def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, asd):
@@ -465,12 +459,17 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     lo = loCol(h, b, H)
     k1 = (H-2*lo)/H
     vu2 = round(k1*max((vu-Vc)/0.75, vue/0.6, (vupr1-Vc)/0.75), 1)
-    s = sCol(db)
+    s = round(sCol(db))
     estr = estribosC(yList)
     est = estr[0]
     nRam = estr[1]
     ramas = Lramas(yList)
-    srotL = [int(sRotC(h, b, db, l)) for l in [min(k) for k in [[i[j]-i[j-1] for j in range(1,len(i))] for i in ramas]]]
+    if len(ramas)>1:
+        srotL = [int(sRotC(h, b, db, l)) for l in [min(k) for k in [[i[j]-i[j-1] for j in range(1,len(i))] for i in ramas]]]
+    else:
+        ramitas = ramas[0]
+        aux1 = [ramitas[i]-ramitas[i-i] for i in range(1, len(ramitas))]
+        srotL =  [int(sRotC(h, b, db, min(aux1)))]
     sash = round(ashS(h, b, dp, fc, fy), 3)
     vu1 = round(max(vu1, sash), 1)
     vu2 = round(max(vu2, sash), 1)
@@ -492,7 +491,7 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     l_rot = lista1[3]
     l_emp = lEmp(fy, db)
     s2L = [[i, j, k] for i in range(len(nRam)) for j in deList for k in range(10, s+1)
-           if vu2<=round(i*aCir(j)*fy*(h-dp)/k, 1)<=vslim]
+           if vu2<=round(nRam[i]*aCir(j)*fy*(h-dp)/k, 1)<=vslim]
     minimo = 99999999
     for i, j, l in s2L:
         ramas1 = est[i]
@@ -503,12 +502,11 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
         if costo<minimo:
             minimo=costo
             lista2=[costo, nRam[i], j, k, s2, s2]
-
     semp = sEmp(h, dp)
     k2 = l_emp/(2*H)
     vu3 = round(k2*max((vu-Vc)/0.75, vue/0.6, (vupr1-Vc)/0.75), 1)
     s3L = [[i, j, k] for i in range(len(nRam)) for j in deList for k in range(5, semp+1)
-           if vu3<=round(i*aCir(j)*fy*(h-dp)/k, 1)<=vslim]
+           if vu3<=round(nRam[i]*aCir(j)*fy*(h-dp)/k, 1)<=vslim]
     minimo = 99999999
     for i, j, k in s3L:
         ramas1 = est[i]
@@ -521,6 +519,7 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
             lista3 = [costo, nRam[i], j, k, s2, s2]
     costo_total = lista1[0]+lista2[0]+lista3[0]
     return costo_total
+
 
 def minEstV(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, x2):
     vu, vue = vu*1000, vue*1000
@@ -559,24 +558,64 @@ def minEstV(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, x2
                 Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de]
     return Lout
 
-from time import time
+# from time import time
+#
+# dp, es, fc, fy, ey, eu, b1, cH, cS = 5, 2100000, 250, 4200, 0.002, 0.003, 0.85, 75000, 7850000
+# dList, estList = [12, 16, 18, 22, 25, 28, 32, 36], [10, 12, 16]
+# # tinicial = time()
+# # hmax, bmax = 60, 30
+# # asdf = list(optimusVig(58.7, 30.29, 2100000, 0.003, 0.002, 0.85, 250, 4200, 5, dList, hmax, bmax, 1, 700, cH, cS, 5))
+# # print(len(asdf))
+# # sup = asdf[12][0] if asdf[12][0][0]+asdf[12][0][2]>=asdf[13][0]+asdf[13][2] else asdf[13]
+# # optimusVig(58.7, 30.29, 2100000, 0.003, 0.002, 0.85, 250, 4200, 5, dList, hmax+40, bmax+20, 1, 700, cH, cS, 5)
+# optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, 50, cH, cS, 1)
+# # xlistV = xLst(sup, 30, 5)[1]
+# # minest = minEstV(30, 40, 34.66, 32.33, xlistV, [10, 12, 16], 28, 60, 30, 700, 5, 4200, 250, 7850000, 318)
+# # xlistC = optC[12]
+# # print(minest)
+# print(optC)
+# estribos_col=minEstC(60, 40, 100, 300, 30, 25, [5, 15, 25, 35, 45], [10, 12, 16], 28, 50, 50, 5, 4200, 250, 7850000)
+# print(estribos_col)
+# tiempo = round(time() - tinicial, 4)
+# # print("tiempo de ejecución =", str(tiempo), "segundos")
+# # XYplotCurv(optC[11], optC[1], optC[2], dp, eu, fy, fc, b1, es, ey, optC[12], optC[9], optC[16], optC[17], 'Interacción de columna')
+def OptimusFrameV(fc, fy, cH, cS, MposV, MnegV, vuV, vueV, hmaxV, bmaxV, Lv, x2):
+    beta1 = b1(fc)
+    dp = 5
+    es = 2100000
+    eu = 0.003
+    ey = 0.002
+    dList = [12, 16, 18, 22, 25, 28, 32, 36]
+    ai = 1
+    deList = [10, 12, 16]
+    v = 5
+    flexVig = optimusVig(MposV, MnegV, es, eu, ey, beta1, fc, fy, dp, dList, hmaxV, bmaxV, ai, Lv, cH, cS, v)
+    resuVig1 = resumen(flexVig[3], flexVig[9], flexVig[2], dp, flexVig[1], eu, fy, fc, beta1, es, ey, flexVig[4])
+    resuVig2 = resumen(flexVig[7], flexVig[9], flexVig[2], dp, flexVig[1], eu, fy, fc, beta1, es, ey, flexVig[8])
+    sup = flexVig[12][0] if flexVig[12][0][0]+flexVig[12][0][2]>=flexVig[13][0]+flexVig[13][2] else flexVig[13]
+    db = max(sup[1], sup[3])
+    xlistV = xLst(sup, 30, 5)[1]
+    cortVig = minEstV(resuVig1[5], resuVig2[5], vuV, vueV, xlistV, deList, db, flexVig[1], flexVig[2], Lv, dp, fy, fc, cS, x2)
+    print(list(flexVig), "\n", cortVig, "\n")
+    return 0
 
-dp, es, fc, fy, ey, eu, b1, cH, cS = 5, 2100000, 250, 4200, 0.002, 0.003, 0.85, 75000, 7850000
-dList, estList = [12, 16, 18, 22, 25, 28, 32, 36], [10, 12, 16]
-tinicial = time()
-hmax, bmax = 60, 30
-asdf = list(optimusVig(58.7, 30.29, 2100000, 0.003, 0.002, 0.85, 250, 4200, 5, dList, hmax, bmax, 1, 700, cH, cS, 5))
-sup = asdf[12][0] if asdf[12][0][0]+asdf[12][0][2]>=asdf[13][0]+asdf[13][2] else asdf[13]
-optimusVig(58.7, 30.29, 2100000, 0.003, 0.002, 0.85, 250, 4200, 5, dList, hmax+40, bmax+20, 1, 700, cH, cS, 5)
-print(asdf)
-optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, 50, cH, cS, 1)
-xlistV = xLst(sup, 30, 5)[1]
-minest = minEstV(30, 40, 34.66, 32.33, xlistV, [10, 12, 16], 28, 60, 30, 700, 5, 4200, 250, 7850000, 318)
-xlistC = optC[12]
-print(minest)
-print(optC)
-estribos_col=minEstC(60, 40, 100, 300, 30, 25, [5, 15, 25, 35, 45], [10, 12, 16], 28, 50, 50, 5, 4200, 250, 7850000)
-print(estribos_col)
-tiempo = round(time() - tinicial, 4)
-print("tiempo de ejecución =", str(tiempo), "segundos")
-XYplotCurv(optC[11], optC[1], optC[2], dp, eu, fy, fc, b1, es, ey, optC[12], optC[9], optC[16], optC[17], 'Interacción de columna')
+OptimusFrameV(250, 4200, 75000, 7850000, 58.7, 30.29, 34.66, 32.33, 60, 30, 836, 318)
+
+def OptimusFrameC(fc, fy, cH, cS, muC, puC, vuC, vueC, hmaxC, H):
+    beta1 = b1(fc)
+    dp = 5
+    es = 2100000
+    eu = 0.003
+    ey = 0.002
+    dList = [12, 16, 18, 22, 25, 28, 32, 36]
+    deList = [10, 12, 16]
+    iguales = 1
+    flexCol = optimusCol(beta1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmaxC, cH, cS, iguales)
+    mpr1 = resumen(flexCol[11], flexCol[9], flexCol[2], dp, flexCol[1], eu, fy, fc, beta1, es, ey, flexCol[12])[5]
+    mpr2 = mpr1
+    cortCol = minEstC(mpr1, mpr2, puC, H, vuC, vueC, flexCol[12], deList, flexCol[5], flexCol[1], flexCol[2], dp, fy, fc, cS)
+    XYplotCurv(flexCol[11], flexCol[2], flexCol[1], dp, eu, fy, fc, beta1, es, ey, flexCol[12], flexCol[9], muC, puC, "Interacción de Columna")
+    print(flexCol, "\n", cortCol)
+    return 0
+
+OptimusFrameC(250, 4200, 75000, 7850000, 30, 100, 30, 25, 70, 300)
