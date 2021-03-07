@@ -118,7 +118,7 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmax, cH, cS, iguale
                 cF = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, muC, puC, ylist)
                 fu = FU(puC, muC, cF[1], cF[2])
                 aS = aCir(l)*4+aCir(m)*(2*j+2*k)
-                cuan = round(aS/(b*h-aS), 5)
+                cuan = round(aS/(b*h), 5)
                 cont+=1
                 if fu < 90 and 0.01 <= cuan <= 0.06:
                     costo = round((aS*cS+(b*h-aS)*cH)/10000, 0)
@@ -127,7 +127,7 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmax, cH, cS, iguale
                         optimo = [minor,h,b,j,k,l,m,fu,cuan,cF[0],e,alist,ylist,cont,cF[1],cF[2],muC,puC]
     return optimo
 
-def yLstV(h, dp):
+def yLstV2(h, dp):
     # se busca el minimo de niveles barras laterales complementarias
     blat = min(int((h-3*dp)/25), int((h-3*dp)/20)+1)
     # se crea lista con dos primeros niveles
@@ -135,6 +135,17 @@ def yLstV(h, dp):
     #se agrega cada nivel de barras complementarias
     for i in range(blat):
         Y.append(round(Y[-1]+(h-3*dp)/(blat+1), 0))
+    # la función retorna la lista de posiciones de barras completa
+    return Y + [h - dp] if Y[-1] < (h-dp) else Y
+
+def yLstV(h, dp, db):
+    # se busca el minimo de niveles barras laterales complementarias
+    blat = min(int((h-2*dp-db/4)/25), int((h-2*dp-db/4)/20)+1)
+    # se crea lista con dos primeros niveles
+    Y = [dp, dp+db/4]
+    #se agrega cada nivel de barras complementarias
+    for i in range(blat):
+        Y.append(round(Y[-1]+(h-2*dp-db/4)/(blat+1), 0))
     # la función retorna la lista de posiciones de barras completa
     return Y + [h - dp] if Y[-1] < (h-dp) else Y
 
@@ -221,14 +232,15 @@ def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, ai, lo, 
                 lis = L
         if lis==[]:
             continue
-        ylst = list(yLstV(h, dp))
+        db = max(L1[0][1], L1[0][3])
+        ylst = list(yLstV(h, dp, db))
         ylstrev = [(h-i) for i in reversed(ylst)]
         aSLst = [L1[0][4], L1[1][4]]+[ai for i in range(len(ylst)-3)]+[lis[4]]
         alstrev = [lis[4]]+[ai for i in range(len(ylst)-3)]+[L1[0][4], L1[1][4]]
         cuanT = round(sum(aSLst)/(h*b-sum(aSLst)), 4)
         cumin = round(max(0.8/fy*(fc**0.5), 14/fy), 4)
-        cuan1 = round(aSLst[0]/((b*(h-dp)-aSLst[0])), 4)
-        cuan2 = round(2*aSLst[-1]/((b*(h-dp)-aSLst[-1])), 4)
+        cuan1 = round((aSLst[0]+aSLst[1])/((b*(h-dp))), 4)
+        cuan2 = round(aSLst[-1]/((b*(h-dp))), 4)
         cpn = cPn(aSLst, b, b1, dp, es, eu, ey, fc, fy, h, 0, ylst)
         cpnrev = cPn(alstrev, b, b1, dp, es, eu, ey, fc, fy, h, 0, ylstrev)
         c, cond = cpn[0], False
@@ -239,7 +251,7 @@ def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, ai, lo, 
             if costo < minim and cond != False:
                 minim = costo
                 FU = round(max(mnn/cpn[1], mpp/cpnrev[1]) * 100, 1)
-                listaT = minim, h, b, aSLst, ylst, cuan1, cuan2*2, ylstrev, alstrev,c , abs(mnn), abs(mpp), L1, lis,\
+                listaT = minim, h, b, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev,c , abs(mnn), abs(mpp), L1, lis,\
                          cpn[1], cpnrev[1]
     return listaT
 
@@ -380,9 +392,7 @@ def countram(ramas):
 
 def Lest(h, b, dp, de): return round((2*(h+b-4*dp+0.2*de)*10+6.75*de*3.1416+2*max(75, 6*de))/10, 2)
 
-def Ltrab(h, dp, de): return round((6*de*3.1416+2*max(75, 6*de)+(h+0.2*de-dp)*10)/10, 2)
-
-def LtrabC(h, dp, de): return round((3.75*de*3.1416+2*max(75, 6*de)+(h+0.2*de-dp)*10)/10, 2)
+def Ltrab(h, dp, de): return round((3.75*de*3.1416+2*max(75, 6*de)+(h+0.2*de-dp)*10)/10, 2)
 
 def vc(fc, b, h, dp): return round(0.53*(fc)**0.5*b*(h-dp)/1000, 2)
 
@@ -481,7 +491,7 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     for i, j, k, l in s1L:
         ramas1 = est[i]
         l1 = Lest(h, ramas1[0][1]-ramas1[0][0], dp, j)
-        l2 = sum([Lest(h, ramas1[m][1]-ramas1[m][0], dp, l) if len(ramas1[m])==2 else LtrabC(h, dp, l)
+        l2 = sum([Lest(h, ramas1[m][1]-ramas1[m][0], dp, l) if len(ramas1[m])==2 else Ltrab(h, dp, l)
               for m in range(1,len(ramas1))])
         s1 = int((lo-0.01)/k)+1
         costo = round(2*s1*(l1*aCir(j)+l2*aCir(l))*cS/1000000, 0)
@@ -496,7 +506,7 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     for i, j, l in s2L:
         ramas1 = est[i]
         s2 = int((H-2*l_rot-l_emp-0.01)/k)
-        l2 = sum([Lest(h, ramas1[m][1] - ramas1[m][0], dp, l) if len(ramas1[m]) == 2 else LtrabC(h, dp, l)
+        l2 = sum([Lest(h, ramas1[m][1] - ramas1[m][0], dp, l) if len(ramas1[m]) == 2 else Ltrab(h, dp, l)
                   for m in range(0, len(ramas1))])
         costo = round(s2*l2*aCir(j)*cS/1000000, 0)
         if costo<minimo:
@@ -511,7 +521,7 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     for i, j, k in s3L:
         ramas1 = est[i]
         s3 = int((l_emp-0.01)/k)+1
-        l2 = sum([Lest(h, ramas1[m][1] - ramas1[m][0], dp, l) if len(ramas1[m]) == 2 else LtrabC(h, dp, l)
+        l2 = sum([Lest(h, ramas1[m][1] - ramas1[m][0], dp, l) if len(ramas1[m]) == 2 else Ltrab(h, dp, l)
                   for m in range(0, len(ramas1))])
         costo = round(s3 * l2 * aCir(j) * cS / 1000000, 0)
         if costo < minimo:
@@ -537,7 +547,7 @@ def minEstV(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, x2
     for n in range(x1, x1 + 25, 5):
         xa1 = n
         xa2 = (x1+x2)-xa1
-        vsB1 = round(max(vu/0.75-Vc, vupr/0.75, vue/0.6), 2)
+        vsB1 = round(max((vu-Vc)/.75, vupr/0.75, vue/0.6), 2)
         vupr2 = round(vupr*(1-(2*xa1)/(xa1+xa2)), 2)
         vsB2 = round(max(vu*(1-(2*xa1)/(xa1+xa2)), (vupr2-Vc)/0.75), 2)
         lista=([i,j,k,l,m] for i in nRam for j in sL1 for k in deList for l in nRam
@@ -558,27 +568,6 @@ def minEstV(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, x2
                 Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de]
     return Lout
 
-# from time import time
-#
-# dp, es, fc, fy, ey, eu, b1, cH, cS = 5, 2100000, 250, 4200, 0.002, 0.003, 0.85, 75000, 7850000
-# dList, estList = [12, 16, 18, 22, 25, 28, 32, 36], [10, 12, 16]
-# # tinicial = time()
-# # hmax, bmax = 60, 30
-# # asdf = list(optimusVig(58.7, 30.29, 2100000, 0.003, 0.002, 0.85, 250, 4200, 5, dList, hmax, bmax, 1, 700, cH, cS, 5))
-# # print(len(asdf))
-# # sup = asdf[12][0] if asdf[12][0][0]+asdf[12][0][2]>=asdf[13][0]+asdf[13][2] else asdf[13]
-# # optimusVig(58.7, 30.29, 2100000, 0.003, 0.002, 0.85, 250, 4200, 5, dList, hmax+40, bmax+20, 1, 700, cH, cS, 5)
-# optC = optimusCol(b1, dp, es, eu, ey, fc, fy, 30, 144, dList, 50, cH, cS, 1)
-# # xlistV = xLst(sup, 30, 5)[1]
-# # minest = minEstV(30, 40, 34.66, 32.33, xlistV, [10, 12, 16], 28, 60, 30, 700, 5, 4200, 250, 7850000, 318)
-# # xlistC = optC[12]
-# # print(minest)
-# print(optC)
-# estribos_col=minEstC(60, 40, 100, 300, 30, 25, [5, 15, 25, 35, 45], [10, 12, 16], 28, 50, 50, 5, 4200, 250, 7850000)
-# print(estribos_col)
-# tiempo = round(time() - tinicial, 4)
-# # print("tiempo de ejecución =", str(tiempo), "segundos")
-# # XYplotCurv(optC[11], optC[1], optC[2], dp, eu, fy, fc, b1, es, ey, optC[12], optC[9], optC[16], optC[17], 'Interacción de columna')
 def OptimusFrameV(fc, fy, cH, cS, MposV, MnegV, vuV, vueV, hmaxV, bmaxV, Lv, x2):
     beta1 = b1(fc)
     dp = 5
@@ -599,8 +588,6 @@ def OptimusFrameV(fc, fy, cH, cS, MposV, MnegV, vuV, vueV, hmaxV, bmaxV, Lv, x2)
     print(list(flexVig), "\n", cortVig, "\n")
     return 0
 
-OptimusFrameV(250, 4200, 75000, 7850000, 58.7, 30.29, 34.66, 32.33, 60, 30, 836, 318)
-
 def OptimusFrameC(fc, fy, cH, cS, muC, puC, vuC, vueC, hmaxC, H):
     beta1 = b1(fc)
     dp = 5
@@ -617,5 +604,10 @@ def OptimusFrameC(fc, fy, cH, cS, muC, puC, vuC, vueC, hmaxC, H):
     XYplotCurv(flexCol[11], flexCol[2], flexCol[1], dp, eu, fy, fc, beta1, es, ey, flexCol[12], flexCol[9], muC, puC, "Interacción de Columna")
     print(flexCol, "\n", cortCol)
     return 0
-
-OptimusFrameC(250, 4200, 75000, 7850000, 30, 100, 30, 25, 70, 300)
+#
+# from time import time
+# t1 = time()
+OptimusFrameV(250, 4200, 75000, 7850000, 58.7, 30.29, 34.66, 32.33, 60, 30, 836, 318)
+OptimusFrameC(250, 4200, 75000, 7850000, 30, 144, 30, 25, 50, 300)
+# t2 = time() - t1
+# print(round(t2,4))
