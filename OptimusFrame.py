@@ -597,7 +597,7 @@ def OptimusFrameC(fc, fy, cH, cS, muC, puC, vuC, vueC, hmaxC, H):
 #
 # from time import time
 # t1 = time()
-OptimusFrameV(250, 4200, 75000, 7850000, 58.7, 30.29, 34.66, 32.33, 60, 30, 836, 298, 10)
+OptimusFrameV(250, 4200, 75000, 7850000, 58.7, 30.29, 34.66, 32.33, 60, 30, 836, 318, 10)
 OptimusFrameC(250, 4200, 75000, 7850000, 30, 144, 30, 25, 50, 300)
 # t2 = time() - t1
 # print(round(t2,4))
