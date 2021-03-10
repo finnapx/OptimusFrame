@@ -101,7 +101,6 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmax, cH, cS, iguale
     hmax = hmax if hmax>=30 else 30
     hList = [i for i in range(30, hmax+5,5)]
     lista = ([b, h] for b in hList for h in hList if b == h)
-    cont=0
     for b, h in lista:
         nH = [i for i in range(int((b-2*dp)/15)-1, int(round((b-2*dp)/10, 0)), 1)]
         nV = nH
@@ -119,24 +118,12 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmax, cH, cS, iguale
                 fu = FU(puC, muC, cF[1], cF[2])
                 aS = aCir(l)*4+aCir(m)*(2*j+2*k)
                 cuan = round(aS/(b*h), 5)
-                cont+=1
                 if fu < 90 and 0.01 <= cuan <= 0.06:
                     costo = round((aS*cS+(b*h-aS)*cH)/10000, 0)
                     if costo < minor:
                         minor, e = costo, round(cF[1]/(cF[2]+0.001), 3)
-                        optimo = [minor,h,b,j,k,l,m,fu,cuan,cF[0],e,alist,ylist,cont,cF[1],cF[2],muC,puC]
+                        optimo = [minor,h,b,j,k,l,m,fu,cuan,cF[0],e,alist,ylist,cF[1],cF[2],muC,puC]
     return optimo
-
-def yLstV2(h, dp):
-    # se busca el minimo de niveles barras laterales complementarias
-    blat = min(int((h-3*dp)/25), int((h-3*dp)/20)+1)
-    # se crea lista con dos primeros niveles
-    Y = [dp, 2*dp]
-    #se agrega cada nivel de barras complementarias
-    for i in range(blat):
-        Y.append(round(Y[-1]+(h-3*dp)/(blat+1), 0))
-    # la función retorna la lista de posiciones de barras completa
-    return Y + [h - dp] if Y[-1] < (h-dp) else Y
 
 def yLstV(h, dp, db):
     # se busca el minimo de niveles barras laterales complementarias
@@ -212,9 +199,9 @@ def listadiam(A, b, dp, h, dList, v):
 
 def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, ai, lo, cH, cS, v):
     minim = 99999999
-    hmax, bmax = hmax if hmax>=25 else 25, bmax if bmax>=25 else 25
-    hList = [i for i in range(25, hmax+5,5)]
-    bList = [i for i in range(25, bmax+5,5)]
+    hmax, bmax = hmax if hmax>=30 else 30, bmax if bmax>=30 else 30
+    hList = [i for i in range(30, hmax+5,5)]
+    bList = [i for i in range(30, bmax+5,5)]
     lista = ([i, j] for i in hList if i >= lo/16 for j in bList if i >= j and j >= 0.4*i)
     for h, b in lista:
         A1 = areaV(mpp, b, b1, h, fc, fy, dp)
@@ -396,8 +383,6 @@ def Ltrab(h, dp, de): return round((3.75*de*3.1416+2*max(75, 6*de)+(h+0.2*de-dp)
 
 def vc(fc, b, h, dp): return round(0.53*(fc)**0.5*b*(h-dp)/1000, 2)
 
-def vcAx(Nu, h, b, fc, dp): return 0.53*(1+Nu*1000/(140*h*b))*(fc)**0.5*b*(h-dp)
-
 def ashS(h, b, dp, fc, fy):
     return round(max(0.3*((b*h)/((h-dp)*(b-dp)))*(fc/fy), 0.09*(h-dp)*fc/fy), 3)
 
@@ -497,7 +482,8 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
         costo = round(2*s1*(l1*aCir(j)+l2*aCir(l))*cS/1000000, 0)
         if costo<minimo:
             minimo=costo
-            lista1=[costo, nRam[i], j, k, l, s1, s1]
+            #[costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos]
+            lista1=[costo, nRam[i], j, k, l, s1]
     l_rot = lista1[3]
     l_emp = lEmp(fy, db)
     s2L = [[i, j, k] for i in range(len(nRam)) for j in deList for k in range(10, s+1)
@@ -511,7 +497,9 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
         costo = round(s2*l2*aCir(j)*cS/1000000, 0)
         if costo<minimo:
             minimo=costo
-            lista2=[costo, nRam[i], j, k, s2, s2]
+            #[costo, n° ramas, de, espaciamiento, n° estribos]
+            lista2=[costo, nRam[i], j, k, s2]
+    lista2
     semp = sEmp(h, dp)
     k2 = l_emp/(2*H)
     vu3 = round(k2*max((vu-Vc)/0.75, vue/0.6, (vupr1-Vc)/0.75), 1)
@@ -526,15 +514,16 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
         costo = round(s3 * l2 * aCir(j) * cS / 1000000, 0)
         if costo < minimo:
             minimo = costo
-            lista3 = [costo, nRam[i], j, k, s2, s2]
+            # [costo, n° ramas, de, espaciamiento, n° estribos]
+            lista3 = [costo, nRam[i], j, k, s3]
     costo_total = lista1[0]+lista2[0]+lista3[0]
-    return costo_total
+    return [costo_total, lista1, lista2, lista3]
 
 
-def minEstV(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, x2):
+def minEstV(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, x2, wo):
     vu, vue = vu*1000, vue*1000
     Vc = vc(fc, b, h, dp)*1000
-    vupr = round(vprV(h, b, lo, mpr1, mpr2))*1000
+    vupr = round(vprV(h, b, lo, mpr1, mpr2))*1000+wo*lo/2
     smax = sMax(fc, b, h, dp, 20)
     srot = int(sRotV(h, dp, db))
     sL1 = [i for i in range(10, int(srot)+1)]
@@ -565,10 +554,11 @@ def minEstV(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, x2
             X2 = x1+x2-X1
             if mini < minim:
                 minim = round(mini, 2)
+                #[costo, dist rot, n° ramas, espaciamiento, n° estribos, dist de rotula al centro, n° ramas, espaciamiento, n° estribos, de]
                 Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de]
     return Lout
 
-def OptimusFrameV(fc, fy, cH, cS, MposV, MnegV, vuV, vueV, hmaxV, bmaxV, Lv, x2):
+def OptimusFrameV(fc, fy, cH, cS, MposV, MnegV, vuV, vueV, hmaxV, bmaxV, Lv, x2, wo):
     beta1 = b1(fc)
     dp = 5
     es = 2100000
@@ -576,7 +566,7 @@ def OptimusFrameV(fc, fy, cH, cS, MposV, MnegV, vuV, vueV, hmaxV, bmaxV, Lv, x2)
     ey = 0.002
     dList = [12, 16, 18, 22, 25, 28, 32, 36]
     ai = 1
-    deList = [10, 12, 16]
+    deList = [10, 12]
     v = 5
     flexVig = optimusVig(MposV, MnegV, es, eu, ey, beta1, fc, fy, dp, dList, hmaxV, bmaxV, ai, Lv, cH, cS, v)
     resuVig1 = resumen(flexVig[3], flexVig[9], flexVig[2], dp, flexVig[1], eu, fy, fc, beta1, es, ey, flexVig[4])
@@ -584,7 +574,7 @@ def OptimusFrameV(fc, fy, cH, cS, MposV, MnegV, vuV, vueV, hmaxV, bmaxV, Lv, x2)
     sup = flexVig[12][0] if flexVig[12][0][0]+flexVig[12][0][2]>=flexVig[13][0]+flexVig[13][2] else flexVig[13]
     db = max(sup[1], sup[3])
     xlistV = xLst(sup, 30, 5)[1]
-    cortVig = minEstV(resuVig1[5], resuVig2[5], vuV, vueV, xlistV, deList, db, flexVig[1], flexVig[2], Lv, dp, fy, fc, cS, x2)
+    cortVig = minEstV(resuVig1[5], resuVig2[5], vuV, vueV, xlistV, deList, db, flexVig[1], flexVig[2], Lv, dp, fy, fc, cS, x2, wo)
     print(list(flexVig), "\n", cortVig, "\n")
     return 0
 
@@ -595,7 +585,7 @@ def OptimusFrameC(fc, fy, cH, cS, muC, puC, vuC, vueC, hmaxC, H):
     eu = 0.003
     ey = 0.002
     dList = [12, 16, 18, 22, 25, 28, 32, 36]
-    deList = [10, 12, 16]
+    deList = [10, 12]
     iguales = 1
     flexCol = optimusCol(beta1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmaxC, cH, cS, iguales)
     mpr1 = resumen(flexCol[11], flexCol[9], flexCol[2], dp, flexCol[1], eu, fy, fc, beta1, es, ey, flexCol[12])[5]
@@ -607,7 +597,7 @@ def OptimusFrameC(fc, fy, cH, cS, muC, puC, vuC, vueC, hmaxC, H):
 #
 # from time import time
 # t1 = time()
-OptimusFrameV(250, 4200, 75000, 7850000, 58.7, 30.29, 34.66, 32.33, 60, 30, 836, 318)
+OptimusFrameV(250, 4200, 75000, 7850000, 58.7, 30.29, 34.66, 32.33, 60, 30, 836, 298, 10)
 OptimusFrameC(250, 4200, 75000, 7850000, 30, 144, 30, 25, 50, 300)
 # t2 = time() - t1
 # print(round(t2,4))
