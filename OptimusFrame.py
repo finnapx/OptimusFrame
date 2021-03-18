@@ -122,13 +122,14 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmax, cH, cS, iguale
                     costo = round((aS*cS+(b*h-aS)*cH)/10000, 0)
                     if costo < minor:
                         minor, e = costo, round(cF[1]/(cF[2]+0.001), 3)
-                        optimo = [minor,h,b,j,k,l,m,fu,cuan,cF[0],e,alist,ylist,cF[1],cF[2],muC,puC]
+                        optimo = [minor, h, b, j, k, l, m, fu, cuan, cF[0], e, alist, ylist, cF[1], cF[2], muC, puC]
+                        # optimo = [minor,h,b,j,k,l,m,fu,cuan,cF[0],e,alist,ylist,cF[1],cF[2],muC,puC]
     return optimo
 
 def yLstV(h, dp, db):
     # se busca el minimo de niveles barras laterales complementarias
     blat = min(int((h-2*dp-db/4)/25), int((h-2*dp-db/4)/20)+1)
-    # se crea lista con dos primeros niveles
+    # se crea lista con dos primeros niveles (1/4*10=2.5 veces el diámetro mayor)
     Y = [dp, dp+db/4]
     #se agrega cada nivel de barras complementarias
     for i in range(blat):
@@ -278,6 +279,75 @@ def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, asd):
     plt.show()
     return 0
 
+def critVC(vigas, columnas):
+    crit = lambda lista: round(1.2*sum(lista[0])/sum(lista[1]), 4)
+    asdf = []
+    for i in reversed(range(len(columnas))):
+        zxcv =[]
+        for j in range(len(vigas[0])+1):
+            qwer = [[],[]]
+            if j == len(vigas[0]):
+                qwer[0].append(vigas[i][len(vigas[0])-1])
+            else:
+                if j != 0:
+                    qwer[0].append(vigas[i][j-1])
+                qwer[0].append(vigas[i][j])
+            qwer[1].append(columnas[i][j])
+            if i != len(columnas)-1:
+                qwer[1].append(columnas[i+1][j])
+            zxcv.append(qwer)
+        asdf.append(zxcv)
+    newlist=asdf[1:]
+    for j in newlist:
+        for i in j:
+            vig=i[0]
+            col=i[1]
+            z = crit(i)
+            for j in range(len(col)):
+                col[j]=round(col[j] if z*col[j]<=col[j] else z*col[j], 1)
+    critmat=[]
+    for i in range(len(asdf)):
+        print("asdf",asdf[i])
+        critpis=[]
+        for j in range(len(asdf[i])):
+            if len(asdf[i][j][0])==1:
+                critpis.append(asdf[i][j][0][0])
+            else:
+                critpis.append(asdf[i][j][0][1])
+        critmat.append(critpis)
+    return list(reversed(critmat))
+
+""" Datos de entrada ficticios para testeo de funciones en conjunto """
+
+#[Vu, Vue, Mpp, Mnn]
+matvig = [[[20.8, 19.2, 28.6, 14.6],[20, 20, 26.9, 13.1],[19.2, 20.8, 28.6, 14.6]],
+          [[20.7, 19.3, 28.4, 14.4],[20,20,26.8,13.2],[20.7, 19.3, 28.4, 14.4]],
+           [[8.3, 7.6, 11.5, 6],[8, 8, 10.8, 5.2],[8.3, 7.6, 11.5, 6]]]
+#[Pu, Vu, Vue, Mu]
+matcol = [[[46.1,3.4,3.4,9],[97.9,0.3,0.3,0.7],[97.9,0.3,0.3,0.7],[46.1,3.4,3.4,9]],
+          [[26.9,6.4,6.4,13.1],[57,0.5,0.5,1],[57,0.5,0.5,1],[26.9,6.4,6.4,13.1]],
+          [[7.6,4.7,4.7,10.2],[16.4,0.4,0.4,0.8],[16.4,0.4,0.4,0.8],[7.6,4.7,4.7,10.2]]]
+
+def extMat(lista, indice):
+    mat1=[]
+    for i in lista:
+        mat2=[]
+        for j in i:
+            mat2.append(j[indice])
+        mat1.append(mat2)
+    return mat1
+
+def replMat(lista1, lista2, indice):
+    for i in range(len(lista2)):
+        for j in range(len(lista2[i])):
+            lista1[i][j][indice]=lista2[i][j]
+    return lista1
+
+matrizC=extMat(matcol, 3)
+matrizV=extMat(matvig, 2)
+newMatC=critVC(matrizV, matrizC)
+matColumna=replMat(matcol, newMatC, 3)
+print(matColumna)
 def Lramas(xList):
     lar=len(xList)
     lista = [xList[0]]
@@ -519,7 +589,6 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     costo_total = lista1[0]+lista2[0]+lista3[0]
     return [costo_total, lista1, lista2, lista3]
 
-
 def minEstV(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, x2, wo):
     vu, vue = vu*1000, vue*1000
     Vc = vc(fc, b, h, dp)*1000
@@ -558,7 +627,14 @@ def minEstV(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, x2
                 Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de]
     return Lout
 
-def OptimusFrameV(fc, fy, cH, cS, MposV, MnegV, vuV, vueV, hmaxV, bmaxV, Lv, x2, wo):
+#agregar función con combinaciones de carga para establecer el máximo de cada tipo
+#agregar función que maneje las listas con la información de matrices, aplique cirterio VG y devuelva matriz
+# de entrada y salida con condicional que detenga las iteraciones. si no cumple, se devuelve, y si cumple,
+# diseña elementos al corte, detalla, cubica y genera informe.
+
+# MatrixV = [MposV, MnegV, vuV, vueV, hmaxV, bmaxV, Lv, x2, wo]
+# MatrixC = [muC, puC, vuC, vueC, hmaxC, H]
+def OptimusFrame(fc, fy, cH, cS, MposV, MnegV, vuV, vueV, hmaxV, bmaxV, Lv, x2, wo,  muC, puC, vuC, vueC, hmaxC, H):
     beta1 = b1(fc)
     dp = 5
     es = 2100000
@@ -568,6 +644,10 @@ def OptimusFrameV(fc, fy, cH, cS, MposV, MnegV, vuV, vueV, hmaxV, bmaxV, Lv, x2,
     ai = 1
     deList = [10, 12]
     v = 5
+    # aplicar criterio previo al cálculo de columnas
+    # Muc1 = max(Muc1/(Muc1+Muc2)*1.2*(Mnv1+Mnv2), Muc1)
+    # Muc2 = max(Muc2/(Muc1+Muc2)*1.2*(Mnv1+Mnv2), Muc2)
+    # lista_nodos = lambda pisos, bahias: [[i, j] for i in range(1, pisos+1) for j in range(1, bahias+2)]
     flexVig = optimusVig(MposV, MnegV, es, eu, ey, beta1, fc, fy, dp, dList, hmaxV, bmaxV, ai, Lv, cH, cS, v)
     resuVig1 = resumen(flexVig[3], flexVig[9], flexVig[2], dp, flexVig[1], eu, fy, fc, beta1, es, ey, flexVig[4])
     resuVig2 = resumen(flexVig[7], flexVig[9], flexVig[2], dp, flexVig[1], eu, fy, fc, beta1, es, ey, flexVig[8])
@@ -575,17 +655,7 @@ def OptimusFrameV(fc, fy, cH, cS, MposV, MnegV, vuV, vueV, hmaxV, bmaxV, Lv, x2,
     db = max(sup[1], sup[3])
     xlistV = xLst(sup, 30, 5)[1]
     cortVig = minEstV(resuVig1[5], resuVig2[5], vuV, vueV, xlistV, deList, db, flexVig[1], flexVig[2], Lv, dp, fy, fc, cS, x2, wo)
-    print(list(flexVig), "\n", cortVig, "\n")
-    return 0
-
-def OptimusFrameC(fc, fy, cH, cS, muC, puC, vuC, vueC, hmaxC, H):
-    beta1 = b1(fc)
-    dp = 5
-    es = 2100000
-    eu = 0.003
-    ey = 0.002
-    dList = [12, 16, 18, 22, 25, 28, 32, 36]
-    deList = [10, 12]
+    print(list(flexVig), "\n", cortVig)
     iguales = 1
     flexCol = optimusCol(beta1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmaxC, cH, cS, iguales)
     mpr1 = resumen(flexCol[11], flexCol[9], flexCol[2], dp, flexCol[1], eu, fy, fc, beta1, es, ey, flexCol[12])[5]
@@ -597,7 +667,16 @@ def OptimusFrameC(fc, fy, cH, cS, muC, puC, vuC, vueC, hmaxC, H):
 #
 # from time import time
 # t1 = time()
-OptimusFrameV(250, 4200, 75000, 7850000, 58.7, 30.29, 34.66, 32.33, 60, 30, 836, 318, 10)
-OptimusFrameC(250, 4200, 75000, 7850000, 30, 144, 30, 25, 50, 300)
+# OptimusFrame(250, 4200, 75000, 7850000, 58.7, 30.29, 34.66, 32.33, 60, 30, 836, 318, 10, 30, 144, 30, 25, 50, 300)
 # t2 = time() - t1
-# print(round(t2,4))
+# print(round(t2, 4))
+
+# lista_nodos = lambda pisos, bahias: [[j for j in range(1, bahias + 2)] for i in range(1, pisos + 1)]
+# asdf = lista_nodos(2, 3)
+# for i in range(len(asdf)):
+#     for j in range(len(asdf[i])):
+#         asdf[i][j] = "Columna " + str(j + 1) + " del piso " + str(i + 1)
+#         print(asdf[i][j])
+
+# cuenta de izquierda a derecha, arriba abajo
+
