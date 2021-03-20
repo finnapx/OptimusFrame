@@ -19,7 +19,12 @@ def aLstC(dEsq, dLat, nHor, nVer):
     return [a]+[round(aCir(dLat)*2,3) for i in range(nVer)]+[a]
 
 def yLstC(dp, h, nVer):
-    return [dp]+[round(i*(h-dp)/(nVer+1),1) for i in range(1,nVer+2)]
+    yLst = [dp]
+    for i in range(1, nVer + 1):
+        yi = round((h - yLst[i - 1] - dp) / (nVer + 2 - i) + yLst[i - 1], 0)
+        yLst.append(int(yi))
+    yLst.append(h - dp)
+    return yLst
 
 def xLst(sup, b, dp):
     mid = int(sup[0] / 2)
@@ -123,7 +128,6 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmax, cH, cS, iguale
                     if costo < minor:
                         minor, e = costo, round(cF[1]/(cF[2]+0.001), 3)
                         optimo = [minor, h, b, j, k, l, m, fu, cuan, cF[0], e, alist, ylist, cF[1], cF[2], muC, puC]
-                        # optimo = [minor,h,b,j,k,l,m,fu,cuan,cF[0],e,alist,ylist,cF[1],cF[2],muC,puC]
     return optimo
 
 def yLstV(h, dp, db):
@@ -322,6 +326,7 @@ def critVC(vigas, columnas):
 matvig = [[[20.8, 19.2, 28.6, 14.6, 5, 7],[20, 20, 26.9, 13.1, 5, 7],[19.2, 20.8, 28.6, 14.6, 5, 7]],
           [[20.7, 19.3, 28.4, 14.4, 5, 7],[20,20,26.8,13.2, 5, 7],[20.7, 19.3, 28.4, 14.4, 5, 7]],
            [[8.3, 7.6, 11.5, 6, 2, 7],[8, 8, 10.8, 5.2, 2, 7],[8.3, 7.6, 11.5, 6, 2, 7]]]
+
 #[Pu, Vu, Vue, Mu, H]
 matcol = [[[46.1,3.4,3.4,9,3],[97.9,0.3,0.3,0.7,3],[97.9,0.3,0.3,0.7,3],[46.1,3.4,3.4,9,3]],
           [[26.9,6.4,6.4,13.1,3],[57,0.5,0.5,1,3],[57,0.5,0.5,1,3],[26.9,6.4,6.4,13.1,3]],
@@ -342,23 +347,6 @@ def replMat(lista1, lista2, indice):
             lista1[i][j][indice]=lista2[i][j]
     return lista1
 
-""" Agregar esto a funciones """
-
-matrizC=extMat(matcol, 3)
-matrizV=extMat(matvig, 2)
-# print(matrizC, "\n", matrizV)
-fy=4200
-fc=250
-beta1 = b1(fc)
-dp = 5
-es = 2100000
-eu = 0.003
-ey = 0.002
-dList = [12, 16, 18, 22, 25, 28, 32, 36]
-ai = 1
-deList = [10, 12]
-v = 5
-
 #[Mpp, Mnn, Vu, Vue, 1.2D+L, lo]
 def matElemV(lista, bmaxV, hmaxV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai, deList, v):
     #se itera en la lista
@@ -371,11 +359,6 @@ def matElemV(lista, bmaxV, hmaxV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai,
             tempV.append(elem)
         listaV.append(tempV)
     return listaV
-
-bbgg=matElemV(matvig, 50, 90, 75000, 7850000, beta1, dp, es, ey, eu, fc, fy, dList, ai, deList, v)
-print(bbgg)
-
-
 
 def matElemC(listaC, listaV, fc, fy, hmaxC, b1, dp, es, eu, ey, dList, cH, cS):
     matvig=extMat(listaV, 16)
@@ -390,10 +373,6 @@ def matElemC(listaC, listaV, fc, fy, hmaxC, b1, dp, es, eu, ey, dList, cH, cS):
             tempC.append(elem)
         listaCol.append(tempC)
     return listaCol
-# matElem([])
-
-Mcolumnas=matElemC(matcol, bbgg, fc, fy, 90, beta1, dp, es, eu, ey, dList, 75000, 7850000)
-print(Mcolumnas)
 
 def Lramas(xList):
     lar=len(xList)
@@ -514,9 +493,9 @@ def VcAx(Nu, fc, b, h, dp): return round(0.53*(1+Nu*1000/(140*h*b))*(fc)**0.5*b*
 def vsLim(fc, b, h, dp):
     return round(2.2*(fc)**0.5*b*(h-dp)/1000,2)
 
-def sRotV(h, dp, db): return round(min(15, 0.6*db, (h-dp)/4), 1)
+def sRotV(h, dp, db): return round(max(min(15, 0.6*db, (h-dp)/4),8), 1)
 
-def sRotC(h, b, db, hx): return round(min(45, 0.6*db, (10+(35-hx)/3)), 1)
+def sRotC(h, b, db, hx): return round(max(min(45, 0.6*db, (10+(35-hx)/3)),8), 1)
 
 def sMax(fc, b, h, dp, sm):
     return min(round((h-dp)/4 if vc(fc, b, h, dp)>0.33*(h-dp)*b*(fc/10)**0.5 else (h-dp)/2, 2), sm)
@@ -558,6 +537,7 @@ def estribosC(xList):
     return lista, count
 
 def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS):
+    H*=100
     #falta cuantia minima
     vu, vue = vu*1000, vue*1000
     Vc = VcAx(Nu, fc, b, h, dp)*1000
@@ -587,7 +567,7 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     vu2 = round(max(vu2, sash), 1)
     sreq = lambda nRam, de: int((nram*aCir(de))/sash)
     s1L = [[i, j, k, l] for i in range(len(nRam)) for j in deList
-           for k in range(10, int(min(h/4, b/4, 6*db, srotL[i]))+1) for l in deList
+           for k in range(8, int(min(h/4, b/4, 6*db, srotL[i]))+1) for l in deList
            if vu1<=round(((2*aCir(j))+((nRam[i]-2)*aCir(l)))*fy*(h-dp)/k, 1)<=vslim and l<=j]
     minimo = 99999999
     for i, j, k, l in s1L:
@@ -617,7 +597,7 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
             #[costo, n° ramas, de, espaciamiento, n° estribos]
             lista2=[costo, nRam[i], j, k, s2]
     lista2
-    semp = sEmp(h, dp)
+    semp = int(sEmp(h, dp))
     k2 = l_emp/(2*H)
     vu3 = round(k2*max((vu-Vc)/0.75, vue/0.6, (vupr1-Vc)/0.75), 1)
     s3L = [[i, j, k] for i in range(len(nRam)) for j in deList for k in range(5, semp+1)
@@ -636,52 +616,57 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     costo_total = lista1[0]+lista2[0]+lista3[0]
     return [costo_total, lista1, lista2, lista3]
 
-def minEstV(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, x2, wo):
+def minEstV(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, wo):
+    lo*=100
     vu, vue = vu*1000, vue*1000
     Vc = vc(fc, b, h, dp)*1000
-    vupr = round(vprV(h, b, lo, mpr1, mpr2))*1000+wo*lo/2
+    vupr = (round(vprV(h, b, lo, mpr1, mpr2))+wo/2)*1000
     smax = sMax(fc, b, h, dp, 20)
     srot = int(sRotV(h, dp, db))
-    sL1 = [i for i in range(10, int(srot)+1)]
-    sL2 = [i for i in range(10, int(smax)+1)]
+    sL1 = [i for i in range(8, int(srot)+1)]
+    sL2 = [i for i in range(8, int(smax)+1)]
     vsL = vsLim(fc, b, h, dp)*1000
     ramas = Lramas(xList)
     est = estribosV(xList, ramas)
     nRam = countram(ramas)
     x1 = 2*h
+    x2 = lo/2-2*h
+    Lout=[]
     for n in range(x1, x1 + 25, 5):
         xa1 = n
         xa2 = (x1+x2)-xa1
         vsB1 = round(max((vu-Vc)/.75, vupr/0.75, vue/0.6), 2)
         vupr2 = round(vupr*(1-(2*xa1)/(xa1+xa2)), 2)
         vsB2 = round(max(vu*(1-(2*xa1)/(xa1+xa2)), (vupr2-Vc)/0.75), 2)
-        lista=([i,j,k,l,m] for i in nRam for j in sL1 for k in deList for l in nRam
+        lista=[[i,j,k,l,m] for i in nRam for j in sL1 for k in deList for l in nRam
         for m in sL2 if vsB1/(fy*(h-dp))<=i*aCir(k)/j<=vsL/(fy*(h-dp))
-        and vsB2/(fy*(h-dp))<=l*(aCir(k))/m<=vsL/(fy*(h-dp)))
+        and vsB2/(fy*(h-dp))<=l*(aCir(k))/m<=vsL/(fy*(h-dp))]
         minim = 999999999
-        for i in lista:
-            nr1, s1, de, nr2, s2 = i
-            Lest1 = est[nRam.index(nr1)]
-            Lest2 = est[nRam.index(nr2)]
-            ns1=int((xa1)/s1)
-            ns2=int((xa2-0.01)/s2)+1
-            mini = (cubEstV(h, dp, de, Lest1)*ns1+cubEstV(h, dp, de, Lest2)*ns2)*cS/1000000
-            X1 = xa1-5 if xa1 > 2*h else 2*h
-            X2 = x1+x2-X1
-            if mini < minim:
-                minim = round(mini, 2)
-                #[costo, dist rot, n° ramas, espaciamiento, n° estribos, dist de rotula al centro, n° ramas, espaciamiento, n° estribos, de]
-                Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de]
-    return Lout
+        if lista!=[]:
+            for i in lista:
+                nr1, s1, de, nr2, s2 = i
+                Lest1 = est[nRam.index(nr1)]
+                Lest2 = est[nRam.index(nr2)]
+                ns1=int((xa1)/s1)
+                ns2=int((xa2-0.01)/s2)+1
+                mini = (cubEstV(h, dp, de, Lest1)*ns1+cubEstV(h, dp, de, Lest2)*ns2)*cS/1000000
+                X1 = xa1-5 if xa1 > 2*h else 2*h
+                X2 = x1+x2-X1
+                if mini < minim:
+                    minim = round(mini, 2)
+                    #[costo, dist rot, n° ramas, espaciamiento, n° estribos, dist de rotula al centro, n° ramas, espaciamiento, n° estribos, de]
+                    Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de]
+            return Lout
+        else:
+            return "Error"
 
-#agregar función con combinaciones de carga para establecer el máximo de cada tipo
-#agregar función que maneje las listas con la información de matrices, aplique cirterio VG y devuelva matriz
-# de entrada y salida con condicional que detenga las iteraciones. si no cumple, se devuelve, y si cumple,
-# diseña elementos al corte, detalla, cubica y genera informe.
-# MatrixV = [MposV, MnegV, vuV, vueV, hmaxV, bmaxV, Lv, x2, wo]
-# MatrixC = [muC, puC, vuC, vueC, hmaxC, H]
+fy=4200
+fc=250
+# Mvig = matElemV(matvig, 50, 90, 75000, 7850000, beta1, dp, es, ey, eu, fc, fy, dList, ai, deList, v)
+# Mcol = matElemC(matcol, Mvig, fc, fy, 90, beta1, dp, es, eu, ey, dList, 75000, 7850000)
+# print(Mvig,"\n",Mcol)
 
-def OptimusFrame(fc, fy, cH, cS, MposV, MnegV, vuV, vueV, hmaxV, bmaxV, Lv, x2, wo,  muC, puC, vuC, vueC, hmaxC, H):
+def OptimusFrame(matvig, matcol, fc, fy, cH, cS, hmaxV, bmaxV, hmaxC):
     beta1 = b1(fc)
     dp = 5
     es = 2100000
@@ -691,36 +676,44 @@ def OptimusFrame(fc, fy, cH, cS, MposV, MnegV, vuV, vueV, hmaxV, bmaxV, Lv, x2, 
     ai = 1
     deList = [10, 12]
     v = 5
-    
-            # flexVig = optimusVig(MposV, MnegV, es, eu, ey, beta1, fc, fy, dp, dList, hmaxV, bmaxV, ai, Lv, cH, cS, v)
-            # resuVig1 = resumen(flexVig[3], flexVig[9], flexVig[2], dp, flexVig[1], eu, fy, fc, beta1, es, ey, flexVig[4])
-            # resuVig2 = resumen(flexVig[7], flexVig[9], flexVig[2], dp, flexVig[1], eu, fy, fc, beta1, es, ey, flexVig[8])
-            # sup = flexVig[12][0] if flexVig[12][0][0]+flexVig[12][0][2]>=flexVig[13][0]+flexVig[13][2] else flexVig[13]
-            # db = max(sup[1], sup[3])
-            # xlistV = xLst(sup, 30, 5)[1]
-            # cortVig = minEstV(resuVig1[5], resuVig2[5], vuV, vueV, xlistV, deList, db, flexVig[1], flexVig[2], Lv, dp, fy, fc, cS, x2, wo)
-            # print(list(flexVig), "\n", cortVig)
-            # iguales = 1
-            # flexCol = optimusCol(beta1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmaxC, cH, cS, iguales)
-            # mpr1 = resumen(flexCol[11], flexCol[9], flexCol[2], dp, flexCol[1], eu, fy, fc, beta1, es, ey, flexCol[12])[5]
-            # mpr2 = mpr1
-            # cortCol = minEstC(mpr1, mpr2, puC, H, vuC, vueC, flexCol[12], deList, flexCol[5], flexCol[1], flexCol[2], dp, fy, fc, cS)
-            # XYplotCurv(flexCol[11], flexCol[2], flexCol[1], dp, eu, fy, fc, beta1, es, ey, flexCol[12], flexCol[9], muC, puC, "Interacción de Columna")
-            # print(flexCol, "\n", cortCol)
-    return 0
-#
-# from time import time
-# t1 = time()
-# OptimusFrame(250, 4200, 75000, 7850000, 58.7, 30.29, 34.66, 32.33, 60, 30, 836, 318, 10, 30, 144, 30, 25, 50, 300)
-# t2 = time() - t1
-# print(round(t2, 4))
+    Mvig = matElemV(matvig, bmaxV, hmaxV, cH, cS, beta1, dp, es, ey, eu, fc, fy, dList, ai, deList, v)
+    Mcol = matElemC(matcol, Mvig, fc, fy, hmaxC, beta1, dp, es, eu, ey, dList, cH, cS)
+    listaC = []
+    for i in range(len(matcol)):
+        tempC = []
+        for j in range(len(matcol[i])):
+            mpr1 = resumen(Mcol[i][j][11], Mcol[i][j][9], Mcol[i][j][2], dp, Mcol[i][j][1], eu, fy, fc, beta1, es, ey, Mcol[i][j][12])[5]
+            mpr2 = mpr1
+            elem = minEstC(mpr1, mpr2, matcol[i][j][0], matcol[i][j][4], matcol[i][j][1], matcol[i][j][2], Mcol[i][j][12], deList, Mcol[i][j][5], Mcol[i][j][1], Mcol[i][j][2], dp, fy, fc, cS)
+            tempC.append(elem)
+        listaC.append(tempC)
+    listaV = []
+    # [Vu, Vue, Mpp, Mnn, 1.2D+L, lo]
+    for i in range(len(matvig)):
+        tempV = []
+        for j in range(len(matvig[i])):
+            resuVig1 = resumen(Mvig[i][j][3], Mvig[i][j][9], Mvig[i][j][2], dp, Mvig[i][j][1], eu, fy, fc, beta1, es, ey, Mvig[i][j][4])
+            resuVig2 = resumen(Mvig[i][j][7], Mvig[i][j][9], Mvig[i][j][2], dp, Mvig[i][j][1], eu, fy, fc, beta1, es, ey, Mvig[i][j][8])
+            sup = Mvig[i][j][12][0] if Mvig[i][j][12][0][0]+Mvig[i][j][12][0][2]>=Mvig[i][j][13][0]+Mvig[i][j][13][2] else Mvig[i][j][13]
+            db = max(sup[1], sup[3])
+            xlistV = xLst(sup, 30, 5)[1]
+            elem = minEstV(resuVig1[5], resuVig2[5], matvig[i][j][0], matvig[i][j][1], xlistV, deList, db, Mvig[i][j][1], Mvig[i][j][2], matvig[i][j][5], dp, fy, fc, cS, matvig[i][j][4])
+            tempV.append(elem)
+        listaV.append(tempV)
+    return Mvig, listaV, Mcol, listaC
 
-# lista_nodos = lambda pisos, bahias: [[j for j in range(1, bahias + 2)] for i in range(1, pisos + 1)]
-# asdf = lista_nodos(2, 3)
-# for i in range(len(asdf)):
-#     for j in range(len(asdf[i])):
-#         asdf[i][j] = "Columna " + str(j + 1) + " del piso " + str(i + 1)
-#         print(asdf[i][j])
-#
-#cuenta de izquierda a derecha, arriba abajo
+
+
+from time import time
+t1 = time()
+toda = OptimusFrame(matvig, matcol, fc, fy, 75000, 7850000, 90, 50, 90)
+t2 = time() - t1
+print("tiempo de ejecución", round(t2, 4), "segundos")
+
+print(toda[0])
+print(toda[1])
+print(toda[2])
+print(toda[3])
+# XYplotCurv(Mcol[i][j][11], Mcol[i][j][2], Mcol[i][j][1], dp, eu, fy, fc, beta1, es, ey, Mcol[i][j][12], Mcol[i][j][9], matcol[i][j][15],
+#                        Mcol[i][j][16], "Interacción de Columna " + str(j) + " del piso " + str(i))
 
