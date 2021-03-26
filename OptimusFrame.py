@@ -1,105 +1,115 @@
 import matplotlib.pyplot as plt
-
 def b1(fc):
     if 550 >= fc >= 280:
-        b1 = round(0.85-0.05/70*(fc-280), 2)
-    else: b1 = 0.85 if fc < 280 else 0.65
-    return b1
+        return round(0.85-0.05/70*(fc-280), 2)
+    else:
+        return 0.85 if fc < 280 else 0.65
 
-def phi(eu, et, ey):
-    if ey <= et <= (eu+ey):
-        phi = round(0.65+0.25/eu*(et-ey), 2)
-    else: phi = 0.65 if et < ey else 0.9
-    return phi
+def et(h,eu,dp,c): return round(eu*abs(h-dp-c)/c, 4)
 
 def aCir(d): return round(0.007854*d**2, 3)
 
-def aLstC(dEsq, dLat, nHor, nVer):
+def phi(eu,et,ey):
+    if ey <= et <= (eu+ey):
+        return round(0.65+0.25/eu*(et-ey), 2)
+    else:
+        return 0.65 if et < ey else 0.9
+
+def aLstC(dEsq,dLat,nHor,nVer):
     a = round(aCir(dEsq)*2+nHor*aCir(dLat), 3)
     return [a]+[round(aCir(dLat)*2,3) for i in range(nVer)]+[a]
 
-def yLstC(dp, h, nVer):
+def yLstC(dp,h,nVer):
     yLst = [dp]
-    for i in range(1, nVer + 1):
-        yi = round((h - yLst[i - 1] - dp) / (nVer + 2 - i) + yLst[i - 1], 0)
+    for i in range(1,nVer+1):
+        yi = round((h-yLst[i-1]-dp)/(nVer+2-i)+yLst[i-1],0)
         yLst.append(int(yi))
-    yLst.append(h - dp)
+    yLst.append(h-dp)
     return yLst
 
-def xLst(sup, b, dp):
-    mid = int(sup[0] / 2)
-    if sup[2]%2==0:
-        l1=[sup[1] for i in range(mid)]
-        l2=[sup[3] for i in range(sup[2])]
-    else:
-        l1=[sup[1] for i in range(mid)]
-        l2=[sup[3] for i in range(sup[2])]
-    lista=l1+l2+l1
-    xList=yLstC(dp, b, len(lista)-2)
-    return lista, xList
-
-def pmC(aLst, b, b1, c, es, eu, ey, fc, fy, h, yLst):
+def pmC(aLst,b,b1,c,es,eu,ey,fc,fy,h,yLst):
     eiLst = [round(eu*(c-i)/c, 5) for i in yLst]
     fsLst = [fy*abs(i)/i if abs(i)>ey else es*i for i in eiLst]
     psLst = [fsLst[i] * aLst[i] for i in range(len(aLst))]
-    Pc, Ps = 0.85*b1*fc*b*c, sum(psLst)
+    Pc = 0.85*b1*fc*b*c
+    Ps = sum(psLst)
     Mc = Pc/2*(h-0.85*c)
     Ms = sum((psLst[i]*(h/2-yLst[i]) for i in range(len(aLst))))
-    return round((Pc+Ps)/1000, 2), round((Mc+Ms)/100000, 2)
+    return [round((Pc+Ps)/1000, 2), round((Mc+Ms)/100000, 2)]
 
-def cPn(aLst, b, b1, dp, es, eu, ey, fc, fy, h, pnB, yLst):
-    c1, c2 = 0, max(h/b1, 3*(h-dp))
+def cPn(aLst,b,b1,dp,es,eu,ey,fc,fy,h,pnB,yLst):
+    c1 = 0
+    c2 = max(h/b1, 3*(h-dp))
     PnMax = round((0.85*fc*(h*b-sum(aLst))+sum(aLst)*fy)/1000, 2)
     PhiPnMax = PnMax*0.8*0.65
-    PnMin, PhiPn, i = round((-sum(aLst)*fy)/1000, 2), pnB+1, 0
+    PnMin = round((-sum(aLst)*fy)/1000, 2)
+    PhiPn = pnB+10
+    i = 0
     if pnB > PnMin * 0.9:
         pnB = PhiPnMax if pnB >= PhiPnMax else pnB
         while abs(pnB-PhiPn) > 0.1 and i<15:
-            c, i = round((c1+c2)/2, 3), i+1
-            PMC = pmC(aLst, b, b1, c, es, eu, ey, fc, fy, h, yLst)
-            eT = round(eu*abs(h-dp-c)/c, 4)
-            Phi = phi(eu, eT, ey)
-            PhiPn, PhiMn = (PMC[0]) * Phi, (PMC[1]) * Phi
+            c = round((c1+c2)/2,3)
+            i += 1
+            PMC = pmC(aLst,b,b1,c,es,eu,ey,fc,fy,h,yLst)
+            eT = et(h,eu,dp,c)
+            Phi = phi(eu,eT,ey)
+            PhiPn = (PMC[0])*Phi
+            PhiMn = (PMC[1])*Phi
             c2 = c if PhiPn > pnB else c2
             c1 = c if PhiPn < pnB else c1
-    else: c, PhiPn, PhiMn = 0, PnMin * 0.9, 0
-    return round(c, 2), abs(round(PhiMn, 1)), round(PhiPn, 1)
+    else:
+        c = 0
+        PhiPn = PnMin*0.9
+        PhiMn = 0
+        Phi = 0.9
+    return [round(c, 2), abs(round(PhiMn, 1)), round(PhiPn, 1), Phi]
 
 def cFind(aLst, b, b1, dp, es, eu, ey, fc, fy, h, mu, pu, yLst):
-    pu, mu = round(abs(pu+0.01)/(pu+0.01)*0.01+pu, 2), round(mu, 1)
-    e = 0 if abs(mu) < 0.1 else round(abs(mu)/pu, 3)
-    PnMin = round((-sum(aLst) * fy) / 1000, 1)
-    if e != 0 and pu > PnMin:
-        i, c2, ex = 0, 0, e+0.001
-        c1 = max(h/b1, 3*(h-dp)) if e > 0 else cPn(aLst, b, b1, dp, es, eu, ey, fc, fy, h, 0, yLst)[0]
-        while abs(e-round(ex, 3)) > 0.001 and i<20:
-            c, i = round((c1+c2)/2, 2), i+1
-            PMC = pmC(aLst, b, b1, c, es, eu, ey, fc, fy, h, yLst)
-            ex = (abs(PMC[1])) / (PMC[0])
-            c1, c2 = c if ex < e else c1, c if ex > e else c2
-        eT = round(eu*abs(h-dp-c)/c, 4)
-        Phi = phi(eu, eT, ey)
-        phipn, phimn = PMC[1]*Phi, PMC[0]*Phi
-    elif pu < PnMin: c, phipn, phimn = 0, PnMin, 0
-    elif e == 0:
-        Pn = round((0.85*fc*(h*b-sum(aLst))+sum(aLst)*fy)/1000, 2)
-        C = cPn(aLst, b, b1, dp, es, eu, ey, fc, fy, h, Pn, yLst)
-        c, phipn, phimn = C[0], C[2], 0
-    return c, abs(round(phimn, 1)), round(phipn, 1)
+    mu = round(abs(mu),3)
+    pu = round(pu,3)
+    PhiPnMin = round((-sum(aLst)*fy)/1000*0.9,1)
+    PhiPnMax = round((0.85*fc*(h*b-sum(aLst))+sum(aLst)*fy)*0.8*0.65/1000,1)
+    if pu<PhiPnMin:
+        pu = PhiPnMin
+    if pu>PhiPnMax:
+        pu = PhiPnMax
+    elif abs(pu) <= 0.1:
+        return cPn(aLst,b,b1,dp,es,eu,ey,fc,fy,h,0,yLst)
+    e = min(mu/pu,999)
+    i = 0
+    c2 = 0
+    ex = e+1
+    c1 = h/b1 if e > 0 else cPn(aLst,b,b1,dp,es,eu,ey,fc,fy,h,0,yLst)[0]
+    while abs(round(e,3)-ex) > 0.001 and i < 15:
+        c = round((c1+c2)/2,2)
+        i += 1
+        PMC = pmC(aLst,b,b1,c,es,eu,ey,fc,fy,h,yLst)
+        ex = round((abs(PMC[1]))/(PMC[0]),3)
+        c1 = c if ex < e else c1
+        c2 = c if ex > e else c2
+    e = ex
+    eT = round(eu*abs(h-dp-c)/c,4)
+    Phi = phi(eu,eT,ey)
+    asdf=pmC(aLst,b,b1,c,es,eu,ey,fc,fy,h,yLst)
+    phipn = PMC[0]*Phi
+    phimn = PMC[1]*Phi
+    return [c,abs(round(phimn,1)),round(phipn,1), Phi, e, PhiPnMin, PhiPnMax]
 
 def resumen(aLst, c, b, dp, h, eu, fy, fc, b1, es, ey, yLst):
     PMC = pmC(aLst, b, b1, c, es, eu, ey, fc, fy, h, yLst)
     eT = round(eu*abs(h-dp-c)/c, 4)
     Phi = phi(eu, eT, ey)
     PMCpr = pmC(aLst, b, b1, c, es, eu, ey, fc, fy*1.25, h, yLst)
-    return [PMC[0]*Phi, PMC[0], PMCpr[0], PMC[1]*Phi, PMC[1], PMCpr[1]]
+    return [PMC[0]*Phi,PMC[0],PMCpr[0],PMC[1]*Phi,PMC[1],PMCpr[1]]
 
 def FU(pu, mu, pn, mn):
-    if abs(mu) < 0.1: FU = abs(pu/(pn+0.01))
-    else: FU = max(abs(pu/(pn+0.01)), abs(mu/(mn+0.01)))
-    return round(FU * 100, 1)
+    if abs(mu) < 0.1:
+        return abs(pu/(pn+0.01))
+    else:
+        return max(abs(pu/(pn+0.01)), abs(mu/(mn+0.01)))
 
 def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmax, cH, cS, iguales):
+    salida=0
     minor = 9999999
     hmax = hmax if hmax>=30 else 30
     hList = [i for i in range(30, hmax+5,5)]
@@ -118,15 +128,29 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puC, dList, hmax, cH, cS, iguale
                 ylist = yLstC(dp, h, k)
                 alist = aLstC(l, m, j, k)
                 cF = cFind(alist, b, b1, dp, es, eu, ey, fc, fy, h, muC, puC, ylist)
-                fu = FU(puC, muC, cF[1], cF[2])
+                fu = round(FU(puC, muC, cF[2], cF[1])*100,1)
                 aS = aCir(l)*4+aCir(m)*(2*j+2*k)
                 cuan = round(aS/(b*h), 5)
-                if fu < 90 and 0.01 <= cuan <= 0.06:
+                if fu < 95 and 0.01 <= cuan <= 0.06:
                     costo = round((aS*cS+(b*h-aS)*cH)/10000, 0)
                     if costo < minor:
                         minor, e = costo, round(cF[1]/(cF[2]+0.001), 3)
                         optimo = [minor, h, b, j, k, l, m, fu, cuan, cF[0], e, alist, ylist, cF[1], cF[2], muC, puC]
-    return optimo
+                        salida=1
+    if salida==1:
+        return optimo
+    else:
+        return "no existe una combinación para las posibles dimensiones de la columna elegidas"
+
+# from time import time
+# t1=time()
+# # asdf=optimusCol(0.85, 5, 2100000, 0.003, 0.002, 250, 4200, 30, 144, [16,18,22,25,28,32,36], 70, 75000, 7850000, 1)
+# for i in range(50):
+#     for j in range(50):
+#         optimusCol(0.85, 5, 2100000, 0.003, 0.002, 250, 4200, 2*i, 4*j, [16, 18, 22, 25, 28, 32, 36], 70, 75000, 7850000,
+#                    1)
+# t2=time()-t1
+# print(round(t2,5), "segundos")
 
 def yLstV(h, dp, db):
     # se busca el minimo de niveles barras laterales complementarias
@@ -148,7 +172,7 @@ def areaV(mu, b, b1, h, fc, fy, dp):
     w = 0.375+wp if wp > 0 else round(1-(1-2*muu)**0.5, 3)
     return round(w*0.85*fc*b*(h-dp)/fy, 2)
 
-#diámetros no pueden diferir en más de 1 diámetro de diferencia i-1<=j<=i+1
+#diámetros no pueden diferir en más de 5mm de diferencia i-1<=j<=i+1
 def listadiam1(A, b, dp, h, dList, v):
     sup = [i for i in range(int(1+(b-2*dp)/15), 2+int((b-2*dp)/10))]
     listadiam = []
@@ -173,9 +197,10 @@ def listadiam1(A, b, dp, h, dList, v):
 
 def listadiam(A, b, dp, h, dList, v):
     amin = 10*A
-    A/=2
+    A /= 2
     lista1 = listadiam1(A, b, dp, h, dList, v)
-    lista2, asdf, minimos = [], [], []
+    lista2 = []
+    minimos = []
     for i in range(len(lista1)):
         if lista1[i][4]<=1.2*A:
             lista2+=[lista1[i]]
@@ -187,22 +212,24 @@ def listadiam(A, b, dp, h, dList, v):
         ar2=round(2*A-ar1, 2)
         ar2 = ar2 if ar2>0 else 0
         lista3 = listadiam1(ar2, b, dp, h, dList, v)
-        if lista3==[]:
+        if lista3 == []:
             continue
         for j in range(len(lista2)):
             L2 = lista3[i]
             if 2*A>L1[4]+L2[4]:
                 continue
             else:
-                asdf+=[L1,L2]
                 if L1[4]+L2[4]<amin:
-                    amin=L1[4]+L2[4]
-                    minimos=[L1, L2, round(amin, 2)]
+                    amin = L1[4]+L2[4]
+                    minimos = [L1, L2, round(amin, 2)]
     return minimos
 
 def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, ai, lo, cH, cS, v):
+    salida = 0
+    lo *= 100
     minim = 99999999
-    hmax, bmax = hmax if hmax>=30 else 30, bmax if bmax>=30 else 30
+    hmax = hmax if hmax>=30 else 30
+    bmax = bmax if bmax>=30 else 30
     hList = [i for i in range(30, hmax+5,5)]
     bList = [i for i in range(30, bmax+5,5)]
     lista = ([i, j] for i in hList if i >= lo/16 for j in bList if i >= j and j >= 0.4*i)
@@ -239,18 +266,29 @@ def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, ai, lo, 
                 and cpn[1] >= mnn and cpnrev[1] >= mpp:
             cond, costo = True, round((sum(aSLst)*cS+(h*b-sum(aSLst))*cH)/10000, 0)
             if costo < minim and cond != False:
+                salida=1
                 minim = costo
                 FU = round(max(mnn/cpn[1], mpp/cpnrev[1]) * 100, 1)
                 listaT = [minim, h, b, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev,c , abs(mnn), abs(mpp), L1, lis,\
                          cpn[1], cpnrev[1], max(cpn[1],cpnrev[1])]
-    return listaT
+    if salida == 1:
+        return listaT
+    else:
+        optimusVig(mpp+5, mnn+5, es, eu, ey, b1, fc, fy, dp, dList, hmax+10, bmax+10, ai, lo/100, cH, cS, v)
 
-def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, asd):
+def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, mn, pn, asd):
     PnMax = round((0.85*fc*(h*b-sum(alst))+sum(alst)*fy)/1000, 2)
     PnMaxPr = round(PnMax+sum(alst)*fy*0.25/1000, 2)
-    PnMin, phiPnMin, PnMinPr = sum(alst)*-fy/1000, 0.9*sum(alst)*-fy/1000, 1.25*sum(alst)*-fy/1000
-    C = [0]+[i/40*h for i in range(2, 41)]
-    X1, X2, X3, Y1, Y2, Y3 = [0], [0], [0], [phiPnMin], [PnMin], [PnMinPr]
+    PnMin = sum(alst)*-fy/1000
+    phiPnMin = 0.9*sum(alst)*-fy/1000
+    PnMinPr = 1.25*sum(alst)*-fy/1000
+    C = [0]+[i/50*h for i in range(2, 51)]
+    X1 = [0]
+    X2 = [0]
+    X3 = [0]
+    Y1 = [phiPnMin]
+    Y2 = [PnMin]
+    Y3 = [PnMinPr]
     for c in C[1::]:
         res = resumen(alst, c, b, dp, h, eu, fy, fc, b1, es, ey, ylst)
         X1.append(res[3])
@@ -271,7 +309,7 @@ def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, asd):
     plt.plot([mu], [pu], marker='x', markersize=10, color='red', label='Mu - Pu', lw='1')
     res1 = resumen(alst, ce, b, dp, h, eu, fy, fc, b1, es, ey, ylst)
     plt.plot([0, mu], [0, pu], ls='--', color='black')
-    plt.plot([mu, res1[3]], [pu, res1[0]], ls='--', color='gray')
+    plt.plot([mu, mn*1.5], [pu, pn*1.5], ls='--', color='gray')
     plt.xlabel('Mn[tonf-m]')
     plt.xlim([0, max(X3)+0.1])
     plt.ylabel('Pn[tonf]')
@@ -283,23 +321,23 @@ def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, asd):
 
 def critVC(vigas, columnas):
     crit = lambda lista: round(1.2*sum(lista[0])/sum(lista[1]), 4)
-    asdf = []
+    temp1 = []
     for i in reversed(range(len(columnas))):
-        zxcv =[]
+        temp2 =[]
         for j in range(len(vigas[0])+1):
-            qwer = [[],[]]
+            temp3 = [[],[]]
             if j == len(vigas[0]):
-                qwer[0].append(vigas[i][len(vigas[0])-1])
+                temp3[0].append(vigas[i][len(vigas[0])-1])
             else:
                 if j != 0:
-                    qwer[0].append(vigas[i][j-1])
-                qwer[0].append(vigas[i][j])
-            qwer[1].append(columnas[i][j])
+                    temp3[0].append(vigas[i][j-1])
+                temp3[0].append(vigas[i][j])
+            temp3[1].append(columnas[i][j])
             if i != len(columnas)-1:
-                qwer[1].append(columnas[i+1][j])
-            zxcv.append(qwer)
-        asdf.append(zxcv)
-    newlist=asdf[1:]
+                temp3[1].append(columnas[i+1][j])
+            temp2.append(temp3)
+        temp1.append(temp2)
+    newlist=temp1[1:]
     for j in newlist:
         for i in j:
             vig=i[0]
@@ -308,13 +346,13 @@ def critVC(vigas, columnas):
             for j in range(len(col)):
                 col[j]=round(col[j] if z*col[j]<=col[j] else z*col[j], 1)
     critmat=[]
-    for i in range(len(asdf)):
+    for i in range(len(temp1)):
         critpis=[]
-        for j in range(len(asdf[i])):
-            if len(asdf[i][j][0])==1:
-                critpis.append(asdf[i][j][0][0])
+        for j in range(len(temp1[i])):
+            if len(temp1[i][j][0])==1:
+                critpis.append(temp1[i][j][0][0])
             else:
-                critpis.append(asdf[i][j][0][1])
+                critpis.append(temp1[i][j][0][1])
         critmat.append(critpis)
     return list(reversed(critmat))
 
@@ -458,45 +496,59 @@ def countram(ramas):
         nramas+=[len(i)]
     return nramas
 
-def Lest(h, b, dp, de): return round((2*(h+b-4*dp+0.2*de)*10+6.75*de*3.1416+2*max(75, 6*de))/10, 2)
+def Lest(h, b, dp, de):
+    return round((2*(h+b-4*dp+0.2*de)*10+6.75*de*3.1416+2*max(75, 6*de))/10, 2)
 
-def Ltrab(h, dp, de): return round((3.75*de*3.1416+2*max(75, 6*de)+(h+0.2*de-dp)*10)/10, 2)
+def Ltrab(h, dp, de):
+    return round((3.75*de*3.1416+2*max(75, 6*de)+(h+0.2*de-dp)*10)/10, 2)
 
-def vc(fc, b, h, dp): return round(0.53*(fc)**0.5*b*(h-dp)/1000, 2)
+def vc(fc, b, h, dp):
+    return round(0.53*(fc)**0.5*b*(h-dp)/1000, 2)
 
 def ashS(h, b, dp, fc, fy):
     return round(max(0.3*((b*h)/((h-dp)*(b-dp)))*(fc/fy), 0.09*(h-dp)*fc/fy), 3)
 
-def loCol(h, b, H): return round(max(h, b, H/6, 45), 1)
+# print(ashS(60,60,5,250,4200))
 
-def lEmp(fy, db): return round(max(0.00071*fy*db if fy<= 4200 else (0.0013*fy-2.4)*db, 30), 0)
+def loCol(h, b, H):
+    return round(max(h, b, H/6, 45), 1)
 
-def vprV(h, b, l, mpr1, mpr2, wo): return (mpr1+mpr2)/(l/100) + wo*(l/100)/2
+def lEmp(fy, db):
+    return round(max(0.00071*fy*db if fy<= 4200 else (0.0013*fy-2.4)*db, 30), 0)
 
-def VcAx(Nu, fc, b, h, dp): return round(0.53*(1+Nu*1000/(140*h*b))*(fc)**0.5*b*(h-dp)/1000, 1)
+def vprV(h, b, l, mpr1, mpr2, wo):
+    return (mpr1+mpr2)/(l/100) + wo*(l/100)/2
+
+def VcAx(Nu, fc, b, h, dp):
+    return round(0.53*(1+Nu*1000/(140*h*b))*(fc)**0.5*b*(h-dp)/1000, 1)
 
 def vsLim(fc, b, h, dp):
     return round(2.2*(fc)**0.5*b*(h-dp)/1000,2)
 
-def sRotV(h, dp, db): return round(max(min(15, 0.6*db, (h-dp)/4),8), 1)
+def sRotV(h, dp, db):
+    return round(max(min(15, 0.6*db, (h-dp)/4),8), 1)
 
-def sRotC(h, b, db, hx): return round(max(min(45, 0.6*db, (10+(35-hx)/3)),8), 1)
+#considerar la barra más pequeña
+def sRotC(h, b, db, hx):
+    return round(min(max(min(15,0.6*db,(10+(35-hx)/3)),8),10),1)
 
 def sMax(fc, b, h, dp, sm):
     return min(round((h-dp)/4 if vc(fc, b, h, dp)>0.33*(h-dp)*b*(fc/10)**0.5 else (h-dp)/2, 2), sm)
 
-def sEmp(h, dp): return round(min(10, (h-dp)/4), 1)
+def sEmp(h, dp):
+    return round(min(10, (h-dp)/4), 1)
 
-def sCol(db): return min(0.6*db, 15)
+def sCol(db):
+    return min(0.6*db, 15)
 
 def cubEstV(h, dp, de, Le):
-    lista =[]
+    lista = []
     for i in Le:
-        if len(i)%2==0:
+        if len(i)%2 == 0:
             b = i[1]-i[0]
-            lista+=[Lest(h, b, dp, de)]
+            lista += [Lest(h, b, dp, de)]
         else:
-            lista+=[Ltrab(h, dp, de)]
+            lista += [Ltrab(h, dp, de)]
     return round(sum(lista)*aCir(de) ,1)
 
 def estribosC(xList):
@@ -507,12 +559,12 @@ def estribosC(xList):
         count.append(len(i))
         Lestrib = []
         temp = i
-        while len(temp)>0:
-            if len(temp)>=2:
-                Lestrib.append([temp[0], temp[-1]])
+        while len(temp) > 0:
+            if len(temp) >= 2:
+                Lestrib.append([temp[0],temp[-1]])
                 temp.remove(temp[0])
                 temp.remove(temp[-1])
-            elif len(temp)==1:
+            elif len(temp) == 1:
                 Lestrib.append([temp[0]])
                 temp.remove(temp[0])
             else:
@@ -523,16 +575,16 @@ def estribosC(xList):
 
 def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS):
     H*=100
-    #falta cuantia minima
-    vu, vue = vu*1000, vue*1000
+    vu = vu*1000
+    vue = vue*1000
+    mpr1*=100000
+    mpr2*=100000
     Vc = VcAx(Nu, fc, b, h, dp)*1000
-    vupr = round(100000*(mpr1+mpr2)/H)
+    vupr = round((mpr1+mpr2)/H,1)
     vupr1 = vupr if Nu*1000 < 0.05 * fc * (h * b) else vupr-Vc
     vupr2 = vupr-Vc
-    vu1 = max((vu-Vc)/0.75, vue/0.6, vupr1/0.75)
+    vu1 = round(max((vu-Vc)/0.75, vue/0.6, vupr1/0.75),1)
     vslim = vsLim(fc, b, h, dp)*1000
-    vsL = vsLim(fc, b, h, dp)*1000
-    #cambiar a función de estribos para columnas
     lo = loCol(h, b, H)
     k1 = (H-2*lo)/H
     vu2 = round(k1*max((vu-Vc)/0.75, vue/0.6, (vupr1-Vc)/0.75), 1)
@@ -545,15 +597,13 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
         srotL = [int(sRotC(h, b, db, l)) for l in [min(k) for k in [[i[j]-i[j-1] for j in range(1,len(i))] for i in ramas]]]
     else:
         ramitas = ramas[0]
-        aux1 = [ramitas[i]-ramitas[i-i] for i in range(1, len(ramitas))]
-        srotL =  [int(sRotC(h, b, db, min(aux1)))]
+        aux1=[ramitas[i]-ramitas[i-1] for i in range(1,len(ramitas))]
+        srotL =  [int(sRotC(h, b, db, max(aux1)))]
     sash = round(ashS(h, b, dp, fc, fy), 3)
-    vu1 = round(max(vu1, sash), 1)
-    vu2 = round(max(vu2, sash), 1)
-    sreq = lambda nRam, de: int((nram*aCir(de))/sash)
+    sreq = lambda nRam, de: int((nRam*aCir(de))/sash)
     s1L = [[i, j, k, l] for i in range(len(nRam)) for j in deList
-           for k in range(8, int(min(h/4, b/4, 6*db, srotL[i]))+1) for l in deList
-           if vu1<=round(((2*aCir(j))+((nRam[i]-2)*aCir(l)))*fy*(h-dp)/k, 1)<=vslim and l<=j]
+           for k in range(8, int(sRotC(h, b, db, srotL[i])+1)) for l in deList
+           if vu1 <= round((2*aCir(j)+(nRam[i]-2)*aCir(l))*fy*(h-dp)/k, 1) <= vslim and l <= j]
     minimo = 99999999
     for i, j, k, l in s1L:
         ramas1 = est[i]
@@ -601,9 +651,12 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     costo_total = lista1[0]+lista2[0]+lista3[0]
     return [costo_total, lista1, lista2, lista3]
 
+print(minEstC(70, 80, 5, 3, 12, 10, [5, 18, 32, 45], [10,12], 18, 50, 50, 5, 4200, 250,7850000))
+
 def minEstV(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, wo):
     lo*=100
-    vu, vue = vu*1000, vue*1000
+    vu = vu*1000
+    vue = vue*1000
     Vc = vc(fc, b, h, dp)*1000
     vupr = round(vprV(h, b, lo, mpr1, mpr2,wo),3)*1000
     smax = sMax(fc, b, h, dp, 20)
@@ -644,9 +697,9 @@ def minEstV(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, wo
             return Lout
         else:
             return "Error, aumentar ancho de elemento"
-
-""" Datos de entrada ficticios para testeo de funciones en conjunto """
-
+#
+# """ Datos de entrada ficticios para testeo de funciones en conjunto """
+#
 #[Vu, Vue, Mpp, Mnn, 1.2D+L, lo]
 matvig = [[[20.8, 19.2, 28.6, 14.6, 5, 7],[20, 20, 26.9, 13.1, 5, 7],[19.2, 20.8, 28.6, 14.6, 5, 7]],
           [[20.7, 19.3, 28.4, 14.4, 5, 7],[20,20,26.8,13.2, 5, 7],[20.7, 19.3, 28.4, 14.4, 5, 7]],
@@ -658,115 +711,9 @@ matcol = [[[46.1,3.4,3.4,9,3],[97.9,0.3,0.3,0.7,3],[97.9,0.3,0.3,0.7,3],[46.1,3.
           [[7.6,4.7,4.7,10.2,3],[16.4,0.4,0.4,0.8,3],[16.4,0.4,0.4,0.8,3],[7.6,4.7,4.7,10.2,3]]]
 
 fy=4200
-fc=250
+fc=170
 
-def OptimusFrame(matvig, matcol, fc, fy, cH, cS, hmaxV, bmaxV, hmaxC):
-    beta1 = b1(fc)
-    dp = 5
-    es = 2100000
-    eu = 0.003
-    ey = 0.002
-    dList = [12, 16, 18, 22, 25, 28, 32, 36]
-    ai = 1
-    deList = [10, 12]
-    v = 5
-    Mvig = matElemV(matvig, bmaxV, hmaxV, cH, cS, beta1, dp, es, ey, eu, fc, fy, dList, ai, deList, v)
-    Mcol = matElemC(matcol, Mvig, fc, fy, hmaxC, beta1, dp, es, eu, ey, dList, cH, cS)
-    listaC = []
-    for i in range(len(matcol)):
-        tempC = []
-        for j in range(len(matcol[i])):
-            mpr1 = resumen(Mcol[i][j][11], Mcol[i][j][9], Mcol[i][j][2], dp, Mcol[i][j][1], eu, fy, fc, beta1, es, ey, Mcol[i][j][12])[5]
-            mpr2 = mpr1
-            elem = minEstC(mpr1, mpr2, matcol[i][j][0], matcol[i][j][4], matcol[i][j][1], matcol[i][j][2], Mcol[i][j][12], deList, Mcol[i][j][5], Mcol[i][j][1], Mcol[i][j][2], dp, fy, fc, cS)
-            tempC.append(elem)
-        listaC.append(tempC)
-    listaV = []
-    # [Vu, Vue, Mpp, Mnn, 1.2D+L, lo]
-    for i in range(len(matvig)):
-        tempV = []
-        for j in range(len(matvig[i])):
-            resuVig1 = resumen(Mvig[i][j][3], Mvig[i][j][9], Mvig[i][j][2], dp, Mvig[i][j][1], eu, fy, fc, beta1, es, ey, Mvig[i][j][4])
-            resuVig2 = resumen(Mvig[i][j][7], Mvig[i][j][9], Mvig[i][j][2], dp, Mvig[i][j][1], eu, fy, fc, beta1, es, ey, Mvig[i][j][8])
-            sup = Mvig[i][j][12][0] if Mvig[i][j][12][0][0]+Mvig[i][j][12][0][2]>=Mvig[i][j][13][0]+Mvig[i][j][13][2] else Mvig[i][j][13]
-            db = max(sup[1], sup[3])
-            xlistV = xLst(sup, Mvig[i][j][2], dp)[1]
-            elem = minEstV(resuVig1[5], resuVig2[5], matvig[i][j][0], matvig[i][j][1], xlistV, deList, db, Mvig[i][j][1], Mvig[i][j][2], matvig[i][j][5], dp, fy, fc, cS, matvig[i][j][4])
-            tempV.append(elem)
-        listaV.append(tempV)
-    return Mvig, listaV, Mcol, listaC
-
-from time import time
-t1 = time()
-toda = OptimusFrame(matvig, matcol, fc, fy, 75000, 7850000, 70, 40, 60)
-t2 = time() - t1
-print("tiempo de ejecución", round(t2, 4), "segundos")
-
-print(toda[0])
-print(toda[1])
-print(toda[2])
-print(toda[3])
-
-""" para después """
-
-def X_2(v1, v2, lo): return round((v2*lo)/v1,1)
-
-# XYplotCurv(Mcol[i][j][11], Mcol[i][j][2], Mcol[i][j][1], dp, eu, fy, fc, beta1, es, ey, Mcol[i][j][12], Mcol[i][j][9], matcol[i][j][15],
-#                        Mcol[i][j][16], "Interacción de Columna " + str(j) + " del piso " + str(i))
-
-def optimusVig2(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, ai, lo, cH, cS, v, wo, deList, vue, vu):
-    minim = 99999999
-    hmax, bmax = hmax if hmax>=30 else 30, bmax if bmax>=30 else 30
-    hList = [i for i in range(30, hmax+5,5)]
-    bList = [i for i in range(30, bmax+5,5)]
-    lista = ([i, j] for i in hList if i >= lo/16 for j in bList if i >= j and j >= 0.4*i)
-    for h, b in lista:
-        A1 = areaV(mpp, b, b1, h, fc, fy, dp)
-        A2 = areaV(mnn, b, b1, h, fc, fy, dp)
-        L1 = listadiam(A1, b, dp, h, dList, v)
-        if L1==[]:
-            continue
-        L2 = listadiam1(A2, b, dp, h, dList, v)
-        mi1 = 10*A2
-        lis=[]
-        for i in range(len(L2)):
-            L=L2[i]
-            if L[4]<mi1:
-                mi1=L[4]
-                lis = L
-        if lis==[]:
-            continue
-        db = max(L1[0][1], L1[0][3])
-        ylst = list(yLstV(h, dp, db))
-        ylstrev = [(h-i) for i in reversed(ylst)]
-        aSLst = [L1[0][4], L1[1][4]]+[ai for i in range(len(ylst)-3)]+[lis[4]]
-        alstrev = [lis[4]]+[ai for i in range(len(ylst)-3)]+[L1[0][4], L1[1][4]]
-        cuanT = round(sum(aSLst)/(h*b-sum(aSLst)), 4)
-        cumin = round(max(0.8/fy*(fc**0.5), 14/fy), 4)
-        cuan1 = round((aSLst[0]+aSLst[1])/((b*(h-dp))), 4)
-        cuan2 = round(aSLst[-1]/((b*(h-dp))), 4)
-        cpn = cPn(aSLst, b, b1, dp, es, eu, ey, fc, fy, h, 0, ylst)
-        cpnrev = cPn(alstrev, b, b1, dp, es, eu, ey, fc, fy, h, 0, ylstrev)
-        c, cond = cpn[0], False
-        eT = round(eu*abs(h-dp-c)/c, 4)
-        PMCpr1 = pmC(aSLst, b, b1, cpn[0], es, eu, ey, fc, fy*1.25, h, ylst)
-        PMCpr2 = pmC(alstrev, b, b1, cpnrev[0], es, eu, ey, fc, fy*1.25, h, ylstrev)
-        db = max(max(L1[0][:-1]), max(L1[1][:-1]), max(lis[:-1]))
-        sup = L1[0]
-        xlistV = xLst(sup, 30, 5)[1]
-        estV = minEstV(PMCpr1[1], PMCpr2[1], vu, vue, xlistV, deList, db, h, b, lo, dp, fy, fc, cS, wo)
-        if 0.025 >= cuan1 >= cumin and 0.025 >= cuan2 >= cumin\
-                and cpn[1] >= mnn and cpnrev[1] >= mpp and estV != []:
-            cond, costo = True, round((sum(aSLst)*cS+(h*b-sum(aSLst))*cH)/10000, 0) #agregar estribos
-            if costo < minim and cond != False:
-                minim = costo
-                FU = round(max(mnn/cpn[1], mpp/cpnrev[1]) * 100, 1)
-                listaFlex = [minim, h, b, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev,c , abs(mnn), abs(mpp), L1, lis,\
-                         cpn[1], cpnrev[1], max(cpn[1],cpnrev[1])]
-                listaCort = estV
-    return listaFlex, listaCort
-
-# def OptimusFrame2(matvig, matcol, fc, fy, cH, cS, hmaxV, bmaxV, hmaxC):
+# def OptimusFrame(matvig, matcol, fc, fy, cH, cS, hmaxV, bmaxV, hmaxC):
 #     beta1 = b1(fc)
 #     dp = 5
 #     es = 2100000
@@ -795,7 +742,6 @@ def optimusVig2(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, ai, lo,
 #             resuVig1 = resumen(Mvig[i][j][3], Mvig[i][j][9], Mvig[i][j][2], dp, Mvig[i][j][1], eu, fy, fc, beta1, es, ey, Mvig[i][j][4])
 #             resuVig2 = resumen(Mvig[i][j][7], Mvig[i][j][9], Mvig[i][j][2], dp, Mvig[i][j][1], eu, fy, fc, beta1, es, ey, Mvig[i][j][8])
 #             sup = Mvig[i][j][12][0] if Mvig[i][j][12][0][0]+Mvig[i][j][12][0][2]>=Mvig[i][j][13][0]+Mvig[i][j][13][2] else Mvig[i][j][13]
-#             print(sup)
 #             db = max(sup[1], sup[3])
 #             xlistV = xLst(sup, Mvig[i][j][2], dp)[1]
 #             elem = minEstV(resuVig1[5], resuVig2[5], matvig[i][j][0], matvig[i][j][1], xlistV, deList, db, Mvig[i][j][1], Mvig[i][j][2], matvig[i][j][5], dp, fy, fc, cS, matvig[i][j][4])
@@ -803,12 +749,119 @@ def optimusVig2(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, ai, lo,
 #         listaV.append(tempV)
 #     return Mvig, listaV, Mcol, listaC
 #
+# from time import time
+# t1 = time()
+# toda = OptimusFrame(matvig, matcol, fc, fy, 75000, 7850000, 70, 40, 60)
+# t2 = time() - t1
+# print("tiempo de ejecución", round(t2, 4), "segundos")
 #
-# optf = OptimusFrame2(matvig, matcol, fc, fy, cH, cS, hmaxV, bmaxV, hmaxC)
-
-
-""" para después """
-
+# print(toda[0])
+# print(toda[1])
+# print(toda[2])
+# print(toda[3])
+#
+# """ para después """
+#
+# def X_2(v1, v2, lo): return round((v2*lo)/v1,1)
+#
+# # XYplotCurv(Mcol[i][j][11], Mcol[i][j][2], Mcol[i][j][1], dp, eu, fy, fc, beta1, es, ey, Mcol[i][j][12], Mcol[i][j][9], matcol[i][j][15],
+# #                        Mcol[i][j][16], "Interacción de Columna " + str(j) + " del piso " + str(i))
+#
+# def optimusVig2(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, ai, lo, cH, cS, v, wo, deList, vue, vu):
+#     minim = 99999999
+#     hmax, bmax = hmax if hmax>=30 else 30, bmax if bmax>=30 else 30
+#     hList = [i for i in range(30, hmax+5,5)]
+#     bList = [i for i in range(30, bmax+5,5)]
+#     lista = ([i, j] for i in hList if i >= lo/16 for j in bList if i >= j and j >= 0.4*i)
+#     for h, b in lista:
+#         A1 = areaV(mpp, b, b1, h, fc, fy, dp)
+#         A2 = areaV(mnn, b, b1, h, fc, fy, dp)
+#         L1 = listadiam(A1, b, dp, h, dList, v)
+#         if L1==[]:
+#             continue
+#         L2 = listadiam1(A2, b, dp, h, dList, v)
+#         mi1 = 10*A2
+#         lis=[]
+#         for i in range(len(L2)):
+#             L=L2[i]
+#             if L[4]<mi1:
+#                 mi1=L[4]
+#                 lis = L
+#         if lis==[]:
+#             continue
+#         db = max(L1[0][1], L1[0][3])
+#         ylst = list(yLstV(h, dp, db))
+#         ylstrev = [(h-i) for i in reversed(ylst)]
+#         aSLst = [L1[0][4], L1[1][4]]+[ai for i in range(len(ylst)-3)]+[lis[4]]
+#         alstrev = [lis[4]]+[ai for i in range(len(ylst)-3)]+[L1[0][4], L1[1][4]]
+#         cuanT = round(sum(aSLst)/(h*b-sum(aSLst)), 4)
+#         cumin = round(max(0.8/fy*(fc**0.5), 14/fy), 4)
+#         cuan1 = round((aSLst[0]+aSLst[1])/((b*(h-dp))), 4)
+#         cuan2 = round(aSLst[-1]/((b*(h-dp))), 4)
+#         cpn = cPn(aSLst, b, b1, dp, es, eu, ey, fc, fy, h, 0, ylst)
+#         cpnrev = cPn(alstrev, b, b1, dp, es, eu, ey, fc, fy, h, 0, ylstrev)
+#         c, cond = cpn[0], False
+#         eT = round(eu*abs(h-dp-c)/c, 4)
+#         PMCpr1 = pmC(aSLst, b, b1, cpn[0], es, eu, ey, fc, fy*1.25, h, ylst)
+#         PMCpr2 = pmC(alstrev, b, b1, cpnrev[0], es, eu, ey, fc, fy*1.25, h, ylstrev)
+#         db = max(max(L1[0][:-1]), max(L1[1][:-1]), max(lis[:-1]))
+#         sup = L1[0]
+#         xlistV = xLst(sup, 30, 5)[1]
+#         estV = minEstV(PMCpr1[1], PMCpr2[1], vu, vue, xlistV, deList, db, h, b, lo, dp, fy, fc, cS, wo)
+#         if 0.025 >= cuan1 >= cumin and 0.025 >= cuan2 >= cumin\
+#                 and cpn[1] >= mnn and cpnrev[1] >= mpp and estV != []:
+#             cond, costo = True, round((sum(aSLst)*cS+(h*b-sum(aSLst))*cH)/10000, 0) #agregar estribos
+#             if costo < minim and cond != False:
+#                 minim = costo
+#                 FU = round(max(mnn/cpn[1], mpp/cpnrev[1]) * 100, 1)
+#                 listaFlex = [minim, h, b, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev,c , abs(mnn), abs(mpp), L1, lis,\
+#                          cpn[1], cpnrev[1], max(cpn[1],cpnrev[1])]
+#                 listaCort = estV
+#     return listaFlex, listaCort
+#
+# # def OptimusFrame2(matvig, matcol, fc, fy, cH, cS, hmaxV, bmaxV, hmaxC):
+# #     beta1 = b1(fc)
+# #     dp = 5
+# #     es = 2100000
+# #     eu = 0.003
+# #     ey = 0.002
+# #     dList = [12, 16, 18, 22, 25, 28, 32, 36]
+# #     ai = 1
+# #     deList = [10, 12]
+# #     v = 5
+# #     Mvig = matElemV(matvig, bmaxV, hmaxV, cH, cS, beta1, dp, es, ey, eu, fc, fy, dList, ai, deList, v)
+# #     Mcol = matElemC(matcol, Mvig, fc, fy, hmaxC, beta1, dp, es, eu, ey, dList, cH, cS)
+# #     listaC = []
+# #     for i in range(len(matcol)):
+# #         tempC = []
+# #         for j in range(len(matcol[i])):
+# #             mpr1 = resumen(Mcol[i][j][11], Mcol[i][j][9], Mcol[i][j][2], dp, Mcol[i][j][1], eu, fy, fc, beta1, es, ey, Mcol[i][j][12])[5]
+# #             mpr2 = mpr1
+# #             elem = minEstC(mpr1, mpr2, matcol[i][j][0], matcol[i][j][4], matcol[i][j][1], matcol[i][j][2], Mcol[i][j][12], deList, Mcol[i][j][5], Mcol[i][j][1], Mcol[i][j][2], dp, fy, fc, cS)
+# #             tempC.append(elem)
+# #         listaC.append(tempC)
+# #     listaV = []
+# #     # [Vu, Vue, Mpp, Mnn, 1.2D+L, lo]
+# #     for i in range(len(matvig)):
+# #         tempV = []
+# #         for j in range(len(matvig[i])):
+# #             resuVig1 = resumen(Mvig[i][j][3], Mvig[i][j][9], Mvig[i][j][2], dp, Mvig[i][j][1], eu, fy, fc, beta1, es, ey, Mvig[i][j][4])
+# #             resuVig2 = resumen(Mvig[i][j][7], Mvig[i][j][9], Mvig[i][j][2], dp, Mvig[i][j][1], eu, fy, fc, beta1, es, ey, Mvig[i][j][8])
+# #             sup = Mvig[i][j][12][0] if Mvig[i][j][12][0][0]+Mvig[i][j][12][0][2]>=Mvig[i][j][13][0]+Mvig[i][j][13][2] else Mvig[i][j][13]
+# #             print(sup)
+# #             db = max(sup[1], sup[3])
+# #             xlistV = xLst(sup, Mvig[i][j][2], dp)[1]
+# #             elem = minEstV(resuVig1[5], resuVig2[5], matvig[i][j][0], matvig[i][j][1], xlistV, deList, db, Mvig[i][j][1], Mvig[i][j][2], matvig[i][j][5], dp, fy, fc, cS, matvig[i][j][4])
+# #             tempV.append(elem)
+# #         listaV.append(tempV)
+# #     return Mvig, listaV, Mcol, listaC
+# #
+# #
+# # optf = OptimusFrame2(matvig, matcol, fc, fy, cH, cS, hmaxV, bmaxV, hmaxC)
+#
+#
+# """ para después """
+#
 tabla = {
     'head': [
         ['fila', 'perfil', 'combo', 'nodo', 'axial', 'corte', 'momento'],
@@ -1112,14 +1165,20 @@ tabla = {
     ]
 }
 
-combis, combi_e, combi_s, tab = 7, 4, 3, tabla['body']
+largosC=[[3,3,3,3],[3,3,3,3],[3,3,3,3]]
+largosV=[[7,7,7],[7,7,7],[7,7,7]]
 
-def filtroCV(combis, combi_e, combi_s, tab):
+combis = 7
+combi_e = 4
+combi_s = 3
+tab = tabla['body']
+
+def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
     bars1=[[tab[i-1]+tab[i] for j in range(2) if j==1]
-           for i in range(len(tab)) if i%2!=0]
+            for i in range(len(tab)) if i%2!=0]
     bars2=[bars1[i][0] for i in range(len(bars1))]
     bars=[[bars2[i] for i in range(combis*j, combis*j+combis)]
-          for j in range(int(len(bars2)/combis))]
+            for j in range(int(len(bars2)/combis))]
     bars_e1=[bars2[i] for i in range(len(bars2)) if 'E' in bars2[i][2]]
     bars_s1=[bars2[i] for i in range(len(bars2)) if 'E' not in bars2[i][2]]
     bars_e=[[bars_e1[i] for i in range(combi_e*j, combi_e*j+combi_e)]
@@ -1127,15 +1186,15 @@ def filtroCV(combis, combi_e, combi_s, tab):
     bars_s=[[bars_s1[i] for i in range(combi_s*j, combi_s*j+combi_s)]
             for j in range(int(len(bars_s1)/combi_s))]
     col_e=[[bars_e[j][i] for i in range(0, combi_e)] for j in range(len(bars_e))
-           if bars_e[j][0][0]=='COL']
+            if bars_e[j][0][0]=='COL']
     col_s=[[bars_s[j][i] for i in range(0, combi_s) if bars_s[j][i][2]!='1.2 D + L']
-           for j in range(len(bars_s)) if bars_s[j][0][0]=='COL']
+            for j in range(len(bars_s)) if bars_s[j][0][0]=='COL']
     col_dl=[[bars_s[j][i] for i in range(0, combi_s) if bars_s[j][i][2]=='1.2 D + L']
             for j in range(len(bars_s)) if bars_s[j][0][0]=='COL']
     vig_e=[[bars_e[j][i] for i in range(0, combi_e)]
-           for j in range(len(bars_e)) if bars_e[j][0][0]=='VIGA']
+            for j in range(len(bars_e)) if bars_e[j][0][0]=='VIGA']
     vig_s=[[bars_s[j][i] for i in range(0, combi_s)if bars_s[j][i][2]!='1.2 D + L']
-           for j in range(len(bars_s)) if bars_s[j][0][0]=='VIGA']
+            for j in range(len(bars_s)) if bars_s[j][0][0]=='VIGA']
     vig_dl=[[bars_s[j][i] for i in range(0, combi_s)if bars_s[j][i][2]=='1.2 D + L']
             for j in range(len(bars_s)) if bars_s[j][0][0]=='VIGA']
     maxTrix_i = lambda lista:[[round(max([lista[k][j][i] for j in range(len(lista[0]))]),2)
@@ -1192,36 +1251,34 @@ def filtroCV(combis, combi_e, combi_s, tab):
         for j in range(len(max_vig_ei[i])):
             lista1=[[round(max_vig_si[i][j][1]/1000,2), round(max_vig_ei[i][j][1]/1000,2),
                      round(max(max_vig_ei[i][j][2],max_vig_si[i][j][2])/1000,2),
-                     round(min(min_vig_ei[i][j][2],min_vig_si[i][j][2])/1000,2),round(max_vig_dli[i][j][1]/1000,2)],
+                     round(min(min_vig_ei[i][j][2],min_vig_si[i][j][2])/1000,2),round(max_vig_dli[i][j][1]/1000,2), largosV[i][j]],
                     [round(max_vig_sj[i][j][1]/1000,2), round(max_vig_ej[i][j][1]/1000,2),
                      round(max(max_vig_ej[i][j][2],max_vig_sj[i][j][2])/1000,2),
-                     round(min(min_vig_ej[i][j][2],min_vig_sj[i][j][2])/1000,2),round(max_vig_dlj[i][j][1]/1000,2)]]
+                     round(min(min_vig_ej[i][j][2],min_vig_sj[i][j][2])/1000,2),round(max_vig_dlj[i][j][1]/1000,2), largosV[i][j]]]
             lista2.append(lista1)
         listaV.append(lista2)
-
     listaC=[]
     for i in range(len(max_col_ei)):
         lista1=[]
         lista2=[]
         for j in range(len(max_col_ei[i])):
+            #[vue, vu, .....]
             lista1=[[round(max(max_col_ei[i][j][0], max_col_si[i][j][0])/1000,2),round(max_col_si[i][j][1]/1000,2),
                      round(max_col_ei[i][j][1]/1000,2), round(max(max_col_ei[i][j][2],max_col_si[i][j][2],
                                               abs(min_col_ei[i][j][2]),abs(min_col_si[i][j][2]))/1000,2),
-                     round(max_col_dli[i][j][1]/1000,2)],
+                     round(max_col_dli[i][j][1]/1000,2), largosC[i][j]],
                     [round(max(max_col_ej[i][j][0], max_col_sj[i][j][0])/1000,2), round(max_col_sj[i][j][1]/1000,2),
                      round(max_col_ej[i][j][1]/1000,2), round(max(max_col_ej[i][j][2],max_col_sj[i][j][2],
                                               abs(min_col_ej[i][j][2]),abs(min_col_sj[i][j][2]))/1000,2),
-                     round(max_col_dlj[i][j][1]/1000,2)]]
+                     round(max_col_dlj[i][j][1]/1000,2), largosC[i][j]]]
             lista2.append(lista1)
         listaC.append(lista2)
-
-
     listaVmax=[[[max(i[j][0][k], i[j][1][k]) for k in range(len(i[j][0]))] for j in range(len(i))] for i in listaV]
     listaCmax=[[[max(i[j][0][k], i[j][1][k]) for k in range(len(i[j][0]))] for j in range(len(i))] for i in listaC]
+    # return [listaV,listaVmax, listaC, listaCmax]
+    return listaV
 
-    return [listaV,listaVmax, listaC, listaCmax]
-    # listaCmax=[[[max(for k in j] for j in i] for i in listaV]
-    # listaVmax=[]
-
-print(filtroCV(combis, combi_e, combi_s, tab))
-
+matrices=filtroCV(combis, combi_e, combi_s, tab, largosV, largosC)
+# matvig, matcol = matrices[1], matrices[3]
+print(matrices)
+# toda2 = OptimusFrame(matvig, matcol, fc, fy, 75000, 7850000, 70, 40, 60)
