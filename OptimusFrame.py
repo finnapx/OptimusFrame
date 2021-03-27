@@ -1,4 +1,455 @@
 import matplotlib.pyplot as plt
+
+""" para después """
+
+tabla = {
+    'head': [
+        ['fila', 'perfil', 'combo', 'nodo', 'axial', 'corte', 'momento'],
+        ['[kg]', '[kg]', '[kg-m]']
+    ],
+    'body': [
+        ['COL', 1, '1.4 D', 'i', 2409.32, -1075.57, -340.37440000000004],
+        [                   'j', 2094.32, -1075.57, 735.1998],
+        ['COL', 1, '1.2 D + L', 'i', 3459.72, -1638.14, -518.4021],
+        [                   'j', 3189.72, -1638.14, 1119.7349000000002],
+        ['COL', 1, '1.2 D + 1.6 L', 'i', 4296.48, -2067.87, -654.3937000000001],
+        [                   'j', 4026.48, -2067.87, 1413.4731],
+        ['COL', 1, '1.2 D + 1.4 E + L', 'i', 2524.45, 1768.9, 1485.7219],
+        [                   'j', 2254.45, 1768.9, -283.1811],
+        ['COL', 1, '1.2 D - 1.4 E + L', 'i', 4395.0, -5045.18, -2522.5261],
+        [                   'j', 4125.0, -5045.18, 2522.6509],
+        ['COL', 1, '0.9 D + 1.4 E', 'i', 613.57, 2715.6, 1785.3118],
+        [                   'j', 411.07, 2715.6, -930.2876],
+        ['COL', 1, '0.9 D - 1.4 E', 'i', 2484.13, -4098.48, -2222.9361],
+        [                   'j', 2281.63, -4098.48, 1875.5445000000002],
+        ['COL', 2, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
+        [                   'j', 2094.32, 1075.57, -735.1998],
+        ['COL', 2, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
+        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
+        ['COL', 2, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
+        [                   'j', 4026.48, 2067.87, -1413.4731],
+        ['COL', 2, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
+        [                   'j', 4125.0, 5045.18, -2522.6509],
+        ['COL', 2, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
+        [                   'j', 2254.45, -1768.9, 283.1811],
+        ['COL', 2, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
+        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
+        ['COL', 2, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
+        [                   'j', 411.07, -2715.6, 930.2876],
+        ['COL', 3, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
+        [                   'j', 2094.32, 1075.57, -735.1998],
+        ['COL', 3, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
+        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
+        ['COL', 3, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
+        [                   'j', 4026.48, 2067.87, -1413.4731],
+        ['COL', 3, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
+        [                   'j', 4125.0, 5045.18, -2522.6509],
+        ['COL', 3, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
+        [                   'j', 2254.45, -1768.9, 283.1811],
+        ['COL', 3, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
+        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
+        ['COL', 3, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
+        [                   'j', 411.07, -2715.6, 930.2876],
+        ['COL', 4, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
+        [                   'j', 2094.32, 1075.57, -735.1998],
+        ['COL', 4, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
+        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
+        ['COL', 4, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
+        [                   'j', 4026.48, 2067.87, -1413.4731],
+        ['COL', 4, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
+        [                   'j', 4125.0, 5045.18, -2522.6509],
+        ['COL', 4, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
+        [                   'j', 2254.45, -1768.9, 283.1811],
+        ['COL', 4, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
+        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
+        ['COL', 4, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
+        [                   'j', 411.07, -2715.6, 930.2876],
+        ['COL', 5, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
+        [                   'j', 2094.32, 1075.57, -735.1998],
+        ['COL', 5, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
+        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
+        ['COL', 5, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
+        [                   'j', 4026.48, 2067.87, -1413.4731],
+        ['COL', 5, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
+        [                   'j', 4125.0, 5045.18, -2522.6509],
+        ['COL', 5, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
+        [                   'j', 2254.45, -1768.9, 283.1811],
+        ['COL', 5, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
+        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
+        ['COL', 5, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
+        [                   'j', 411.07, -2715.6, 930.2876],
+        ['COL', 6, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
+        [                   'j', 2094.32, 1075.57, -735.1998],
+        ['COL', 6, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
+        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
+        ['COL', 6, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
+        [                   'j', 4026.48, 2067.87, -1413.4731],
+        ['COL', 6, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
+        [                   'j', 4125.0, 5045.18, -2522.6509],
+        ['COL', 6, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
+        [                   'j', 2254.45, -1768.9, 283.1811],
+        ['COL', 6, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
+        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
+        ['COL', 6, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
+        [                   'j', 411.07, -2715.6, 930.2876],
+        ['COL', 7, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
+        [                   'j', 2094.32, 1075.57, -735.1998],
+        ['COL', 7, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
+        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
+        ['COL', 7, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
+        [                   'j', 4026.48, 2067.87, -1413.4731],
+        ['COL', 7, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
+        [                   'j', 4125.0, 5045.18, -2522.6509],
+        ['COL', 7, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
+        [                   'j', 2254.45, -1768.9, 283.1811],
+        ['COL', 7, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
+        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
+        ['COL', 7, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
+        [                   'j', 411.07, -2715.6, 930.2876],
+        ['COL', 8, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
+        [                   'j', 2094.32, 1075.57, -735.1998],
+        ['COL', 8, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
+        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
+        ['COL', 8, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
+        [                   'j', 4026.48, 2067.87, -1413.4731],
+        ['COL', 8, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
+        [                   'j', 4125.0, 5045.18, -2522.6509],
+        ['COL', 8, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
+        [                   'j', 2254.45, -1768.9, 283.1811],
+        ['COL', 8, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
+        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
+        ['COL', 8, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
+        [                   'j', 411.07, -2715.6, 930.2876],
+        ['COL', 9, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
+        [                   'j', 2094.32, 1075.57, -735.1998],
+        ['COL', 9, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
+        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
+        ['COL', 9, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
+        [                   'j', 4026.48, 2067.87, -1413.4731],
+        ['COL', 9, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
+        [                   'j', 4125.0, 5045.18, -2522.6509],
+        ['COL', 9, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
+        [                   'j', 2254.45, -1768.9, 283.1811],
+        ['COL', 9, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
+        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
+        ['COL', 9, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
+        [                   'j', 411.07, -2715.6, 930.2876],
+        ['COL', 10, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
+        [                   'j', 2094.32, 1075.57, -735.1998],
+        ['COL', 10, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
+        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
+        ['COL', 10, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
+        [                   'j', 4026.48, 2067.87, -1413.4731],
+        ['COL', 10, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
+        [                   'j', 4125.0, 5045.18, -2522.6509],
+        ['COL', 10, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
+        [                   'j', 2254.45, -1768.9, 283.1811],
+        ['COL', 10, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
+        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
+        ['COL', 10, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
+        [                   'j', 411.07, -2715.6, 930.2876],
+        ['COL', 11, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
+        [                   'j', 2094.32, 1075.57, -735.1998],
+        ['COL', 11, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
+        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
+        ['COL', 11, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
+        [                   'j', 4026.48, 2067.87, -1413.4731],
+        ['COL', 11, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
+        [                   'j', 4125.0, 5045.18, -2522.6509],
+        ['COL', 11, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
+        [                   'j', 2254.45, -1768.9, 283.1811],
+        ['COL', 11, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
+        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
+        ['COL', 11, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
+        [                   'j', 411.07, -2715.6, 930.2876],
+        ['COL', 12, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
+        [                   'j', 2094.32, 1075.57, -735.1998],
+        ['COL', 12, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
+        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
+        ['COL', 12, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
+        [                   'j', 4026.48, 2067.87, -1413.4731],
+        ['COL', 12, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
+        [                   'j', 4125.0, 5045.18, -2522.6509],
+        ['COL', 12, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
+        [                   'j', 2254.45, -1768.9, 283.1811],
+        ['COL', 12, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
+        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
+        ['COL', 12, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
+        [                   'j', 411.07, -2715.6, 930.2876],
+        ['VIGA', 13, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
+        [                   'j', 1075.57, -2094.32, 735.1998],
+        ['VIGA', 13, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
+        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
+        ['VIGA', 13, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
+        [                   'j', 2067.87, -4026.48, 1413.4731],
+        ['VIGA', 13, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
+        [                   'j', 1638.14, -4125.0, 2522.6509],
+        ['VIGA', 13, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
+        [                   'j', 1638.14, -2254.45, -283.1811],
+        ['VIGA', 13, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
+        [                   'j', 691.44, -2281.63, 1875.5445000000002],
+        ['VIGA', 13, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
+        [                   'j', 691.44, -411.07, -930.2876],
+        ['VIGA', 14, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
+        [                   'j', 1075.57, -2094.32, 735.1998],
+        ['VIGA', 14, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
+        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
+        ['VIGA', 14, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
+        [                   'j', 2067.87, -4026.48, 1413.4731],
+        ['VIGA', 14, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
+        [                   'j', 1638.14, -4125.0, 2522.6509],
+        ['VIGA', 14, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
+        [                   'j', 1638.14, -2254.45, -283.1811],
+        ['VIGA', 14, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
+        [                   'j', 691.44, -2281.63, 1875.5445000000002],
+        ['VIGA', 14, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
+        [                   'j', 691.44, -411.07, -930.2876],
+        ['VIGA', 15, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
+        [                   'j', 1075.57, -2094.32, 735.1998],
+        ['VIGA', 15, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
+        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
+        ['VIGA', 15, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
+        [                   'j', 2067.87, -4026.48, 1413.4731],
+        ['VIGA', 15, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
+        [                   'j', 1638.14, -4125.0, 2522.6509],
+        ['VIGA', 15, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
+        [                   'j', 1638.14, -2254.45, -283.1811],
+        ['VIGA', 15, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
+        [                   'j', 691.44, -2281.63, 1875.5445000000002],
+        ['VIGA', 15, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
+        [                   'j', 691.44, -411.07, -930.2876],
+        ['VIGA', 16, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
+        [                   'j', 1075.57, -2094.32, 735.1998],
+        ['VIGA', 16, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
+        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
+        ['VIGA', 16, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
+        [                   'j', 2067.87, -4026.48, 1413.4731],
+        ['VIGA', 16, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
+        [                   'j', 1638.14, -4125.0, 2522.6509],
+        ['VIGA', 16, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
+        [                   'j', 1638.14, -2254.45, -283.1811],
+        ['VIGA', 16, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
+        [                   'j', 691.44, -2281.63, 1875.5445000000002],
+        ['VIGA', 16, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
+        [                   'j', 691.44, -411.07, -930.2876],
+        ['VIGA', 17, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
+        [                   'j', 1075.57, -2094.32, 735.1998],
+        ['VIGA', 17, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
+        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
+        ['VIGA', 17, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
+        [                   'j', 2067.87, -4026.48, 1413.4731],
+        ['VIGA', 17, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
+        [                   'j', 1638.14, -4125.0, 2522.6509],
+        ['VIGA', 17, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
+        [                   'j', 1638.14, -2254.45, -283.1811],
+        ['VIGA', 17, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
+        [                   'j', 691.44, -2281.63, 1875.5445000000002],
+        ['VIGA', 17, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
+        [                   'j', 691.44, -411.07, -930.2876],
+        ['VIGA', 18, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
+        [                   'j', 1075.57, -2094.32, 735.1998],
+        ['VIGA', 18, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
+        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
+        ['VIGA', 18, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
+        [                   'j', 2067.87, -4026.48, 1413.4731],
+        ['VIGA', 18, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
+        [                   'j', 1638.14, -4125.0, 2522.6509],
+        ['VIGA', 18, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
+        [                   'j', 1638.14, -2254.45, -283.1811],
+        ['VIGA', 18, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
+        [                   'j', 691.44, -2281.63, 1875.5445000000002],
+        ['VIGA', 18, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
+        [                   'j', 691.44, -411.07, -930.2876],
+        ['VIGA', 19, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
+        [                   'j', 1075.57, -2094.32, 735.1998],
+        ['VIGA', 19, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
+        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
+        ['VIGA', 19, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
+        [                   'j', 2067.87, -4026.48, 1413.4731],
+        ['VIGA', 19, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
+        [                   'j', 1638.14, -4125.0, 2522.6509],
+        ['VIGA', 19, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
+        [                   'j', 1638.14, -2254.45, -283.1811],
+        ['VIGA', 19, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
+        [                   'j', 691.44, -2281.63, 1875.5445000000002],
+        ['VIGA', 19, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
+        [                   'j', 691.44, -411.07, -930.2876],
+        ['VIGA', 20, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
+        [                   'j', 1075.57, -2094.32, 735.1998],
+        ['VIGA', 20, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
+        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
+        ['VIGA', 20, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
+        [                   'j', 2067.87, -4026.48, 1413.4731],
+        ['VIGA', 20, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
+        [                   'j', 1638.14, -4125.0, 2522.6509],
+        ['VIGA', 20, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
+        [                   'j', 1638.14, -2254.45, -283.1811],
+        ['VIGA', 20, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
+        [                   'j', 691.44, -2281.63, 1875.5445000000002],
+        ['VIGA', 20, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
+        [                   'j', 691.44, -411.07, -930.2876],
+        ['VIGA', 21, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
+        [                   'j', 1075.57, -2094.32, 735.1998],
+        ['VIGA', 21, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
+        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
+        ['VIGA', 21, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
+        [                   'j', 2067.87, -4026.48, 1413.4731],
+        ['VIGA', 21, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
+        [                   'j', 1638.14, -4125.0, 2522.6509],
+        ['VIGA', 21, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
+        [                   'j', 1638.14, -2254.45, -283.1811],
+        ['VIGA', 21, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
+        [                   'j', 691.44, -2281.63, 1875.5445000000002],
+        ['VIGA', 21, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
+        [                   'j', 691.44, -411.07, -930.2876],
+    ]
+}
+
+largosC=[[3,3,3,3],[3,3,3,3],[3,3,3,3]]
+largosV=[[7,7,7],[7,7,7],[7,7,7]]
+
+combis = 7
+combi_e = 4
+combi_s = 3
+tab = tabla['body']
+
+def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
+    bars1=[[tab[i-1]+tab[i] for j in range(2) if j==1]
+            for i in range(len(tab)) if i%2!=0]
+    bars2=[bars1[i][0] for i in range(len(bars1))]
+    bars=[[bars2[i] for i in range(combis*j, combis*j+combis)]
+            for j in range(int(len(bars2)/combis))]
+    bars_e1=[bars2[i] for i in range(len(bars2)) if 'E' in bars2[i][2]]
+    bars_s1=[bars2[i] for i in range(len(bars2)) if 'E' not in bars2[i][2]]
+    bars_e=[[bars_e1[i] for i in range(combi_e*j, combi_e*j+combi_e)]
+            for j in range(int(len(bars_e1)/combi_e))]
+    bars_s=[[bars_s1[i] for i in range(combi_s*j, combi_s*j+combi_s)]
+            for j in range(int(len(bars_s1)/combi_s))]
+    col_e=[[bars_e[j][i] for i in range(0, combi_e)] for j in range(len(bars_e))
+            if bars_e[j][0][0]=='COL']
+    col_s=[[bars_s[j][i] for i in range(0, combi_s) if bars_s[j][i][2]!='1.2 D + L']
+            for j in range(len(bars_s)) if bars_s[j][0][0]=='COL']
+    col_dl=[[bars_s[j][i] for i in range(0, combi_s) if bars_s[j][i][2]=='1.2 D + L']
+            for j in range(len(bars_s)) if bars_s[j][0][0]=='COL']
+    vig_e=[[bars_e[j][i] for i in range(0, combi_e)]
+            for j in range(len(bars_e)) if bars_e[j][0][0]=='VIGA']
+    vig_s=[[bars_s[j][i] for i in range(0, combi_s)if bars_s[j][i][2]!='1.2 D + L']
+            for j in range(len(bars_s)) if bars_s[j][0][0]=='VIGA']
+    vig_dl=[[bars_s[j][i] for i in range(0, combi_s)if bars_s[j][i][2]=='1.2 D + L']
+            for j in range(len(bars_s)) if bars_s[j][0][0]=='VIGA']
+
+    maTrix_ij = lambda lista:[[[round(lista[k][j][i],1) for j in range(len(lista[0]))]
+                               for i in [5,9]] for k in range(len(lista))]
+
+    maxTrix_i = lambda lista:[[round(max([lista[k][j][i] for j in range(len(lista[0]))]),2)
+                               for i in [4,5,6]] for k in range(len(lista))]
+    minTrix_i = lambda lista:[[round(min([lista[k][j][i] for j in range(len(lista[0]))]),2)
+                               for i in [4,5,6]] for k in range(len(lista))]
+    maxTrix_j = lambda lista:[[round(max([lista[k][j][i] for j in range(len(lista[0]))]),2)
+                               for i in [8,9,10]] for k in range(len(lista))]
+    minTrix_j = lambda lista:[[round(min([lista[k][j][i] for j in range(len(lista[0]))]),2)
+                               for i in [8,9,10]] for k in range(len(lista))]
+
+    npisos, nbahias = len(col_e)-len(vig_e), int(len(vig_e)/(len(col_e)-len(vig_e)))
+
+    forma_col = lambda lista, nbahias, npisos:[
+        [lista[j] for j in range(i*(nbahias+1), (i+1)*(nbahias+1))] for i in range(npisos)]
+    forma_vig = lambda lista, nbahias, npisos:[
+        [lista[j] for j in range(i*(nbahias), (i+1)*(nbahias))] for i in range(npisos)]
+
+    max_col_ei = forma_col(maxTrix_i(col_e),nbahias,npisos)
+    max_col_si = forma_col(maxTrix_i(col_s),nbahias,npisos)
+    max_col_dli = forma_col(maxTrix_i(col_dl),nbahias,npisos)
+
+    min_col_ei = forma_col(minTrix_i(col_e),nbahias,npisos)
+    min_col_si = forma_col(minTrix_i(col_s),nbahias,npisos)
+    min_col_dli = forma_col(minTrix_i(col_dl),nbahias,npisos)
+
+    max_col_ej = forma_col(maxTrix_j(col_e),nbahias,npisos)
+    max_col_sj = forma_col(maxTrix_j(col_s),nbahias,npisos)
+    max_col_dlj = forma_col(maxTrix_j(col_dl),nbahias,npisos)
+
+    min_col_ej = forma_col(minTrix_j(col_e),nbahias,npisos)
+    min_col_sj = forma_col(minTrix_j(col_s),nbahias,npisos)
+    min_col_dlj = forma_col(minTrix_j(col_dl),nbahias,npisos)
+
+    mat_col_e = forma_col(maTrix_ij(col_e),nbahias,npisos)
+    mat_col_s = forma_col(maTrix_ij(col_s),nbahias,npisos)
+
+    max_vig_ei = forma_vig(maxTrix_i(vig_e),nbahias,npisos)
+    max_vig_si = forma_vig(maxTrix_i(vig_s),nbahias,npisos)
+    max_vig_dli = forma_vig(maxTrix_i(vig_dl),nbahias,npisos)
+
+    min_vig_ei = forma_vig(minTrix_i(vig_e),nbahias,npisos)
+    min_vig_si = forma_vig(minTrix_i(vig_s),nbahias,npisos)
+    min_vig_dli = forma_vig(minTrix_i(vig_dl),nbahias,npisos)
+
+    max_vig_ej = forma_vig(maxTrix_j(vig_e),nbahias,npisos)
+    max_vig_sj = forma_vig(maxTrix_j(vig_s),nbahias,npisos)
+    max_vig_dlj = forma_vig(maxTrix_j(vig_dl),nbahias,npisos)
+
+    min_vig_ej = forma_vig(minTrix_j(vig_e),nbahias,npisos)
+    min_vig_sj = forma_vig(minTrix_j(vig_s),nbahias,npisos)
+    min_vig_dlj = forma_vig(minTrix_j(vig_dl),nbahias,npisos)
+
+    mat_vig_e = forma_vig(maTrix_ij(vig_e),nbahias,npisos)
+    mat_vig_s = forma_vig(maTrix_ij(vig_s),nbahias,npisos)
+
+    matCorte_col=[mat_col_e,mat_col_s]
+    matCorte_vig=[mat_vig_e,mat_vig_s]
+
+    #'axial', 'corte', 'momento'
+    listaV=[]
+    for i in range(len(max_vig_ei)):
+        lista1=[]
+        lista2=[]
+        for j in range(len(max_vig_ei[i])):
+            lista1=[[round(max_vig_si[i][j][1]/1000,2), round(max_vig_ei[i][j][1]/1000,2),
+                     round(max(max_vig_ei[i][j][2],max_vig_si[i][j][2])/1000,2),
+                     round(min(min_vig_ei[i][j][2],min_vig_si[i][j][2])/1000,2),round(max_vig_dli[i][j][1]/1000,2),
+                     largosV[i][j],mat_vig_s[i][j][0],mat_vig_e[i][j][0]],
+                    [round(max_vig_sj[i][j][1]/1000,2), round(max_vig_ej[i][j][1]/1000,2),
+                     round(max(max_vig_ej[i][j][2],max_vig_sj[i][j][2])/1000,2),
+                     round(min(min_vig_ej[i][j][2],min_vig_sj[i][j][2])/1000,2),round(max_vig_dlj[i][j][1]/1000,2),
+                     largosV[i][j],mat_vig_s[i][j][1],mat_vig_e[i][j][1]]]
+            lista2.append(lista1)
+        listaV.append(lista2)
+    listaC=[]
+    for i in range(len(max_col_ei)):
+        lista1=[]
+        lista2=[]
+        for j in range(len(max_col_ei[i])):
+            #[vue, vu, .....]
+            lista1=[[round(max(max_col_ei[i][j][0], max_col_si[i][j][0])/1000,2),round(max_col_si[i][j][1]/1000,2),
+                     round(max_col_ei[i][j][1]/1000,2), round(max(max_col_ei[i][j][2],max_col_si[i][j][2],
+                                              abs(min_col_ei[i][j][2]),abs(min_col_si[i][j][2]))/1000,2),
+                     round(max_col_dli[i][j][1]/1000,2), largosC[i][j],mat_col_s[i][j][0],mat_col_e[i][j][0]],
+                    [round(max(max_col_ej[i][j][0], max_col_sj[i][j][0])/1000,2), round(max_col_sj[i][j][1]/1000,2),
+                     round(max_col_ej[i][j][1]/1000,2), round(max(max_col_ej[i][j][2],max_col_sj[i][j][2],
+                                              abs(min_col_ej[i][j][2]),abs(min_col_sj[i][j][2]))/1000,2),
+                     round(max_col_dlj[i][j][1]/1000,2), largosC[i][j],mat_col_s[i][j][1],mat_col_e[i][j][1]]]
+            lista2.append(lista1)
+        listaC.append(lista2)
+    # listaVmax=[[[max(i[j][0][k], i[j][1][k]) for k in range(len(i[j][0]))] for j in range(len(i))] for i in listaV]
+    # listaCmax=[[[max(i[j][0][k], i[j][1][k]) for k in range(len(i[j][0]))] for j in range(len(i))] for i in listaC]
+    # return [listaV,listaVmax, listaC, listaCmax]
+    return [listaV, listaC]
+
+vuLsti = [2094.3, 4026.5]
+vueLsti = [2254.4, 4125.0, 411.1, 2281.6]
+vuLstj = [-2094.3, -4026.5]
+vueLstj = [-4125.0, -2254.4, -2281.6, -411.1]
+
+def V2vig(x1, lo, vuLsti, vueLsti, vuLstj, vueLstj, vupr, vc, state):
+    vc = vc if state==1 else 0
+    v2Calc = lambda v1, v2, x1, lo: round(v1 - x1 * (v1 - v2) / lo, 1)
+    vupr2 = v2Calc(vupr,-vupr,x1,lo)/0.75-vc
+    vu2 = max([v2Calc(vuLsti[i],vuLstj[i], x1, lo) for i in range(len(vuLsti))])/0.75-vc
+    vue2 = max([v2Calc(vueLsti[i],vueLstj[i], x1, lo) for i in range(len(vueLsti))])/0.6
+    return round(max(vupr2,vu2, vue2),1)
+
+# print(V2vig(120, 700, vuLsti, vueLsti, vuLstj, vueLstj, 3000,1000,1))
+
 def b1(fc):
     if 550 >= fc >= 280:
         return round(0.85-0.05/70*(fc-280), 2)
@@ -573,6 +1024,7 @@ def estribosC(xList):
         Lestrib = []
     return lista, count
 
+#se toma el corte de entrada máximo para combinaciones estáticas y sísmicas simplemente como entrada
 def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS):
     H*=100
     vu = vu*1000
@@ -586,7 +1038,9 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     vu1 = round(max((vu-Vc)/0.75, vue/0.6, vupr1/0.75),1)
     vslim = vsLim(fc, b, h, dp)*1000
     lo = loCol(h, b, H)
-    k1 = (H-2*lo)/H
+    # k1 = (H-2*lo)/H --> X incorrecto, para hacer esto se evalúan
+    # los cortes de ambosa extremos y se interpola linealmente
+    k1=1
     vu2 = round(k1*max((vu-Vc)/0.75, vue/0.6, (vupr1-Vc)/0.75), 1)
     s = round(sCol(db))
     estr = estribosC(yList)
@@ -614,8 +1068,7 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
         costo = round(2*s1*(l1*aCir(j)+l2*aCir(l))*cS/1000000, 0)
         if costo<minimo:
             minimo=costo
-            #[costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos]
-            lista1=[costo, nRam[i], j, k, l, s1]
+            lista1=[costo, nRam[i], j, k, l, s1, lo]
     l_rot = lista1[3]
     l_emp = lEmp(fy, db)
     s2L = [[i, j, k] for i in range(len(nRam)) for j in deList for k in range(10, s+1)
@@ -623,17 +1076,18 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     minimo = 99999999
     for i, j, l in s2L:
         ramas1 = est[i]
-        s2 = int((H-2*l_rot-l_emp-0.01)/k)
+        s2 = int((H-2*lo-l_emp-0.01)/k)
+        dist2 = H-2*lo-l_emp
         l2 = sum([Lest(h, ramas1[m][1] - ramas1[m][0], dp, l) if len(ramas1[m]) == 2 else Ltrab(h, dp, l)
                   for m in range(0, len(ramas1))])
         costo = round(s2*l2*aCir(j)*cS/1000000, 0)
         if costo<minimo:
             minimo=costo
-            #[costo, n° ramas, de, espaciamiento, n° estribos]
-            lista2=[costo, nRam[i], j, k, s2]
+            lista2=[costo, nRam[i], j, k, s2, dist2]
     lista2
     semp = int(sEmp(h, dp))
-    k2 = l_emp/(2*H)
+    # k2 = l_emp/(2*H)
+    k2 = 1
     vu3 = round(k2*max((vu-Vc)/0.75, vue/0.6, (vupr1-Vc)/0.75), 1)
     s3L = [[i, j, k] for i in range(len(nRam)) for j in deList for k in range(5, semp+1)
            if vu3<=round(nRam[i]*aCir(j)*fy*(h-dp)/k, 1)<=vslim]
@@ -646,29 +1100,17 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
         costo = round(s3 * l2 * aCir(j) * cS / 1000000, 0)
         if costo < minimo:
             minimo = costo
-            # [costo, n° ramas, de, espaciamiento, n° estribos]
-            lista3 = [costo, nRam[i], j, k, s3]
+            lista3 = [costo, nRam[i], j, k, s3, l_emp]
     costo_total = lista1[0]+lista2[0]+lista3[0]
-    return [costo_total, lista1, lista2, lista3]
+    # lista1 --> [n° ramas, de_externo, espaciamiento, de_interno, n° estribos, dist]
+    # lista2 --> [n° ramas, de, espaciamiento, n° estribos, dist]
+    # lista3 --> [n° ramas, de, espaciamiento, n° estribos, dist]
+    # los estribos del empalme corresponden a los mismos de la zona ubicada fuera de la rótula plástica
+    return [costo_total]+lista1[1:]+lista2[1:]+lista3[1:]
 
-# print(minEstC(70, 80, 5, 3, 12, 10, [5, 18, 32, 45], [10,12], 18, 50, 50, 5, 4200, 250,7850000))
+print(minEstC(70, 80, 5, 3, 12, 10, [5, 18, 32, 45], [10,12], 18, 50, 50, 5, 4200, 250,7850000))
 
-vuLsti = [2094.3, 4026.5]
-vueLsti = [2254.4, 4125.0, 411.1, 2281.6]
-vuLstj = [-2094.3, -4026.5]
-vueLstj = [-4125.0, -2254.4, -2281.6, -411.1]
-
-def V2vig(x1, lo, vuLsti, vueLsti, vuLstj, vueLstj, vupr, vc, state):
-    vc = vc if state==1 else 0
-    v2Calc = lambda v1, v2, x1, lo: round(v1 - x1 * (v1 - v2) / lo, 1)
-    vupr2 = v2Calc(vupr,-vupr,x1,lo)/0.75-vc
-    vu2 = max([v2Calc(vuLsti[i],vuLstj[i], x1, lo) for i in range(len(vuLsti))])/0.75-vc
-    vue2 = max([v2Calc(vueLsti[i],vueLstj[i], x1, lo) for i in range(len(vueLsti))])/0.6
-    return round(max(vupr2,vu2, vue2),1)
-
-print(V2vig(120, 700, vuLsti, vueLsti, vuLstj, vueLstj, 3000,1000,1))
-
-#cubica mitad de la viga solamente
+#REVISAR RESULTADOS
 def minEstV(mpr1, mpr2, vuLSti, vueLSti, vuLstj, vueLstj, xList, deList, db, h, b, lo, dp, fy, fc, cS, wo):
     lo*=100
     Vc = vc(fc, b, h, dp)*1000
@@ -711,23 +1153,23 @@ def minEstV(mpr1, mpr2, vuLSti, vueLSti, vuLstj, vueLstj, xList, deList, db, h, 
         else:
             return "Error, aumentar ancho de elemento"
 
-print(minEstV(20, 25, vuLsti, vueLsti, vuLstj, vueLstj, [5, 15, 25], [10, 12], 18, 50, 50, 7, 5, 4200, 250, 7850000, 1))
+# print(minEstV(20, 25, vuLsti, vueLsti, vuLstj, vueLstj, [5, 15, 25], [10, 12], 18, 50, 50, 7, 5, 4200, 250, 7850000, 1))
 
-# """ Datos de entrada ficticios para testeo de funciones en conjunto """
+# # """ Datos de entrada ficticios para testeo de funciones en conjunto """
+# #
+# #[Vu, Vue, Mpp, Mnn, 1.2D+L, lo]
+# matvig = [[[20.8, 19.2, 28.6, 14.6, 5, 7],[20, 20, 26.9, 13.1, 5, 7],[19.2, 20.8, 28.6, 14.6, 5, 7]],
+#           [[20.7, 19.3, 28.4, 14.4, 5, 7],[20,20,26.8,13.2, 5, 7],[20.7, 19.3, 28.4, 14.4, 5, 7]],
+#            [[8.3, 7.6, 11.5, 6, 2, 7],[8, 8, 10.8, 5.2, 2, 7],[8.3, 7.6, 11.5, 6, 2, 7]]]
 #
-#[Vu, Vue, Mpp, Mnn, 1.2D+L, lo]
-matvig = [[[20.8, 19.2, 28.6, 14.6, 5, 7],[20, 20, 26.9, 13.1, 5, 7],[19.2, 20.8, 28.6, 14.6, 5, 7]],
-          [[20.7, 19.3, 28.4, 14.4, 5, 7],[20,20,26.8,13.2, 5, 7],[20.7, 19.3, 28.4, 14.4, 5, 7]],
-           [[8.3, 7.6, 11.5, 6, 2, 7],[8, 8, 10.8, 5.2, 2, 7],[8.3, 7.6, 11.5, 6, 2, 7]]]
-
-#[Pu, Vu, Vue, Mu, H]
-matcol = [[[46.1,3.4,3.4,9,3],[97.9,0.3,0.3,0.7,3],[97.9,0.3,0.3,0.7,3],[46.1,3.4,3.4,9,3]],
-          [[26.9,6.4,6.4,13.1,3],[57,0.5,0.5,1,3],[57,0.5,0.5,1,3],[26.9,6.4,6.4,13.1,3]],
-          [[7.6,4.7,4.7,10.2,3],[16.4,0.4,0.4,0.8,3],[16.4,0.4,0.4,0.8,3],[7.6,4.7,4.7,10.2,3]]]
-
-fy=4200
-fc=170
-
+# #[Pu, Vu, Vue, Mu, H]
+# matcol = [[[46.1,3.4,3.4,9,3],[97.9,0.3,0.3,0.7,3],[97.9,0.3,0.3,0.7,3],[46.1,3.4,3.4,9,3]],
+#           [[26.9,6.4,6.4,13.1,3],[57,0.5,0.5,1,3],[57,0.5,0.5,1,3],[26.9,6.4,6.4,13.1,3]],
+#           [[7.6,4.7,4.7,10.2,3],[16.4,0.4,0.4,0.8,3],[16.4,0.4,0.4,0.8,3],[7.6,4.7,4.7,10.2,3]]]
+#
+# fy=4200
+# fc=170
+#
 # def OptimusFrame(matvig, matcol, fc, fy, cH, cS, hmaxV, bmaxV, hmaxC):
 #     beta1 = b1(fc)
 #     dp = 5
@@ -774,14 +1216,9 @@ fc=170
 # print(toda[1])
 # print(toda[2])
 # print(toda[3])
-#
-# """ para después """
-#
-# def X_2(v1, v2, lo): return round((v2*lo)/v1,1)
-#
-# # XYplotCurv(Mcol[i][j][11], Mcol[i][j][2], Mcol[i][j][1], dp, eu, fy, fc, beta1, es, ey, Mcol[i][j][12], Mcol[i][j][9], matcol[i][j][15],
-# #                        Mcol[i][j][16], "Interacción de Columna " + str(j) + " del piso " + str(i))
-#
+
+""" para después """
+
 # def optimusVig2(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, ai, lo, cH, cS, v, wo, deList, vue, vu):
 #     minim = 99999999
 #     hmax, bmax = hmax if hmax>=30 else 30, bmax if bmax>=30 else 30
@@ -834,533 +1271,41 @@ fc=170
 #                 listaCort = estV
 #     return listaFlex, listaCort
 #
-# # def OptimusFrame2(matvig, matcol, fc, fy, cH, cS, hmaxV, bmaxV, hmaxC):
-# #     beta1 = b1(fc)
-# #     dp = 5
-# #     es = 2100000
-# #     eu = 0.003
-# #     ey = 0.002
-# #     dList = [12, 16, 18, 22, 25, 28, 32, 36]
-# #     ai = 1
-# #     deList = [10, 12]
-# #     v = 5
-# #     Mvig = matElemV(matvig, bmaxV, hmaxV, cH, cS, beta1, dp, es, ey, eu, fc, fy, dList, ai, deList, v)
-# #     Mcol = matElemC(matcol, Mvig, fc, fy, hmaxC, beta1, dp, es, eu, ey, dList, cH, cS)
-# #     listaC = []
-# #     for i in range(len(matcol)):
-# #         tempC = []
-# #         for j in range(len(matcol[i])):
-# #             mpr1 = resumen(Mcol[i][j][11], Mcol[i][j][9], Mcol[i][j][2], dp, Mcol[i][j][1], eu, fy, fc, beta1, es, ey, Mcol[i][j][12])[5]
-# #             mpr2 = mpr1
-# #             elem = minEstC(mpr1, mpr2, matcol[i][j][0], matcol[i][j][4], matcol[i][j][1], matcol[i][j][2], Mcol[i][j][12], deList, Mcol[i][j][5], Mcol[i][j][1], Mcol[i][j][2], dp, fy, fc, cS)
-# #             tempC.append(elem)
-# #         listaC.append(tempC)
-# #     listaV = []
-# #     # [Vu, Vue, Mpp, Mnn, 1.2D+L, lo]
-# #     for i in range(len(matvig)):
-# #         tempV = []
-# #         for j in range(len(matvig[i])):
-# #             resuVig1 = resumen(Mvig[i][j][3], Mvig[i][j][9], Mvig[i][j][2], dp, Mvig[i][j][1], eu, fy, fc, beta1, es, ey, Mvig[i][j][4])
-# #             resuVig2 = resumen(Mvig[i][j][7], Mvig[i][j][9], Mvig[i][j][2], dp, Mvig[i][j][1], eu, fy, fc, beta1, es, ey, Mvig[i][j][8])
-# #             sup = Mvig[i][j][12][0] if Mvig[i][j][12][0][0]+Mvig[i][j][12][0][2]>=Mvig[i][j][13][0]+Mvig[i][j][13][2] else Mvig[i][j][13]
-# #             print(sup)
-# #             db = max(sup[1], sup[3])
-# #             xlistV = xLst(sup, Mvig[i][j][2], dp)[1]
-# #             elem = minEstV(resuVig1[5], resuVig2[5], matvig[i][j][0], matvig[i][j][1], xlistV, deList, db, Mvig[i][j][1], Mvig[i][j][2], matvig[i][j][5], dp, fy, fc, cS, matvig[i][j][4])
-# #             tempV.append(elem)
-# #         listaV.append(tempV)
-# #     return Mvig, listaV, Mcol, listaC
-# #
-# #
-# # optf = OptimusFrame2(matvig, matcol, fc, fy, cH, cS, hmaxV, bmaxV, hmaxC)
+# def OptimusFrame2(matvig, matcol, fc, fy, cH, cS, hmaxV, bmaxV, hmaxC):
+#     beta1 = b1(fc)
+#     dp = 5
+#     es = 2100000
+#     eu = 0.003
+#     ey = 0.002
+#     dList = [12, 16, 18, 22, 25, 28, 32, 36]
+#     ai = 1
+#     deList = [10, 12]
+#     v = 5
+#     Mvig = matElemV(matvig, bmaxV, hmaxV, cH, cS, beta1, dp, es, ey, eu, fc, fy, dList, ai, deList, v)
+#     Mcol = matElemC(matcol, Mvig, fc, fy, hmaxC, beta1, dp, es, eu, ey, dList, cH, cS)
+#     listaC = []
+#     for i in range(len(matcol)):
+#         tempC = []
+#         for j in range(len(matcol[i])):
+#             mpr1 = resumen(Mcol[i][j][11], Mcol[i][j][9], Mcol[i][j][2], dp, Mcol[i][j][1], eu, fy, fc, beta1, es, ey, Mcol[i][j][12])[5]
+#             mpr2 = mpr1
+#             elem = minEstC(mpr1, mpr2, matcol[i][j][0], matcol[i][j][4], matcol[i][j][1], matcol[i][j][2], Mcol[i][j][12], deList, Mcol[i][j][5], Mcol[i][j][1], Mcol[i][j][2], dp, fy, fc, cS)
+#             tempC.append(elem)
+#         listaC.append(tempC)
+#     listaV = []
+#     # [Vu, Vue, Mpp, Mnn, 1.2D+L, lo]
+#     for i in range(len(matvig)):
+#         tempV = []
+#         for j in range(len(matvig[i])):
+#             resuVig1 = resumen(Mvig[i][j][3], Mvig[i][j][9], Mvig[i][j][2], dp, Mvig[i][j][1], eu, fy, fc, beta1, es, ey, Mvig[i][j][4])
+#             resuVig2 = resumen(Mvig[i][j][7], Mvig[i][j][9], Mvig[i][j][2], dp, Mvig[i][j][1], eu, fy, fc, beta1, es, ey, Mvig[i][j][8])
+#             sup = Mvig[i][j][12][0] if Mvig[i][j][12][0][0]+Mvig[i][j][12][0][2]>=Mvig[i][j][13][0]+Mvig[i][j][13][2] else Mvig[i][j][13]
+#             print(sup)
+#             db = max(sup[1], sup[3])
+#             xlistV = xLst(sup, Mvig[i][j][2], dp)[1]
+#             elem = minEstV(resuVig1[5], resuVig2[5], matvig[i][j][0], matvig[i][j][1], xlistV, deList, db, Mvig[i][j][1], Mvig[i][j][2], matvig[i][j][5], dp, fy, fc, cS, matvig[i][j][4])
+#             tempV.append(elem)
+#         listaV.append(tempV)
+#     return Mvig, listaV, Mcol, listaC
 #
-#
-# """ para después """
-#
-tabla = {
-    'head': [
-        ['fila', 'perfil', 'combo', 'nodo', 'axial', 'corte', 'momento'],
-        ['[kg]', '[kg]', '[kg-m]']
-    ],
-    'body': [
-        ['COL', 1, '1.4 D', 'i', 2409.32, -1075.57, -340.37440000000004],
-        [                   'j', 2094.32, -1075.57, 735.1998],
-        ['COL', 1, '1.2 D + L', 'i', 3459.72, -1638.14, -518.4021],
-        [                   'j', 3189.72, -1638.14, 1119.7349000000002],
-        ['COL', 1, '1.2 D + 1.6 L', 'i', 4296.48, -2067.87, -654.3937000000001],
-        [                   'j', 4026.48, -2067.87, 1413.4731],
-        ['COL', 1, '1.2 D + 1.4 E + L', 'i', 2524.45, 1768.9, 1485.7219],
-        [                   'j', 2254.45, 1768.9, -283.1811],
-        ['COL', 1, '1.2 D - 1.4 E + L', 'i', 4395.0, -5045.18, -2522.5261],
-        [                   'j', 4125.0, -5045.18, 2522.6509],
-        ['COL', 1, '0.9 D + 1.4 E', 'i', 613.57, 2715.6, 1785.3118],
-        [                   'j', 411.07, 2715.6, -930.2876],
-        ['COL', 1, '0.9 D - 1.4 E', 'i', 2484.13, -4098.48, -2222.9361],
-        [                   'j', 2281.63, -4098.48, 1875.5445000000002],
-        ['COL', 2, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
-        [                   'j', 2094.32, 1075.57, -735.1998],
-        ['COL', 2, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
-        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
-        ['COL', 2, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
-        [                   'j', 4026.48, 2067.87, -1413.4731],
-        ['COL', 2, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
-        [                   'j', 4125.0, 5045.18, -2522.6509],
-        ['COL', 2, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
-        [                   'j', 2254.45, -1768.9, 283.1811],
-        ['COL', 2, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
-        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
-        ['COL', 2, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
-        [                   'j', 411.07, -2715.6, 930.2876],
-        ['COL', 3, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
-        [                   'j', 2094.32, 1075.57, -735.1998],
-        ['COL', 3, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
-        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
-        ['COL', 3, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
-        [                   'j', 4026.48, 2067.87, -1413.4731],
-        ['COL', 3, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
-        [                   'j', 4125.0, 5045.18, -2522.6509],
-        ['COL', 3, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
-        [                   'j', 2254.45, -1768.9, 283.1811],
-        ['COL', 3, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
-        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
-        ['COL', 3, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
-        [                   'j', 411.07, -2715.6, 930.2876],
-        ['COL', 4, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
-        [                   'j', 2094.32, 1075.57, -735.1998],
-        ['COL', 4, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
-        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
-        ['COL', 4, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
-        [                   'j', 4026.48, 2067.87, -1413.4731],
-        ['COL', 4, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
-        [                   'j', 4125.0, 5045.18, -2522.6509],
-        ['COL', 4, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
-        [                   'j', 2254.45, -1768.9, 283.1811],
-        ['COL', 4, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
-        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
-        ['COL', 4, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
-        [                   'j', 411.07, -2715.6, 930.2876],
-        ['COL', 5, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
-        [                   'j', 2094.32, 1075.57, -735.1998],
-        ['COL', 5, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
-        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
-        ['COL', 5, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
-        [                   'j', 4026.48, 2067.87, -1413.4731],
-        ['COL', 5, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
-        [                   'j', 4125.0, 5045.18, -2522.6509],
-        ['COL', 5, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
-        [                   'j', 2254.45, -1768.9, 283.1811],
-        ['COL', 5, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
-        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
-        ['COL', 5, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
-        [                   'j', 411.07, -2715.6, 930.2876],
-        ['COL', 6, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
-        [                   'j', 2094.32, 1075.57, -735.1998],
-        ['COL', 6, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
-        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
-        ['COL', 6, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
-        [                   'j', 4026.48, 2067.87, -1413.4731],
-        ['COL', 6, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
-        [                   'j', 4125.0, 5045.18, -2522.6509],
-        ['COL', 6, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
-        [                   'j', 2254.45, -1768.9, 283.1811],
-        ['COL', 6, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
-        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
-        ['COL', 6, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
-        [                   'j', 411.07, -2715.6, 930.2876],
-        ['COL', 7, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
-        [                   'j', 2094.32, 1075.57, -735.1998],
-        ['COL', 7, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
-        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
-        ['COL', 7, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
-        [                   'j', 4026.48, 2067.87, -1413.4731],
-        ['COL', 7, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
-        [                   'j', 4125.0, 5045.18, -2522.6509],
-        ['COL', 7, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
-        [                   'j', 2254.45, -1768.9, 283.1811],
-        ['COL', 7, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
-        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
-        ['COL', 7, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
-        [                   'j', 411.07, -2715.6, 930.2876],
-        ['COL', 8, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
-        [                   'j', 2094.32, 1075.57, -735.1998],
-        ['COL', 8, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
-        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
-        ['COL', 8, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
-        [                   'j', 4026.48, 2067.87, -1413.4731],
-        ['COL', 8, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
-        [                   'j', 4125.0, 5045.18, -2522.6509],
-        ['COL', 8, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
-        [                   'j', 2254.45, -1768.9, 283.1811],
-        ['COL', 8, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
-        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
-        ['COL', 8, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
-        [                   'j', 411.07, -2715.6, 930.2876],
-        ['COL', 9, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
-        [                   'j', 2094.32, 1075.57, -735.1998],
-        ['COL', 9, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
-        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
-        ['COL', 9, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
-        [                   'j', 4026.48, 2067.87, -1413.4731],
-        ['COL', 9, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
-        [                   'j', 4125.0, 5045.18, -2522.6509],
-        ['COL', 9, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
-        [                   'j', 2254.45, -1768.9, 283.1811],
-        ['COL', 9, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
-        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
-        ['COL', 9, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
-        [                   'j', 411.07, -2715.6, 930.2876],
-        ['COL', 10, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
-        [                   'j', 2094.32, 1075.57, -735.1998],
-        ['COL', 10, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
-        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
-        ['COL', 10, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
-        [                   'j', 4026.48, 2067.87, -1413.4731],
-        ['COL', 10, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
-        [                   'j', 4125.0, 5045.18, -2522.6509],
-        ['COL', 10, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
-        [                   'j', 2254.45, -1768.9, 283.1811],
-        ['COL', 10, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
-        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
-        ['COL', 10, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
-        [                   'j', 411.07, -2715.6, 930.2876],
-        ['COL', 11, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
-        [                   'j', 2094.32, 1075.57, -735.1998],
-        ['COL', 11, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
-        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
-        ['COL', 11, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
-        [                   'j', 4026.48, 2067.87, -1413.4731],
-        ['COL', 11, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
-        [                   'j', 4125.0, 5045.18, -2522.6509],
-        ['COL', 11, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
-        [                   'j', 2254.45, -1768.9, 283.1811],
-        ['COL', 11, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
-        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
-        ['COL', 11, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
-        [                   'j', 411.07, -2715.6, 930.2876],
-        ['COL', 12, '1.4 D', 'i', 2409.32, 1075.57, 340.37440000000004],
-        [                   'j', 2094.32, 1075.57, -735.1998],
-        ['COL', 12, '1.2 D + L', 'i', 3459.72, 1638.14, 518.4021],
-        [                   'j', 3189.72, 1638.14, -1119.7349000000002],
-        ['COL', 12, '1.2 D + 1.6 L', 'i', 4296.48, 2067.87, 654.3937000000001],
-        [                   'j', 4026.48, 2067.87, -1413.4731],
-        ['COL', 12, '1.2 D + 1.4 E + L', 'i', 4395.0, 5045.18, 2522.5261],
-        [                   'j', 4125.0, 5045.18, -2522.6509],
-        ['COL', 12, '1.2 D - 1.4 E + L', 'i', 2524.45, -1768.9, -1485.7219],
-        [                   'j', 2254.45, -1768.9, 283.1811],
-        ['COL', 12, '0.9 D + 1.4 E', 'i', 2484.13, 4098.48, 2222.9361],
-        [                   'j', 2281.63, 4098.48, -1875.5445000000002],
-        ['COL', 12, '0.9 D - 1.4 E', 'i', 613.57, -2715.6, -1785.3118],
-        [                   'j', 411.07, -2715.6, 930.2876],
-        ['VIGA', 13, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
-        [                   'j', 1075.57, -2094.32, 735.1998],
-        ['VIGA', 13, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
-        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
-        ['VIGA', 13, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
-        [                   'j', 2067.87, -4026.48, 1413.4731],
-        ['VIGA', 13, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
-        [                   'j', 1638.14, -4125.0, 2522.6509],
-        ['VIGA', 13, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
-        [                   'j', 1638.14, -2254.45, -283.1811],
-        ['VIGA', 13, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
-        [                   'j', 691.44, -2281.63, 1875.5445000000002],
-        ['VIGA', 13, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
-        [                   'j', 691.44, -411.07, -930.2876],
-        ['VIGA', 14, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
-        [                   'j', 1075.57, -2094.32, 735.1998],
-        ['VIGA', 14, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
-        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
-        ['VIGA', 14, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
-        [                   'j', 2067.87, -4026.48, 1413.4731],
-        ['VIGA', 14, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
-        [                   'j', 1638.14, -4125.0, 2522.6509],
-        ['VIGA', 14, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
-        [                   'j', 1638.14, -2254.45, -283.1811],
-        ['VIGA', 14, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
-        [                   'j', 691.44, -2281.63, 1875.5445000000002],
-        ['VIGA', 14, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
-        [                   'j', 691.44, -411.07, -930.2876],
-        ['VIGA', 15, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
-        [                   'j', 1075.57, -2094.32, 735.1998],
-        ['VIGA', 15, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
-        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
-        ['VIGA', 15, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
-        [                   'j', 2067.87, -4026.48, 1413.4731],
-        ['VIGA', 15, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
-        [                   'j', 1638.14, -4125.0, 2522.6509],
-        ['VIGA', 15, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
-        [                   'j', 1638.14, -2254.45, -283.1811],
-        ['VIGA', 15, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
-        [                   'j', 691.44, -2281.63, 1875.5445000000002],
-        ['VIGA', 15, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
-        [                   'j', 691.44, -411.07, -930.2876],
-        ['VIGA', 16, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
-        [                   'j', 1075.57, -2094.32, 735.1998],
-        ['VIGA', 16, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
-        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
-        ['VIGA', 16, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
-        [                   'j', 2067.87, -4026.48, 1413.4731],
-        ['VIGA', 16, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
-        [                   'j', 1638.14, -4125.0, 2522.6509],
-        ['VIGA', 16, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
-        [                   'j', 1638.14, -2254.45, -283.1811],
-        ['VIGA', 16, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
-        [                   'j', 691.44, -2281.63, 1875.5445000000002],
-        ['VIGA', 16, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
-        [                   'j', 691.44, -411.07, -930.2876],
-        ['VIGA', 17, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
-        [                   'j', 1075.57, -2094.32, 735.1998],
-        ['VIGA', 17, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
-        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
-        ['VIGA', 17, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
-        [                   'j', 2067.87, -4026.48, 1413.4731],
-        ['VIGA', 17, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
-        [                   'j', 1638.14, -4125.0, 2522.6509],
-        ['VIGA', 17, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
-        [                   'j', 1638.14, -2254.45, -283.1811],
-        ['VIGA', 17, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
-        [                   'j', 691.44, -2281.63, 1875.5445000000002],
-        ['VIGA', 17, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
-        [                   'j', 691.44, -411.07, -930.2876],
-        ['VIGA', 18, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
-        [                   'j', 1075.57, -2094.32, 735.1998],
-        ['VIGA', 18, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
-        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
-        ['VIGA', 18, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
-        [                   'j', 2067.87, -4026.48, 1413.4731],
-        ['VIGA', 18, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
-        [                   'j', 1638.14, -4125.0, 2522.6509],
-        ['VIGA', 18, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
-        [                   'j', 1638.14, -2254.45, -283.1811],
-        ['VIGA', 18, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
-        [                   'j', 691.44, -2281.63, 1875.5445000000002],
-        ['VIGA', 18, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
-        [                   'j', 691.44, -411.07, -930.2876],
-        ['VIGA', 19, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
-        [                   'j', 1075.57, -2094.32, 735.1998],
-        ['VIGA', 19, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
-        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
-        ['VIGA', 19, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
-        [                   'j', 2067.87, -4026.48, 1413.4731],
-        ['VIGA', 19, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
-        [                   'j', 1638.14, -4125.0, 2522.6509],
-        ['VIGA', 19, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
-        [                   'j', 1638.14, -2254.45, -283.1811],
-        ['VIGA', 19, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
-        [                   'j', 691.44, -2281.63, 1875.5445000000002],
-        ['VIGA', 19, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
-        [                   'j', 691.44, -411.07, -930.2876],
-        ['VIGA', 20, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
-        [                   'j', 1075.57, -2094.32, 735.1998],
-        ['VIGA', 20, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
-        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
-        ['VIGA', 20, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
-        [                   'j', 2067.87, -4026.48, 1413.4731],
-        ['VIGA', 20, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
-        [                   'j', 1638.14, -4125.0, 2522.6509],
-        ['VIGA', 20, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
-        [                   'j', 1638.14, -2254.45, -283.1811],
-        ['VIGA', 20, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
-        [                   'j', 691.44, -2281.63, 1875.5445000000002],
-        ['VIGA', 20, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
-        [                   'j', 691.44, -411.07, -930.2876],
-        ['VIGA', 21, '1.4 D', 'i', 1075.57, 2094.32, 735.1998],
-        [                   'j', 1075.57, -2094.32, 735.1998],
-        ['VIGA', 21, '1.2 D + L', 'i', 1638.14, 3189.72, 1119.7349000000002],
-        [                   'j', 1638.14, -3189.72, 1119.7349000000002],
-        ['VIGA', 21, '1.2 D + 1.6 L', 'i', 2067.87, 4026.48, 1413.4731],
-        [                   'j', 2067.87, -4026.48, 1413.4731],
-        ['VIGA', 21, '1.2 D + 1.4 E + L', 'i', 1638.14, 2254.45, -283.1811],
-        [                   'j', 1638.14, -4125.0, 2522.6509],
-        ['VIGA', 21, '1.2 D - 1.4 E + L', 'i', 1638.14, 4125.0, 2522.6509],
-        [                   'j', 1638.14, -2254.45, -283.1811],
-        ['VIGA', 21, '0.9 D + 1.4 E', 'i', 691.44, 411.07, -930.2876],
-        [                   'j', 691.44, -2281.63, 1875.5445000000002],
-        ['VIGA', 21, '0.9 D - 1.4 E', 'i', 691.44, 2281.63, 1875.5445000000002],
-        [                   'j', 691.44, -411.07, -930.2876],
-    ]
-}
-
-largosC=[[3,3,3,3],[3,3,3,3],[3,3,3,3]]
-largosV=[[7,7,7],[7,7,7],[7,7,7]]
-
-combis = 7
-combi_e = 4
-combi_s = 3
-tab = tabla['body']
-
-def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
-    bars1=[[tab[i-1]+tab[i] for j in range(2) if j==1]
-            for i in range(len(tab)) if i%2!=0]
-    bars2=[bars1[i][0] for i in range(len(bars1))]
-    bars=[[bars2[i] for i in range(combis*j, combis*j+combis)]
-            for j in range(int(len(bars2)/combis))]
-    bars_e1=[bars2[i] for i in range(len(bars2)) if 'E' in bars2[i][2]]
-    bars_s1=[bars2[i] for i in range(len(bars2)) if 'E' not in bars2[i][2]]
-    bars_e=[[bars_e1[i] for i in range(combi_e*j, combi_e*j+combi_e)]
-            for j in range(int(len(bars_e1)/combi_e))]
-    bars_s=[[bars_s1[i] for i in range(combi_s*j, combi_s*j+combi_s)]
-            for j in range(int(len(bars_s1)/combi_s))]
-    col_e=[[bars_e[j][i] for i in range(0, combi_e)] for j in range(len(bars_e))
-            if bars_e[j][0][0]=='COL']
-    col_s=[[bars_s[j][i] for i in range(0, combi_s) if bars_s[j][i][2]!='1.2 D + L']
-            for j in range(len(bars_s)) if bars_s[j][0][0]=='COL']
-    col_dl=[[bars_s[j][i] for i in range(0, combi_s) if bars_s[j][i][2]=='1.2 D + L']
-            for j in range(len(bars_s)) if bars_s[j][0][0]=='COL']
-    vig_e=[[bars_e[j][i] for i in range(0, combi_e)]
-            for j in range(len(bars_e)) if bars_e[j][0][0]=='VIGA']
-    vig_s=[[bars_s[j][i] for i in range(0, combi_s)if bars_s[j][i][2]!='1.2 D + L']
-            for j in range(len(bars_s)) if bars_s[j][0][0]=='VIGA']
-    vig_dl=[[bars_s[j][i] for i in range(0, combi_s)if bars_s[j][i][2]=='1.2 D + L']
-            for j in range(len(bars_s)) if bars_s[j][0][0]=='VIGA']
-
-    maTrix_ij = lambda lista:[[[round(lista[k][j][i],1) for j in range(len(lista[0]))]
-                               for i in [5,9]] for k in range(len(lista))]
-
-    maxTrix_i = lambda lista:[[round(max([lista[k][j][i] for j in range(len(lista[0]))]),2)
-                               for i in [4,5,6]] for k in range(len(lista))]
-    minTrix_i = lambda lista:[[round(min([lista[k][j][i] for j in range(len(lista[0]))]),2)
-                               for i in [4,5,6]] for k in range(len(lista))]
-    maxTrix_j = lambda lista:[[round(max([lista[k][j][i] for j in range(len(lista[0]))]),2)
-                               for i in [8,9,10]] for k in range(len(lista))]
-    minTrix_j = lambda lista:[[round(min([lista[k][j][i] for j in range(len(lista[0]))]),2)
-                               for i in [8,9,10]] for k in range(len(lista))]
-
-    npisos, nbahias = len(col_e)-len(vig_e), int(len(vig_e)/(len(col_e)-len(vig_e)))
-
-    forma_col = lambda lista, nbahias, npisos:[
-        [lista[j] for j in range(i*(nbahias+1), (i+1)*(nbahias+1))] for i in range(npisos)]
-    forma_vig = lambda lista, nbahias, npisos:[
-        [lista[j] for j in range(i*(nbahias), (i+1)*(nbahias))] for i in range(npisos)]
-
-    max_col_ei = forma_col(maxTrix_i(col_e),nbahias,npisos)
-    max_col_si = forma_col(maxTrix_i(col_s),nbahias,npisos)
-    max_col_dli = forma_col(maxTrix_i(col_dl),nbahias,npisos)
-
-    min_col_ei = forma_col(minTrix_i(col_e),nbahias,npisos)
-    min_col_si = forma_col(minTrix_i(col_s),nbahias,npisos)
-    min_col_dli = forma_col(minTrix_i(col_dl),nbahias,npisos)
-
-    max_col_ej = forma_col(maxTrix_j(col_e),nbahias,npisos)
-    max_col_sj = forma_col(maxTrix_j(col_s),nbahias,npisos)
-    max_col_dlj = forma_col(maxTrix_j(col_dl),nbahias,npisos)
-
-    min_col_ej = forma_col(minTrix_j(col_e),nbahias,npisos)
-    min_col_sj = forma_col(minTrix_j(col_s),nbahias,npisos)
-    min_col_dlj = forma_col(minTrix_j(col_dl),nbahias,npisos)
-
-    mat_col_e = forma_col(maTrix_ij(col_e),nbahias,npisos)
-    mat_col_s = forma_col(maTrix_ij(col_s),nbahias,npisos)
-
-    max_vig_ei = forma_vig(maxTrix_i(vig_e),nbahias,npisos)
-    max_vig_si = forma_vig(maxTrix_i(vig_s),nbahias,npisos)
-    max_vig_dli = forma_vig(maxTrix_i(vig_dl),nbahias,npisos)
-
-    min_vig_ei = forma_vig(minTrix_i(vig_e),nbahias,npisos)
-    min_vig_si = forma_vig(minTrix_i(vig_s),nbahias,npisos)
-    min_vig_dli = forma_vig(minTrix_i(vig_dl),nbahias,npisos)
-
-    max_vig_ej = forma_vig(maxTrix_j(vig_e),nbahias,npisos)
-    max_vig_sj = forma_vig(maxTrix_j(vig_s),nbahias,npisos)
-    max_vig_dlj = forma_vig(maxTrix_j(vig_dl),nbahias,npisos)
-
-    min_vig_ej = forma_vig(minTrix_j(vig_e),nbahias,npisos)
-    min_vig_sj = forma_vig(minTrix_j(vig_s),nbahias,npisos)
-    min_vig_dlj = forma_vig(minTrix_j(vig_dl),nbahias,npisos)
-
-    mat_vig_e = forma_vig(maTrix_ij(vig_e),nbahias,npisos)
-    mat_vig_s = forma_vig(maTrix_ij(vig_s),nbahias,npisos)
-
-    matCorte_col=[mat_col_e,mat_col_s]
-    matCorte_vig=[mat_vig_e,mat_vig_s]
-
-    #'axial', 'corte', 'momento'
-    listaV=[]
-    for i in range(len(max_vig_ei)):
-        lista1=[]
-        lista2=[]
-        for j in range(len(max_vig_ei[i])):
-            lista1=[[round(max_vig_si[i][j][1]/1000,2), round(max_vig_ei[i][j][1]/1000,2),
-                     round(max(max_vig_ei[i][j][2],max_vig_si[i][j][2])/1000,2),
-                     round(min(min_vig_ei[i][j][2],min_vig_si[i][j][2])/1000,2),round(max_vig_dli[i][j][1]/1000,2),
-                     largosV[i][j],mat_vig_s[i][j][0],mat_vig_e[i][j][0]],
-                    [round(max_vig_sj[i][j][1]/1000,2), round(max_vig_ej[i][j][1]/1000,2),
-                     round(max(max_vig_ej[i][j][2],max_vig_sj[i][j][2])/1000,2),
-                     round(min(min_vig_ej[i][j][2],min_vig_sj[i][j][2])/1000,2),round(max_vig_dlj[i][j][1]/1000,2),
-                     largosV[i][j],mat_vig_s[i][j][1],mat_vig_e[i][j][1]]]
-            lista2.append(lista1)
-        listaV.append(lista2)
-    listaC=[]
-    for i in range(len(max_col_ei)):
-        lista1=[]
-        lista2=[]
-        for j in range(len(max_col_ei[i])):
-            #[vue, vu, .....]
-            lista1=[[round(max(max_col_ei[i][j][0], max_col_si[i][j][0])/1000,2),round(max_col_si[i][j][1]/1000,2),
-                     round(max_col_ei[i][j][1]/1000,2), round(max(max_col_ei[i][j][2],max_col_si[i][j][2],
-                                              abs(min_col_ei[i][j][2]),abs(min_col_si[i][j][2]))/1000,2),
-                     round(max_col_dli[i][j][1]/1000,2), largosC[i][j],mat_col_s[i][j][0],mat_col_e[i][j][0]],
-                    [round(max(max_col_ej[i][j][0], max_col_sj[i][j][0])/1000,2), round(max_col_sj[i][j][1]/1000,2),
-                     round(max_col_ej[i][j][1]/1000,2), round(max(max_col_ej[i][j][2],max_col_sj[i][j][2],
-                                              abs(min_col_ej[i][j][2]),abs(min_col_sj[i][j][2]))/1000,2),
-                     round(max_col_dlj[i][j][1]/1000,2), largosC[i][j],mat_col_s[i][j][1],mat_col_e[i][j][1]]]
-            lista2.append(lista1)
-        listaC.append(lista2)
-    # listaVmax=[[[max(i[j][0][k], i[j][1][k]) for k in range(len(i[j][0]))] for j in range(len(i))] for i in listaV]
-    # listaCmax=[[[max(i[j][0][k], i[j][1][k]) for k in range(len(i[j][0]))] for j in range(len(i))] for i in listaC]
-    # return [listaV,listaVmax, listaC, listaCmax]
-    return [listaV, listaC]
-
-# asdf = filtroCV(combis, combi_e, combi_s, tab, largosV, largosC)
-# print(asdf)
-
-# #crear una función
-#
-# #columnas corte estático
-# ccs=asdf[1][0]
-# #columnas corte sísmico
-# cce=asdf[1][1]
-# #vigas corte estático
-# cvs=asdf[2][0]
-# #vigas corte sísmico
-# cve=asdf[2][1]
-#
-# corte2=lambda v1,v2,x1,lo: round(v1-x1*(v1-v2)/lo,1)
-# lo=700
-# x1=120
-# #piso
-# phis=0.75
-# phie=0.6
-# for i in cve:
-#     # print(i)
-#     #elemento
-#     for j in i:
-#         # print(j)
-#         for k in range(len(j[0])):
-#             vi = j[0][k]
-#             vj = j[1][k]
-#             #llamar a x1 y lo desde una lista
-#             v2 = corte2(vi,vj,x1,lo)
-#             phiv2 = round(v2/phie,1)
-#             print(vi,vj,v2,phiv2)
-
-# print(asdf[1])
-# for i in asdf[1]:
-#     print(i)
-#     for j in i:
-#         print(j)
-#         for k in j:
-#             print(k)
-#             for l in k:
-#                 print(l)
-#                 for m in l:
-#                     print(m)
-                    # ci=asdf[1][i][j][k][l][0]
-                    # cj=asdf[1][i][j][k][l][1]
-                    # c2=corte2(ci,cj,x1,lo)
-                    # print("i = ",ci,"j = ",cj,"c2 = ",c2)
-
-
-# matrices=filtroCV(combis, combi_e, combi_s, tab, largosV, largosC)
-# # matvig, matcol = matrices[1], matrices[3]
-# print(matrices)
-# # toda2 = OptimusFrame(matvig, matcol, fc, fy, 75000, 7850000, 70, 40, 60)
+# optf = OptimusFrame2(matvig, matcol, fc, fy, cH, cS, hmaxV, bmaxV, hmaxC)
