@@ -668,6 +668,7 @@ def V2vig(x1, lo, vuLsti, vueLsti, vuLstj, vueLstj, vupr, vc, state):
 
 print(V2vig(120, 700, vuLsti, vueLsti, vuLstj, vueLstj, 3000,1000,1))
 
+#cubica mitad de la viga solamente
 def minEstV(mpr1, mpr2, vuLSti, vueLSti, vuLstj, vueLstj, xList, deList, db, h, b, lo, dp, fy, fc, cS, wo):
     lo*=100
     Vc = vc(fc, b, h, dp)*1000
@@ -697,11 +698,11 @@ def minEstV(mpr1, mpr2, vuLSti, vueLSti, vuLstj, vueLstj, xList, deList, db, h, 
                 nr1, s1, de, nr2, s2 = i
                 Lest1 = est[nRam.index(nr1)]
                 Lest2 = est[nRam.index(nr2)]
-                ns1=int((xa1)/s1)
-                ns2=int((xa2-0.01)/s2)+1
+                ns1=int((xa1*2)/s1)
+                ns2=int((xa2-0.01)*2/s2)+1
                 mini = (cubEstV(h, dp, de, Lest1)*ns1+cubEstV(h, dp, de, Lest2)*ns2)*cS/1000000
                 X1 = xa1-5 if xa1 > 2*h else 2*h
-                X2 = x1+x2-X1
+                X2 = 2*((x1+x2)-X1)
                 if mini < minim:
                     minim = round(mini, 2)
                     #[costo, dist rot, n° ramas, espaciamiento, n° estribos, dist de rotula al centro, n° ramas, espaciamiento, n° estribos, de]
