@@ -651,12 +651,25 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     costo_total = lista1[0]+lista2[0]+lista3[0]
     return [costo_total, lista1, lista2, lista3]
 
-print(minEstC(70, 80, 5, 3, 12, 10, [5, 18, 32, 45], [10,12], 18, 50, 50, 5, 4200, 250,7850000))
+# print(minEstC(70, 80, 5, 3, 12, 10, [5, 18, 32, 45], [10,12], 18, 50, 50, 5, 4200, 250,7850000))
 
-def minEstV(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, wo):
+vuLsti = [2094.3, 4026.5]
+vueLsti = [2254.4, 4125.0, 411.1, 2281.6]
+vuLstj = [-2094.3, -4026.5]
+vueLstj = [-4125.0, -2254.4, -2281.6, -411.1]
+
+def V2vig(x1, lo, vuLsti, vueLsti, vuLstj, vueLstj, vupr, vc, state):
+    vc = vc if state==1 else 0
+    v2Calc = lambda v1, v2, x1, lo: round(v1 - x1 * (v1 - v2) / lo, 1)
+    vupr2 = v2Calc(vupr,-vupr,x1,lo)/0.75-vc
+    vu2 = max([v2Calc(vuLsti[i],vuLstj[i], x1, lo) for i in range(len(vuLsti))])/0.75-vc
+    vue2 = max([v2Calc(vueLsti[i],vueLstj[i], x1, lo) for i in range(len(vueLsti))])/0.6
+    return round(max(vupr2,vu2, vue2),1)
+
+print(V2vig(120, 700, vuLsti, vueLsti, vuLstj, vueLstj, 3000,1000,1))
+
+def minEstV(mpr1, mpr2, vuLSti, vueLSti, vuLstj, vueLstj, xList, deList, db, h, b, lo, dp, fy, fc, cS, wo):
     lo*=100
-    vu = vu*1000
-    vue = vue*1000
     Vc = vc(fc, b, h, dp)*1000
     vupr = round(vprV(h, b, lo, mpr1, mpr2,wo),3)*1000
     smax = sMax(fc, b, h, dp, 20)
@@ -672,10 +685,9 @@ def minEstV(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, wo
     Lout=[]
     for n in range(x1, x1 + 25, 5):
         xa1 = n
-        xa2 = (x1+x2)-xa1
-        vsB1 = round(max((vu-Vc)/.75, vupr/0.75, vue/0.6), 2)
-        vupr2 = round(vupr*(1-(2*xa1)/(xa1+xa2)), 2)
-        vsB2 = round(max(vu*(1-(2*xa1)/(xa1+xa2)), (vupr2-Vc)/0.75), 2)
+        xa2 = (x1 + x2) - xa1
+        vsB1 = V2vig(xa1,lo,vuLsti,vueLsti,vuLstj,vueLstj,vupr,Vc,0)
+        vsB2 = V2vig(xa1,lo,vuLsti,vueLsti,vuLstj,vueLstj,vupr,Vc,1)
         lista=[[i,j,k,l,m] for i in nRam for j in sL1 for k in deList for l in nRam
         for m in sL2 if vsB1/(fy*(h-dp))<=i*aCir(k)/j<=vsL/(fy*(h-dp))
         and vsB2/(fy*(h-dp))<=l*(aCir(k))/m<=vsL/(fy*(h-dp))]
@@ -697,7 +709,9 @@ def minEstV(mpr1, mpr2, vu, vue, xList, deList, db, h, b, lo, dp, fy, fc, cS, wo
             return Lout
         else:
             return "Error, aumentar ancho de elemento"
-#
+
+print(minEstV(20, 25, vuLsti, vueLsti, vuLstj, vueLstj, [5, 15, 25], [10, 12], 18, 50, 50, 7, 5, 4200, 250, 7850000, 1))
+
 # """ Datos de entrada ficticios para testeo de funciones en conjunto """
 #
 #[Vu, Vue, Mpp, Mnn, 1.2D+L, lo]
@@ -1197,6 +1211,10 @@ def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
             for j in range(len(bars_s)) if bars_s[j][0][0]=='VIGA']
     vig_dl=[[bars_s[j][i] for i in range(0, combi_s)if bars_s[j][i][2]=='1.2 D + L']
             for j in range(len(bars_s)) if bars_s[j][0][0]=='VIGA']
+
+    maTrix_ij = lambda lista:[[[round(lista[k][j][i],1) for j in range(len(lista[0]))]
+                               for i in [5,9]] for k in range(len(lista))]
+
     maxTrix_i = lambda lista:[[round(max([lista[k][j][i] for j in range(len(lista[0]))]),2)
                                for i in [4,5,6]] for k in range(len(lista))]
     minTrix_i = lambda lista:[[round(min([lista[k][j][i] for j in range(len(lista[0]))]),2)
@@ -1205,7 +1223,9 @@ def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
                                for i in [8,9,10]] for k in range(len(lista))]
     minTrix_j = lambda lista:[[round(min([lista[k][j][i] for j in range(len(lista[0]))]),2)
                                for i in [8,9,10]] for k in range(len(lista))]
+
     npisos, nbahias = len(col_e)-len(vig_e), int(len(vig_e)/(len(col_e)-len(vig_e)))
+
     forma_col = lambda lista, nbahias, npisos:[
         [lista[j] for j in range(i*(nbahias+1), (i+1)*(nbahias+1))] for i in range(npisos)]
     forma_vig = lambda lista, nbahias, npisos:[
@@ -1227,6 +1247,9 @@ def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
     min_col_sj = forma_col(minTrix_j(col_s),nbahias,npisos)
     min_col_dlj = forma_col(minTrix_j(col_dl),nbahias,npisos)
 
+    mat_col_e = forma_col(maTrix_ij(col_e),nbahias,npisos)
+    mat_col_s = forma_col(maTrix_ij(col_s),nbahias,npisos)
+
     max_vig_ei = forma_vig(maxTrix_i(vig_e),nbahias,npisos)
     max_vig_si = forma_vig(maxTrix_i(vig_s),nbahias,npisos)
     max_vig_dli = forma_vig(maxTrix_i(vig_dl),nbahias,npisos)
@@ -1243,6 +1266,12 @@ def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
     min_vig_sj = forma_vig(minTrix_j(vig_s),nbahias,npisos)
     min_vig_dlj = forma_vig(minTrix_j(vig_dl),nbahias,npisos)
 
+    mat_vig_e = forma_vig(maTrix_ij(vig_e),nbahias,npisos)
+    mat_vig_s = forma_vig(maTrix_ij(vig_s),nbahias,npisos)
+
+    matCorte_col=[mat_col_e,mat_col_s]
+    matCorte_vig=[mat_vig_e,mat_vig_s]
+
     #'axial', 'corte', 'momento'
     listaV=[]
     for i in range(len(max_vig_ei)):
@@ -1251,10 +1280,12 @@ def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
         for j in range(len(max_vig_ei[i])):
             lista1=[[round(max_vig_si[i][j][1]/1000,2), round(max_vig_ei[i][j][1]/1000,2),
                      round(max(max_vig_ei[i][j][2],max_vig_si[i][j][2])/1000,2),
-                     round(min(min_vig_ei[i][j][2],min_vig_si[i][j][2])/1000,2),round(max_vig_dli[i][j][1]/1000,2), largosV[i][j]],
+                     round(min(min_vig_ei[i][j][2],min_vig_si[i][j][2])/1000,2),round(max_vig_dli[i][j][1]/1000,2),
+                     largosV[i][j],mat_vig_s[i][j][0],mat_vig_e[i][j][0]],
                     [round(max_vig_sj[i][j][1]/1000,2), round(max_vig_ej[i][j][1]/1000,2),
                      round(max(max_vig_ej[i][j][2],max_vig_sj[i][j][2])/1000,2),
-                     round(min(min_vig_ej[i][j][2],min_vig_sj[i][j][2])/1000,2),round(max_vig_dlj[i][j][1]/1000,2), largosV[i][j]]]
+                     round(min(min_vig_ej[i][j][2],min_vig_sj[i][j][2])/1000,2),round(max_vig_dlj[i][j][1]/1000,2),
+                     largosV[i][j],mat_vig_s[i][j][1],mat_vig_e[i][j][1]]]
             lista2.append(lista1)
         listaV.append(lista2)
     listaC=[]
@@ -1266,19 +1297,69 @@ def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
             lista1=[[round(max(max_col_ei[i][j][0], max_col_si[i][j][0])/1000,2),round(max_col_si[i][j][1]/1000,2),
                      round(max_col_ei[i][j][1]/1000,2), round(max(max_col_ei[i][j][2],max_col_si[i][j][2],
                                               abs(min_col_ei[i][j][2]),abs(min_col_si[i][j][2]))/1000,2),
-                     round(max_col_dli[i][j][1]/1000,2), largosC[i][j]],
+                     round(max_col_dli[i][j][1]/1000,2), largosC[i][j],mat_col_s[i][j][0],mat_col_e[i][j][0]],
                     [round(max(max_col_ej[i][j][0], max_col_sj[i][j][0])/1000,2), round(max_col_sj[i][j][1]/1000,2),
                      round(max_col_ej[i][j][1]/1000,2), round(max(max_col_ej[i][j][2],max_col_sj[i][j][2],
                                               abs(min_col_ej[i][j][2]),abs(min_col_sj[i][j][2]))/1000,2),
-                     round(max_col_dlj[i][j][1]/1000,2), largosC[i][j]]]
+                     round(max_col_dlj[i][j][1]/1000,2), largosC[i][j],mat_col_s[i][j][1],mat_col_e[i][j][1]]]
             lista2.append(lista1)
         listaC.append(lista2)
-    listaVmax=[[[max(i[j][0][k], i[j][1][k]) for k in range(len(i[j][0]))] for j in range(len(i))] for i in listaV]
-    listaCmax=[[[max(i[j][0][k], i[j][1][k]) for k in range(len(i[j][0]))] for j in range(len(i))] for i in listaC]
+    # listaVmax=[[[max(i[j][0][k], i[j][1][k]) for k in range(len(i[j][0]))] for j in range(len(i))] for i in listaV]
+    # listaCmax=[[[max(i[j][0][k], i[j][1][k]) for k in range(len(i[j][0]))] for j in range(len(i))] for i in listaC]
     # return [listaV,listaVmax, listaC, listaCmax]
-    return listaV
+    return [listaV, listaC]
 
-matrices=filtroCV(combis, combi_e, combi_s, tab, largosV, largosC)
-# matvig, matcol = matrices[1], matrices[3]
-print(matrices)
-# toda2 = OptimusFrame(matvig, matcol, fc, fy, 75000, 7850000, 70, 40, 60)
+# asdf = filtroCV(combis, combi_e, combi_s, tab, largosV, largosC)
+# print(asdf)
+
+# #crear una función
+#
+# #columnas corte estático
+# ccs=asdf[1][0]
+# #columnas corte sísmico
+# cce=asdf[1][1]
+# #vigas corte estático
+# cvs=asdf[2][0]
+# #vigas corte sísmico
+# cve=asdf[2][1]
+#
+# corte2=lambda v1,v2,x1,lo: round(v1-x1*(v1-v2)/lo,1)
+# lo=700
+# x1=120
+# #piso
+# phis=0.75
+# phie=0.6
+# for i in cve:
+#     # print(i)
+#     #elemento
+#     for j in i:
+#         # print(j)
+#         for k in range(len(j[0])):
+#             vi = j[0][k]
+#             vj = j[1][k]
+#             #llamar a x1 y lo desde una lista
+#             v2 = corte2(vi,vj,x1,lo)
+#             phiv2 = round(v2/phie,1)
+#             print(vi,vj,v2,phiv2)
+
+# print(asdf[1])
+# for i in asdf[1]:
+#     print(i)
+#     for j in i:
+#         print(j)
+#         for k in j:
+#             print(k)
+#             for l in k:
+#                 print(l)
+#                 for m in l:
+#                     print(m)
+                    # ci=asdf[1][i][j][k][l][0]
+                    # cj=asdf[1][i][j][k][l][1]
+                    # c2=corte2(ci,cj,x1,lo)
+                    # print("i = ",ci,"j = ",cj,"c2 = ",c2)
+
+
+# matrices=filtroCV(combis, combi_e, combi_s, tab, largosV, largosC)
+# # matvig, matcol = matrices[1], matrices[3]
+# print(matrices)
+# # toda2 = OptimusFrame(matvig, matcol, fc, fy, 75000, 7850000, 70, 40, 60)
