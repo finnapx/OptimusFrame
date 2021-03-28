@@ -436,7 +436,7 @@ def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
     # return [listaV,listaVmax, listaC, listaCmax]
     return [listaV, listaC]
 
-print(filtroCV(combis, combi_e, combi_s, tab, largosV, largosC))
+# print(filtroCV(combis, combi_e, combi_s, tab, largosV, largosC))
 
 vuLsti = [2094.3, 4026.5]
 vueLsti = [2254.4, 4125.0, 411.1, 2281.6]
@@ -884,6 +884,19 @@ def estribosC(xList):
         Lestrib = []
     return lista, count
 
+def xLst(sup, b, dp):
+    mid = int(sup[0] / 2)
+    if sup[2]%2==0:
+        l1=[sup[1] for i in range(mid)]
+        l2=[sup[3] for i in range(sup[2])]
+    else:
+        l1=[sup[1] for i in range(mid)]
+        l2=[sup[3] for i in range(sup[2])]
+    lista=l1+l2+l1
+    xList=yLstC(dp, b, len(lista)-2)
+    return lista, xList
+
+
 #se toma el corte de entrada máximo para combinaciones estáticas y sísmicas simplemente como entrada
 def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS):
     salida1, salida2, salida3 = 0, 0, 0
@@ -934,9 +947,7 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
             lista1=[costo, nRam[i], j, k, l, s1, lo]
             salida1=1
     l_rot = lista1[3]
-    print(fy,db)
     l_emp = lEmp(fy, db)
-    print(l_emp)
     s2L = [[i, j, k] for i in range(len(nRam)) for j in deList for k in range(10, s+1)
            if vu2<=round(nRam[i]*aCir(j)*fy*(h-dp)/k, 1)<=vslim]
     if s2L==[]:
@@ -1015,7 +1026,6 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH,
                 #            pmC(alist, b, b1, cF2[0], es, eu, ey, fc, fy*1.25, h, ylist)[1])
                 mpr2 = mpr1
                 #agregar a entrada H, vu, vue, deList
-
                 if fu < 95 and fu2 < 95 and 0.01 <= cuan <= 0.06:
                     costo = round((aS*cS+(b*h-aS)*cH)/10000, 0)
                     if costo < minor:
@@ -1026,7 +1036,7 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH,
     if salida==1:
         return optimo, corte
     else:
-        return "no existe una combinación para las posibles dimensiones de la columna elegidas"
+        return 0
 
 # print(optimusCol(0.85, 5, 2100000, 0.003, 0.002, 250, 4200, 30, 100, 144, [16,18,22,25,28,32,36], 70, 75000, 7850000, 1))
 # from time import time
@@ -1037,7 +1047,7 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH,
 
 # print(optcol[0], "\n\n", optcol[1])
 
-def minEstV(mpr1, mpr2, vuLSti, vueLSti, vuLstj, vueLstj, xList, deList, db, h, b, lo, dp, fy, fc, cS, wo):
+def minEstV(mpr1, mpr2, vuLsti,vueLsti,vuLstj,vueLstj, xList, deList, db, h, b, lo, dp, fy, fc, cS, wo):
     lo*=100
     Vc = vc(fc, b, h, dp)*1000
     vupr = round(vprV(h, b, lo, mpr1, mpr2,wo),3)*1000
@@ -1077,14 +1087,23 @@ def minEstV(mpr1, mpr2, vuLSti, vueLSti, vuLstj, vueLstj, xList, deList, db, h, 
                     Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de]
     return Lout
 
-def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, ai, lo, cH, cS, v):
+vuLsti = [2094.3, 4026.5]
+vueLsti = [2254.4, 4125.0, 411.1, 2281.6]
+vuLstj = [-2094.3, -4026.5]
+vueLstj = [-4125.0, -2254.4, -2281.6, -411.1]
+allVu=[vuLsti,vueLsti,vuLstj,vueLstj]
+
+def optimusVig(mpp,mnn,es,eu,ey,b1,fc,fy,dp,dList,hmax,bmax,hmin,bmin,ai,lo,cH,cS,v,allVu,deList,wo):
+# def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, ai, lo, cH, cS, v):
     salida=0
     minim = 99999999
     hmax = hmax if hmax>=30 else 30
     bmax = bmax if bmax>=30 else 30
-    hList = [i for i in range(30, hmax+5,5)]
-    bList = [i for i in range(30, bmax+5,5)]
-    lista = ([i, j] for i in hList if i >= lo/16 for j in bList if i >= j and j >= 0.4*i)
+    hmin = hmin if hmin<=30 else 30
+    bmin = bmin if bmin<=30 else 30
+    hList = [i for i in range(hmin, hmax+5,5)]
+    bList = [i for i in range(bmin, bmax+5,5)]
+    lista = ([i, j] for i in hList if i >= 100*lo/16 for j in bList if i >= j and j >= 0.4*i)
     for h, b in lista:
         A1 = areaV(mpp, b, b1, h, fc, fy, dp)
         A2 = areaV(mnn, b, b1, h, fc, fy, dp)
@@ -1115,6 +1134,14 @@ def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, ai, lo, 
         c = cpn[0]
         cond = False
         eT = round(eu*abs(h-dp-c)/c, 4)
+        mpr1 = pmC(aSLst, b, b1, cpn[0], es, eu, ey, fc, fy * 1.25, h, ylst)[1]
+        mpr2 = pmC(alstrev, b, b1, cpnrev[0], es, eu, ey, fc, fy * 1.25, h, ylstrev)[1]
+        # es el mínimo
+        db=16
+        # db = max(max(L1[0][1],L1[0][3]), max(L1[1][1],L1[1][3]), max(lis[0][1],lis[0][3]))
+        # sup = L1[0]
+        sup=L1[0]
+        xlistV = xLst(sup, 30, 5)[1]
         if 0.025 >= cuan1 >= cumin and 0.025 >= cuan2 >= cumin\
                 and cpn[1] >= mnn and cpnrev[1] >= mpp:
             cond = True
@@ -1124,13 +1151,19 @@ def optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, ai, lo, 
                 FU = round(max(mnn/cpn[1], mpp/cpnrev[1]) * 100, 1)
                 listaT = [minim, h, b, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev,c , abs(mnn), abs(mpp), L1, lis,\
                          cpn[1], cpnrev[1], max(cpn[1],cpnrev[1])]
+                corte = minEstV(mpr1,mpr2,allVu[0],allVu[1],allVu[2],allVu[3],xlistV,deList, db,h,  b, lo, dp, fy, fc, cS, wo)
                 salida = 1
     if salida == 1:
-        return listaT
+        return listaT, corte
     else:
-        return "no existe una combinación para las posibles dimensiones de la viga elegidas"
+        return 0
+from time import time
+t1=time()
+optV=optimusVig(58.7,30.3,2100000,0.003,0.002,0.85,250,4200,5,[16,18,22,25,28,32,36],70,40,25,25,1,7,75000,7850000,5,allVu,[10,12],1)
+t2=time()-t1
+print(t2,"segundos")
 
-def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, mn, pn, asd):
+def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, mn, pn, titulo):
     PnMax = round((0.85*fc*(h*b-sum(alst))+sum(alst)*fy)/1000, 2)
     PnMaxPr = round(PnMax+sum(alst)*fy*0.25/1000, 2)
     PnMin = sum(alst)*-fy/1000
@@ -1157,24 +1190,29 @@ def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, mn, pn,
     Y1.append(Y1[-1])
     Y2.append(PnMax)
     Y3.append(PnMaxPr)
-    plt.figure(figsize=[4,6])
+    fig = plt.figure(figsize=[4,6], dpi=200)
     plt.plot(X1, Y1, label='ØMn - ØPn', color='steelblue')
     plt.plot(X2, Y2, label='Mn - Pn', color='crimson')
     plt.plot(X3, Y3, label='Mpr - Ppr', color='forestgreen')
     plt.plot([mu], [pu], marker='x', markersize=10, color='red', label='Mu - Pu', lw='1')
     res1 = resumen(alst, ce, b, dp, h, eu, fy, fc, b1, es, ey, ylst)
     plt.plot([0, mu], [0, pu], ls='--', color='black')
-    plt.plot([mu, mn], [pu, pn], ls='--', color='gray')
+    # plt.plot([mu, mn], [pu, pn], ls='--', color='gray')
     plt.xlabel('Mn[tonf-m]')
     plt.xlim([0, max(X3)+0.1])
     plt.ylabel('Pn[tonf]')
-    plt.title(asd)
+    plt.title(titulo)
     plt.legend()
     plt.grid()
     plt.show()
+    fig.savefig(titulo)
     return 0
 
-XYplotCurv([10.18, 5.09, 5.09, 10.18], 50, 50, 5, 0.003, 4200, 250, 0.85, 2100000, 0.002, [5, 18, 32, 45], 26.77, 30, 144, 159.9, 33.3, "tula")
+XYplotCurv([10.18, 5.09, 5.09, 10.18], 50, 50, 5, 0.003, 4200, 250, 0.85, 2100000, 0.002, [5, 18, 32, 45], 26.77, 30, 144, 159.9, 33.3, "Columna 1")
+
+
+
+
 
 
 # # """ Datos de entrada ficticios para testeo de funciones en conjunto """
