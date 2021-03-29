@@ -1034,7 +1034,7 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH,
                         salida=1
                         corte = minEstC(mpr1, mpr2, muC, H, vu, vue, ylist, deList, min(l, m), h, b, dp, fy, fc, cS)
     if salida==1:
-        return optimo, corte
+        return [optimo, corte]
     else:
         return 0
 
@@ -1136,10 +1136,10 @@ def optimusVig(mpp,mnn,es,eu,ey,b1,fc,fy,dp,dList,hmax,bmax,hmin,bmin,ai,lo,cH,c
         eT = round(eu*abs(h-dp-c)/c, 4)
         mpr1 = pmC(aSLst, b, b1, cpn[0], es, eu, ey, fc, fy * 1.25, h, ylst)[1]
         mpr2 = pmC(alstrev, b, b1, cpnrev[0], es, eu, ey, fc, fy * 1.25, h, ylstrev)[1]
-        # es el mínimo
-        db=16
-        # db = max(max(L1[0][1],L1[0][3]), max(L1[1][1],L1[1][3]), max(lis[0][1],lis[0][3]))
-        # sup = L1[0]
+        db = min([L1[0][1] if L1[0][1]>0 else 99
+                 ,L1[0][3] if L1[0][3]>0 else 99
+                 ,lis[1] if lis[1]>0 else 99
+                 ,lis[3] if lis[3]>0 else 99])
         sup=L1[0]
         xlistV = xLst(sup, 30, 5)[1]
         if 0.025 >= cuan1 >= cumin and 0.025 >= cuan2 >= cumin\
@@ -1162,6 +1162,7 @@ t1=time()
 optV=optimusVig(58.7,30.3,2100000,0.003,0.002,0.85,250,4200,5,[16,18,22,25,28,32,36],70,40,25,25,1,7,75000,7850000,5,allVu,[10,12],1)
 t2=time()-t1
 print(t2,"segundos")
+print(optV)
 
 def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, mn, pn, titulo):
     PnMax = round((0.85*fc*(h*b-sum(alst))+sum(alst)*fy)/1000, 2)
@@ -1208,63 +1209,8 @@ def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, mn, pn,
     fig.savefig(titulo)
     return 0
 
-XYplotCurv([10.18, 5.09, 5.09, 10.18], 50, 50, 5, 0.003, 4200, 250, 0.85, 2100000, 0.002, [5, 18, 32, 45], 26.77, 30, 144, 159.9, 33.3, "Columna 1")
+# XYplotCurv([10.18, 5.09, 5.09, 10.18], 50, 50, 5, 0.003, 4200, 250, 0.85, 2100000, 0.002, [5, 18, 32, 45], 26.77, 30, 144, 159.9, 33.3, "Columna 1")
 
-
-
-
-
-
-# # """ Datos de entrada ficticios para testeo de funciones en conjunto """
-# #
-# #[Vu, Vue, Mpp, Mnn, 1.2D+L, lo]
-# matvig = [[[20.8, 19.2, 28.6, 14.6, 5, 7],[20, 20, 26.9, 13.1, 5, 7],[19.2, 20.8, 28.6, 14.6, 5, 7]],
-#           [[20.7, 19.3, 28.4, 14.4, 5, 7],[20,20,26.8,13.2, 5, 7],[20.7, 19.3, 28.4, 14.4, 5, 7]],
-#            [[8.3, 7.6, 11.5, 6, 2, 7],[8, 8, 10.8, 5.2, 2, 7],[8.3, 7.6, 11.5, 6, 2, 7]]]
-#
-# #[Pu, Vu, Vue, Mu, H]
-# matcol = [[[46.1,3.4,3.4,9,3],[97.9,0.3,0.3,0.7,3],[97.9,0.3,0.3,0.7,3],[46.1,3.4,3.4,9,3]],
-#           [[26.9,6.4,6.4,13.1,3],[57,0.5,0.5,1,3],[57,0.5,0.5,1,3],[26.9,6.4,6.4,13.1,3]],
-#           [[7.6,4.7,4.7,10.2,3],[16.4,0.4,0.4,0.8,3],[16.4,0.4,0.4,0.8,3],[7.6,4.7,4.7,10.2,3]]]
-#
-# fy=4200
-# fc=170
-#
-# def OptimusFrame(matvig, matcol, fc, fy, cH, cS, hmaxV, bmaxV, hmaxC):
-#     beta1 = b1(fc)
-#     dp = 5
-#     es = 2100000
-#     eu = 0.003
-#     ey = 0.002
-#     dList = [12, 16, 18, 22, 25, 28, 32, 36]
-#     ai = 1
-#     deList = [10, 12]
-#     v = 5
-#     Mvig = matElemV(matvig, bmaxV, hmaxV, cH, cS, beta1, dp, es, ey, eu, fc, fy, dList, ai, deList, v)
-#     Mcol = matElemC(matcol, Mvig, fc, fy, hmaxC, beta1, dp, es, eu, ey, dList, cH, cS)
-#     listaC = []
-#     for i in range(len(matcol)):
-#         tempC = []
-#         for j in range(len(matcol[i])):
-#             mpr1 = resumen(Mcol[i][j][11], Mcol[i][j][9], Mcol[i][j][2], dp, Mcol[i][j][1], eu, fy, fc, beta1, es, ey, Mcol[i][j][12])[5]
-#             mpr2 = mpr1
-#             elem = minEstC(mpr1, mpr2, matcol[i][j][0], matcol[i][j][4], matcol[i][j][1], matcol[i][j][2], Mcol[i][j][12], deList, Mcol[i][j][5], Mcol[i][j][1], Mcol[i][j][2], dp, fy, fc, cS)
-#             tempC.append(elem)
-#         listaC.append(tempC)
-#     listaV = []
-#     # [Vu, Vue, Mpp, Mnn, 1.2D+L, lo]
-#     for i in range(len(matvig)):
-#         tempV = []
-#         for j in range(len(matvig[i])):
-#             resuVig1 = resumen(Mvig[i][j][3], Mvig[i][j][9], Mvig[i][j][2], dp, Mvig[i][j][1], eu, fy, fc, beta1, es, ey, Mvig[i][j][4])
-#             resuVig2 = resumen(Mvig[i][j][7], Mvig[i][j][9], Mvig[i][j][2], dp, Mvig[i][j][1], eu, fy, fc, beta1, es, ey, Mvig[i][j][8])
-#             sup = Mvig[i][j][12][0] if Mvig[i][j][12][0][0]+Mvig[i][j][12][0][2]>=Mvig[i][j][13][0]+Mvig[i][j][13][2] else Mvig[i][j][13]
-#             db = max(sup[1], sup[3])
-#             xlistV = xLst(sup, Mvig[i][j][2], dp)[1]
-#             elem = minEstV(resuVig1[5], resuVig2[5], matvig[i][j][0], matvig[i][j][1], xlistV, deList, db, Mvig[i][j][1], Mvig[i][j][2], matvig[i][j][5], dp, fy, fc, cS, matvig[i][j][4])
-#             tempV.append(elem)
-#         listaV.append(tempV)
-#     return Mvig, listaV, Mcol, listaC
-
-
+def optimusFrame():
+    pass
 
