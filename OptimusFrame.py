@@ -410,15 +410,18 @@ def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
         lista2=[]
         for j in range(len(max_col_ei[i])):
             #[vue, vu, .....]
+            # round(max_col_dli[i][j][1] / 1000, 2)
+            # round(max_col_dlj[i][j][1] / 1000, 2)
             lista1=[[round(max(max_col_ei[i][j][0], max_col_si[i][j][0])/1000,2),
                      round(min(min_col_ei[i][j][0], min_col_si[i][j][0])/1000,2), round(max_col_si[i][j][1]/1000,2),
                      round(max_col_ei[i][j][1]/1000,2), round(max(max_col_ei[i][j][2],max_col_si[i][j][2],
                                               abs(min_col_ei[i][j][2]),abs(min_col_si[i][j][2]))/1000,2),
-                     round(max_col_dli[i][j][1]/1000,2), largosC[i][j],mat_col_s[i][j][0],mat_col_e[i][j][0]],
-                    [round(max(max_col_ej[i][j][0], max_col_sj[i][j][0])/1000,2), round(max_col_sj[i][j][1]/1000,2),
+                     largosC[i][j],mat_col_s[i][j][0],mat_col_e[i][j][0]],
+                    [round(max(max_col_ej[i][j][0], max_col_sj[i][j][0])/1000,2),
+                     round(min(min_col_ej[i][j][0], min_col_sj[i][j][0])/1000,2), round(max_col_sj[i][j][1]/1000,2),
                      round(max_col_ej[i][j][1]/1000,2), round(max(max_col_ej[i][j][2],max_col_sj[i][j][2],
                                               abs(min_col_ej[i][j][2]),abs(min_col_sj[i][j][2]))/1000,2),
-                     round(max_col_dlj[i][j][1]/1000,2), largosC[i][j],mat_col_s[i][j][1],mat_col_e[i][j][1]]]
+                     largosC[i][j],mat_col_s[i][j][1],mat_col_e[i][j][1]]]
             lista2.append(lista1)
         listaC.append(lista2)
     # listaVmax=[[[max(i[j][0][k], i[j][1][k]) for k in range(len(i[j][0]))] for j in range(len(i))] for i in listaV]
@@ -619,6 +622,16 @@ def listadiam(A, b, dp, h, dList, v):
                         minimos = [L1, L2, round(amin, 2)]
     return minimos
 
+#[Vu, Vue, Mpp, Mnn, 1.2D+L, lo]
+matvig = [[[20.8, 19.2, 28.6, 14.6, 5, 7],[20, 20, 26.9, 13.1, 5, 7],[19.2, 20.8, 28.6, 14.6, 5, 7]],
+          [[20.7, 19.3, 28.4, 14.4, 5, 7],[20,20,26.8,13.2, 5, 7],[20.7, 19.3, 28.4, 14.4, 5, 7]],
+           [[8.3, 7.6, 11.5, 6, 2, 7],[8, 8, 10.8, 5.2, 2, 7],[8.3, 7.6, 11.5, 6, 2, 7]]]
+
+#[Pu, Vu, Vue, Mu, H]
+matcol = [[[46.1,3.4,3.4,9,3],[97.9,0.3,0.3,0.7,3],[97.9,0.3,0.3,0.7,3],[46.1,3.4,3.4,9,3]],
+          [[26.9,6.4,6.4,13.1,3],[57,0.5,0.5,1,3],[57,0.5,0.5,1,3],[26.9,6.4,6.4,13.1,3]],
+          [[7.6,4.7,4.7,10.2,3],[16.4,0.4,0.4,0.8,3],[16.4,0.4,0.4,0.8,3],[7.6,4.7,4.7,10.2,3]]]
+
 def critVC(vigas, columnas):
     crit = lambda lista: round(1.2*sum(lista[0])/sum(lista[1]), 4)
     temp1 = []
@@ -638,23 +651,31 @@ def critVC(vigas, columnas):
             temp2.append(temp3)
         temp1.append(temp2)
     newlist=temp1[1:]
+    new1=[]
     for j in newlist:
+        new2=[]
         for i in j:
             vig=i[0]
             col=i[1]
             z = crit(i)
             for j in range(len(col)):
-                col[j]=round(col[j] if z*col[j]<=col[j] else z*col[j], 1)
+                col[j]=round(col[j] if z*col[j]<=col[j] else z*col[j], 2)
+            new2.append(col[j])
+        new1.append(new2)
     critmat=[]
-    for i in range(len(temp1)):
+
+    for i in range(1,len(temp1)):
         critpis=[]
         for j in range(len(temp1[i])):
             if len(temp1[i][j][0])==1:
-                critpis.append(temp1[i][j][0][0])
+                critpis.append(temp1[i][j][1][0])
             else:
-                critpis.append(temp1[i][j][0][1])
+                critpis.append(temp1[i][j][1][1])
         critmat.append(critpis)
-    return list(reversed(critmat))
+    critmat=list(reversed(critmat))
+    critmat.append(critmat[-1])
+    return critmat
+
 
 def extMat(lista, indice):
     mat1=[]
@@ -1130,11 +1151,9 @@ def optimusVig(mpp,mnn,es,eu,ey,b1,fc,fy,dp,dList,dimV,ai,lo,cH,cS,v,allVu,deLis
                 corte = minEstV(mpr1,mpr2,allVu[0],allVu[1],allVu[2],allVu[3],xlistV,deList, db,h,  b, lo, dp, fy, fc, cS, wo)
                 salida = 1
     if salida == 1:
-        return listaT, corte
+        return [listaT, corte]
     else:
         return 0
-
-
 
 def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, mn, pn, titulo):
     PnMax = round((0.85*fc*(h*b-sum(alst))+sum(alst)*fy)/1000, 2)
@@ -1193,6 +1212,10 @@ dimV = [[[70,40,40,25],[70,40,40,25],[70,40,40,25]],
         [[70,40,40,25],[70,40,40,25],[70,40,40,25]],
         [[70,40,40,25],[70,40,40,25],[70,40,40,25]]]
 
+# dimV = [[[90,25,90,25],[90,25,90,25],[90,25,90,25]],
+#         [[90,25,90,25],[90,25,90,25],[90,25,90,25]],
+#         [[90,25,90,25],[90,25,90,25],[90,25,90,25]]]
+
 #falta crear lista completa
 def matElemV(lista, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai, deList, v):
     #se itera en la lista
@@ -1214,25 +1237,22 @@ def matElemV(lista, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai, deList, v):
         listaV.append(tempV)
     return listaV
 
-def matElemC(listaC, listaV, fc, fy, hmaxC, b1, dp, es, eu, ey, dList, cH, cS):
-    matvig=extMat(listaV, 16)
-    matcol=extMat(listaC, 3)
-    newMatC=critVC(matvig, matcol)
-    lista=replMat(listaC, newMatC, 3)
-    listaCol=[]
-    for i in lista:
-        tempC=[]
-        for j in i:
-            elem=optimusCol(b1, dp, es, eu, ey, fc, fy, j[3], j[0], dList, hmaxC, cH, cS, 1)
-            # optimusCol(b1,dp,es,eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH, cS, H, vu, vue, deList, iguales)
-            tempC.append(elem)
-        listaCol.append(tempC)
-    return listaCol
+# def matElemC(listaC, listaV, b1,dp,es,eu, ey, fc, fy, dList, cH, cS, H, deList):
+#     newMatC=critVC(listaV, listaC)
+#     lista=replMat(listaC, newMatC, 3)
+#     listaCol=[]
+#     for i in lista:
+#         tempC=[]
+#         for j in i:
+#             elem=optimusCol(b1,dp,es,eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH, cS, H, vu, vue, deList, 1)
+#             tempC.append(elem)
+#         listaCol.append(tempC)
+#     return listaCol
 
 cH, cS, b1, dp, es, ey, eu, fc, fy = 75000,7850000,0.85,5,2100000,0.002,0.003,250,4200
 dList, deList = [16,18,22,25,28,32,36],[10,12]
 
-def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, deList):
+def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, deList, hColMax, hColMin):
     dList=[16,18,22,25,28,32,36]
     deList=[10,12]
     combis = 7
@@ -1259,21 +1279,51 @@ def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
     maxLo = [max(i) for i in largosV]
     listaVig = [[[mpp2[i][j],mnn2[i][j],wo2[i][j],largosV[i][j],allVuL[i][j], dimV[i][j]]
        for i in range(len(listaV))] for j in range(len(listaV[0]))]
-    print(optimusVig(58.7, 30.3, 2100000, 0.003, 0.002, 0.85, 250, 4200, 5, [16, 18, 22, 25, 28, 32, 36],[60,60,30,30], 1, 7, 75000,
-          7850000, 5, listaVig[0][0][4], [10,12], 3))
-    # mpp, mnn, hmax, hmin, bmax, bmin, lo, wo, allVu
-    print(matElemV(listaVig, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, 1, deList, 5))
-    # optimusVig(mpp, mnn, es, eu, ey, b1, fc, fy, dp, dList, hmax, bmax, hmin, bmin, ai, lo, cH, cS, v, allVu, deList, wo)
-    # critVC(vigas, columnas)
+    detvig=matElemV(listaVig, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, 1, deList, 5)
+    listaCol =[[[max(abs(listaC[i][j][0][k]), abs(listaC[i][j][1][k])) for k in range(6)]
+                for j in range(len(listaC[0]))] for i in range(len(listaC))]
+    tempCol = extMat(listaCol, 4)
+    tempVig = [[round(max(abs(listaVig[i][j][0]),abs(listaVig[i][j][1])),1) for j in range(len(listaVig[0]))] for i in range(len(listaVig))]
+    colDef=replMat(listaCol,critVC(tempVig, tempCol),4)
+    detcol=[]
+    for i in colDef:
+        tempC=[]
+        for j in i:
+            elem=optimusCol(b1, dp, es, eu, ey, fc, fy, j[4], j[1], j[0], dList,hColMax, cH, cS, j[5], j[2], j[3], deList, 1)
+            tempC.append(elem)
+        detcol.append(tempC)
     # optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH, cS, H, vu, vue, deList, iguales)
+
     # XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, mn, pn, titulo)
     return 0
 
 # extMat(lista, indice)
 # replMat(lista1, lista2, indice)
+hColMax, hColMin = 70,30
 
-optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, deList)
+from time import time
+t1=time()
+# optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, deList, hColMax, hColMin)
+optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, deList, hColMax, hColMin)
+t2=time()-t1
+print("tiempo de ejecución",round(t2,5),"segundos")
+
 # print(optimusVig(2.52,abs(-0.93),2100000,0.003,0.002,0.85,250,4200,5,[16,18,22,25,28,32,36],
 #                               [70, 40, 40, 25],1,7,75000,7850000,5,
 #                  [[2094.3, 4026.5], [2254.4, 4125.0, 411.1, 2281.6], [-2094.3, -4026.5], [-4125.0, -2254.4, -2281.6, -411.1]],
 #                  [10,12],3.19))
+
+# def matElemC(listaC, listaV, fc, fy, hmaxC, b1, dp, es, eu, ey, dList, cH, cS):
+#     matvig=extMat(listaV, 16)
+#     matcol=extMat(listaC, 3)
+#     newMatC=critVC(matvig, matcol)
+#     lista=replMat(listaC, newMatC, 3)
+#     listaCol=[]
+#     for i in lista:
+#         tempC=[]
+#         for j in i:
+#             elem=optimusCol(b1, dp, es, eu, ey, fc, fy, j[3], j[0], dList, hmaxC, cH, cS, 1)
+#             # optimusCol(b1,dp,es,eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH, cS, H, vu, vue, deList, iguales)
+#             tempC.append(elem)
+#         listaCol.append(tempC)
+#     return listaCol
