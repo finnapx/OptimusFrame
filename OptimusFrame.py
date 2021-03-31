@@ -317,6 +317,10 @@ def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
             for j in range(int(len(bars_s1)/combi_s))]
     col_e=[[bars_e[j][i] for i in range(0, combi_e)] for j in range(len(bars_e))
             if bars_e[j][0][0]=='COL']
+    exc_col = [[max(abs(col_e[i][j][6]/col_e[i][j][4]),abs(col_e[i][j][10]/col_e[i][j][8]))
+                for i in range(len(col_e))] for j in range(len(col_e[0]))]
+    ex_col= [max([exc_col[i][j] for i in range(len(exc_col))]) for j in range(len(exc_col[0]))]
+
     col_s=[[bars_s[j][i] for i in range(0, combi_s) if bars_s[j][i][2]!='1.2 D + L']
             for j in range(len(bars_s)) if bars_s[j][0][0]=='COL']
     col_dl=[[bars_s[j][i] for i in range(0, combi_s) if bars_s[j][i][2]=='1.2 D + L']
@@ -328,9 +332,19 @@ def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
     vig_dl=[[bars_s[j][i] for i in range(0, combi_s)if bars_s[j][i][2]=='1.2 D + L']
             for j in range(len(bars_s)) if bars_s[j][0][0]=='VIGA']
 
+    # temp1=[]
+    # for i in range(len(col_e)):
+    #     temp2=[]
+    #     for j in range(len(col_e[0])):
+    #         print(col_e[i][j])
+    #         temp2.append(max(abs(col_e[i][j][6]/col_e[i][j][4]),abs(col_e[i][j][10]/col_e[i][j][8])))
+    #     for j in range(len(col_s[0][0])):
+    #         temp2.append(max(abs(col_s[i][j][6]/col_s[i][j][4]), abs(col_s[i][j][10]/col_s[i][j][8])))
+    #     temp1.append(temp2)
+    # print(temp1)
+
     maTrix_ij = lambda lista:[[[round(lista[k][j][i],1) for j in range(len(lista[0]))]
                                for i in [5,9]] for k in range(len(lista))]
-
     maxTrix_i = lambda lista:[[round(max([lista[k][j][i] for j in range(len(lista[0]))]),2)
                                for i in [4,5,6]] for k in range(len(lista))]
     minTrix_i = lambda lista:[[round(min([lista[k][j][i] for j in range(len(lista[0]))]),2)
@@ -341,7 +355,14 @@ def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
                                for i in [8,9,10]] for k in range(len(lista))]
 
     npisos, nbahias = len(col_e)-len(vig_e), int(len(vig_e)/(len(col_e)-len(vig_e)))
-
+    exC=[]
+    cont=0
+    for i in range(npisos):
+        temp2=[]
+        for j in range(nbahias+1):
+            temp2.append(round(ex_col[i],2))
+            cont+=1
+        exC.append(temp2)
     forma_col = lambda lista, nbahias, npisos:[
         [lista[j] for j in range(i*(nbahias+1), (i+1)*(nbahias+1))] for i in range(npisos)]
     forma_vig = lambda lista, nbahias, npisos:[
@@ -427,7 +448,7 @@ def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
     # listaVmax=[[[max(i[j][0][k], i[j][1][k]) for k in range(len(i[j][0]))] for j in range(len(i))] for i in listaV]
     # listaCmax=[[[max(i[j][0][k], i[j][1][k]) for k in range(len(i[j][0]))] for j in range(len(i))] for i in listaC]
     # return [listaV,listaVmax, listaC, listaCmax]
-    return [listaV, listaC]
+    return [listaV, listaC, exC]
 
 # print(filtroCV(combis, combi_e, combi_s, tab, largosV, largosC))
 
@@ -1003,7 +1024,8 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     else:
         return 0
 
-def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH, cS, H, vu, vue, deList, iguales):
+def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH, cS, H, vu, vue, deList, min_e, iguales):
+    puCmin = round(muC/min_e,2)
     salida=0
     minor = 9999999
     hmax = hmax if hmax>=30 else 30
@@ -1039,8 +1061,9 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH,
                     if costo < minor:
                         minor, e = costo, round(cF[1]/(cF[2]+0.001), 3)
                         optimo = [minor, h, b, j, k, l, m, fu, fu2, cuan, cF[0], cF2[0], e, alist, ylist, cF[1], cF[2], muC, puCmax, puCmin]
-                        salida=1
                         corte = minEstC(mpr1, mpr2, muC, H, vu, vue, ylist, deList, min(l, m), h, b, dp, fy, fc, cS)
+                        salida=1
+
     if salida==1:
         return [optimo, corte]
     else:
@@ -1262,6 +1285,7 @@ def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
     filtro=filtroCV(combis, combi_e, combi_s, tab, largosV, largosC)
     listaV=filtro[0]
     listaC=filtro[1]
+    exc_col=filtro[2]
     #filtro por piso
     mpp1=[max([max([max(listaV[i][j][0][2], listaV[i][j][1][2]) for j in range(len(listaV[0]))])
                  for k in range(len(listaV[0][0]))]) for i in range(len(listaV))]
@@ -1285,13 +1309,26 @@ def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
     tempCol = extMat(listaCol, 4)
     tempVig = [[round(max(abs(listaVig[i][j][0]),abs(listaVig[i][j][1])),1) for j in range(len(listaVig[0]))] for i in range(len(listaVig))]
     colDef=replMat(listaCol,critVC(tempVig, tempCol),4)
+    for i in range(len(exc_col)):
+        for j in range(len(exc_col[0])):
+            colDef[i][j].append(exc_col[i][j])
     detcol=[]
     for i in colDef:
         tempC=[]
         for j in i:
-            elem=optimusCol(b1, dp, es, eu, ey, fc, fy, j[4], j[1], j[0], dList,hColMax, cH, cS, j[5], j[2], j[3], deList, 1)
+            elem=optimusCol(b1, dp, es, eu, ey, fc, fy, j[4], j[1], j[0], dList,hColMax, cH, cS, j[5], j[2], j[3], deList, j[6], 1)
+            cont=0
+            # while elem==0 and cont<10:
+            #     cont+=1
+            #     j[4]=j[4]*0.95
+            #     elem = optimusCol(b1, dp, es, eu, ey, fc, fy, j[4], j[1], j[0], dList, hColMax, cH, cS, j[5], j[2],
+            #                       j[3], deList, 1)
             tempC.append(elem)
         detcol.append(tempC)
+    print(detcol)
+    print(detvig)
+
+    #agregar while y asd.f...-
     # optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH, cS, H, vu, vue, deList, iguales)
 
     # XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, mn, pn, titulo)
