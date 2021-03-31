@@ -431,17 +431,6 @@ def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
     vig_dl=[[bars_s[j][i] for i in range(0, combi_s)if bars_s[j][i][2]=='1.2 D + L']
             for j in range(len(bars_s)) if bars_s[j][0][0]=='VIGA']
 
-    # temp1=[]
-    # for i in range(len(col_e)):
-    #     temp2=[]
-    #     for j in range(len(col_e[0])):
-    #         print(col_e[i][j])
-    #         temp2.append(max(abs(col_e[i][j][6]/col_e[i][j][4]),abs(col_e[i][j][10]/col_e[i][j][8])))
-    #     for j in range(len(col_s[0][0])):
-    #         temp2.append(max(abs(col_s[i][j][6]/col_s[i][j][4]), abs(col_s[i][j][10]/col_s[i][j][8])))
-    #     temp1.append(temp2)
-    # print(temp1)
-
     maTrix_ij = lambda lista:[[[round(lista[k][j][i],1) for j in range(len(lista[0]))]
                                for i in [5,9]] for k in range(len(lista))]
     maxTrix_i = lambda lista:[[round(max([lista[k][j][i] for j in range(len(lista[0]))]),2)
@@ -544,8 +533,6 @@ def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
                      largosC[i][j],mat_col_s[i][j][1],mat_col_e[i][j][1]]]
             lista2.append(lista1)
         listaC.append(lista2)
-    # listaVmax=[[[max(i[j][0][k], i[j][1][k]) for k in range(len(i[j][0]))] for j in range(len(i))] for i in listaV]
-    # listaCmax=[[[max(i[j][0][k], i[j][1][k]) for k in range(len(i[j][0]))] for j in range(len(i))] for i in listaC]
     # return [listaV,listaVmax, listaC, listaCmax]
     return [listaV, listaC, exC]
 
@@ -741,17 +728,6 @@ def listadiam(A, b, dp, h, dList, v):
                     else:
                         minimos = [L1, L2, round(amin, 2)]
     return minimos
-
-# #[Vu, Vue, Mpp, Mnn, 1.2D+L, lo]
-# matvig = [[[20.8, 19.2, 28.6, 14.6, 5, 7],[20, 20, 26.9, 13.1, 5, 7],[19.2, 20.8, 28.6, 14.6, 5, 7]],
-#           [[20.7, 19.3, 28.4, 14.4, 5, 7],[20,20,26.8,13.2, 5, 7],[20.7, 19.3, 28.4, 14.4, 5, 7]],
-#            [[8.3, 7.6, 11.5, 6, 2, 7],[8, 8, 10.8, 5.2, 2, 7],[8.3, 7.6, 11.5, 6, 2, 7]]]
-#
-# #[Pu, Vu, Vue, Mu, H]
-# matcol = [[[46.1,3.4,3.4,9,3],[97.9,0.3,0.3,0.7,3],[97.9,0.3,0.3,0.7,3],[46.1,3.4,3.4,9,3]],
-#           [[26.9,6.4,6.4,13.1,3],[57,0.5,0.5,1,3],[57,0.5,0.5,1,3],[26.9,6.4,6.4,13.1,3]],
-#           [[7.6,4.7,4.7,10.2,3],[16.4,0.4,0.4,0.8,3],[16.4,0.4,0.4,0.8,3],[7.6,4.7,4.7,10.2,3]]]
-
 
 def critVC(vigas, columnas):
     crit = lambda lista: round(1.2*sum(lista[0])/sum(lista[1]), 4)
@@ -1162,7 +1138,7 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH,
                         if corte!=0:
                             minor, e = costo, round(cF[1] / (cF[2] + 0.001), 3)
                             optimo = [minor, h, b, j, k, l, m, fu, fu2, cuan, cF[0], cF2[0], e, alist, ylist, cF[1],
-                                      cF[2], muC, puCmax, puCmin]
+                                      cF[2], muC, puCmax, puCmin, H]
                         salida=1
 
     if salida==1:
@@ -1269,7 +1245,7 @@ def optimusVig(mpp,mnn,es,eu,ey,b1,fc,fy,dp,dList,dimV,ai,lo,cH,cS,v,allVu,deLis
                 minim = costo
                 FU = round(max(mnn/cpn[1], mpp/cpnrev[1]) * 100, 1)
                 listaT = [minim, h, b, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev,c , round(abs(mnn),2), round(abs(mpp),2), L1, lis,\
-                         cpn[1], cpnrev[1], max(cpn[1],cpnrev[1])]
+                         cpn[1], cpnrev[1], max(cpn[1],cpnrev[1]), lo]
                 corte = minEstV(mpr1,mpr2,allVu[0],allVu[1],allVu[2],allVu[3],xlistV,deList, db,h,  b, lo, dp, fy, fc, cS, wo)
                 salida = 1
     if salida == 1:
@@ -1337,7 +1313,6 @@ dimV = [[[80,50,40,30],[80,50,40,30],[80,50,40,30]],
         [[80,50,40,30],[80,50,40,30],[80,50,40,30]],
         [[80,50,40,30],[80,50,40,30],[80,50,40,30]]]
 
-
 def matElemV(lista, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai, deList, v):
     #se itera en la lista
     listaV = []
@@ -1350,8 +1325,8 @@ def matElemV(lista, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai, deList, v):
             cont=0
             while elem == 0 and cont<10:
                 cont+=1
-                lista[i][j][0]=lista[i][j][0]*1.25
-                lista[i][j][1]=lista[i][j][1]*1.25
+                lista[i][j][0]=lista[i][j][0]*1.1
+                lista[i][j][1]=lista[i][j][1]*1.1
                 elem = optimusVig(lista[i][j][0], lista[i][j][1], es, eu, ey, b1, fc, fy, dp, dList,
                                   lista[i][j][5], ai, lista[i][j][3], cH, cS, v, lista[i][j][4], deList, lista[i][j][2])
             tempV.append(elem)
@@ -1406,6 +1381,52 @@ def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
             cont=0
             tempC.append(elem)
         detcol.append(tempC)
+    di=8
+    ai=1
+    cont=0
+    for i in detvig:
+        for j in i:
+
+            """ Identificador """
+
+            cont+=1
+            print("\nViga n° ",cont,"\n\n")
+
+            """Dimensiones"""
+
+            print("Dimensiones")
+            print("Largo : ", j[0][17], "metros")
+            print("Alto : ",j[0][1], "centímetros")
+            print("Ancho : ",j[0][2], "centímetros\n")
+
+            """Refuerzo longitudinal"""
+
+            print("Refuerzo longitudinal")
+            numB2=" barras" if j[0][12][0][2]>1 else " barra"
+            barr2 = "" if j[0][12][0][2]==0 else ", "+str(j[0][12][0][2])+str(numB2)+" Ø "+str(j[0][12][0][3])+"mm en la posición y = "+str(j[0][4][0])+" cm, área = "+str(j[0][3][0])+" cm2"
+            print(j[0][12][0][0],"barras Ø",j[0][12][0][1],"mm",barr2)
+            numB3 = " barras" if j[0][12][0][2] > 1 else " barra"
+            barr3 = "" if j[0][12][1][2] == 0 else ", " + str(j[0][12][1][2])+str(numB3)+" Ø "+str(j[0][12][1][3])+"mm en la posición y = "+str(j[0][4][1])+" cm, área = "+str(j[0][3][1])+" cm2"
+            print(j[0][12][1][0], "barras Ø", j[0][12][1][1],"mm",barr3)
+            if len(j[0][3])>3:
+                for i in range(len(j[0][3])-3, len(j[0][3])-1):
+                    print("2 barras Ø",di,"mm en la posición y = ",j[0][4][i],"cm, área = ",ai,"cm2")
+            numB4 = " barras" if j[0][13][2] > 1 else " barra"
+            barr4 = "" if j[0][13][2] == 0 else ", " + str(j[0][13][2])+str(numB3)+" Ø "+str(j[0][13][3])+"mm en la posición y = "+str(j[0][4][-1])+" cm, área = "+str(j[0][3][-1])+" cm2"
+            print(j[0][13][0], "barras Ø", j[0][13][1],"mm",barr4,"\n")
+
+            """Cuantías"""
+
+            print("Cuantías")
+            print("Superior = ",j[0][5])
+            print("Inferior = ",j[0][6],"\n")
+
+            """Refuerzo transversal"""
+
+            print("\n")
+
+
+    # minim, h, b, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev, c, round(abs(mnn), 2), round(abs(mpp), 2), L1, lis, cpn[1], cpnrev[1], max(cpn[1], cpnrev[1], lo
 
     return [detcol,detvig]
 
@@ -1418,3 +1439,4 @@ t2=time()-t1
 print("tiempo de ejecución",round(t2,5),"segundos")
 
 print(asd[0],"\n\n",asd[1])
+
