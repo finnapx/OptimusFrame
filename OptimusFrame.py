@@ -821,7 +821,6 @@ def matElemV(lista, bmaxV, hmaxV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai,
         tempV=[]
         for j in i:
             elem = optimusVig(j[2],j[3],es,eu,ey,b1,fc,fy,dp,dList,hmaxV,bmaxV,ai,j[5],cH,cS,v)
-            #optimusVig(mpp,mnn,es,eu,ey,b1,fc,fy,dp,dList,hmax,bmax,hmin,bmin,ai,lo,cH,cS,v,allVu,deList,wo)
             tempV.append(elem)
         listaV.append(tempV)
     return listaV
@@ -958,9 +957,9 @@ def loCol(h, b, H):
 def lEmp(fy, db):
     return round(max(0.00073*fy*db if fy<= 4200 else (0.0013*fy-2.4)*db, 30),0)
 
-#revisar, entrada ya es corte
+#wo es corte y no carga distribuida
 def vprV(h, b, l, mpr1, mpr2, wo):
-    return (mpr1+mpr2)/(l/100) + wo*(l/100)/2
+    return 100*(mpr1+mpr2)/l + wo/50
 
 def VcAx(Nu, fc, b, h, dp):
     return round(0.53*(1+Nu*1000/(140*h*b))*(fc)**0.5*b*(h-dp)/1000, 1)
@@ -1039,7 +1038,7 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     vupr1 = vupr if Nu*1000 < 0.05 * fc * (h * b) else vupr-Vc
     vupr2 = vupr-Vc
     vu1 = round(max((vu-Vc)/0.75, vue/0.6, vupr1/0.75),1)
-    vslim = vsLim(fc, b, h, dp)*1000
+    vslim = vsLim(fc, b, h, dp)*1000*1.1
     lo = loCol(h, b, H)
     # k1 = (H-2*lo)/H --> X incorrecto, para hacer esto se evalúan
     # los cortes de ambosa extremos y se interpola linealmente
@@ -1159,9 +1158,11 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH,
                 if fu < 95 and fu2 < 95 and 0.01 <= cuan <= 0.06:
                     costo = round((aS*cS+(b*h-aS)*cH)/10000, 0)
                     if costo < minor:
-                        minor, e = costo, round(cF[1]/(cF[2]+0.001), 3)
-                        optimo = [minor, h, b, j, k, l, m, fu, fu2, cuan, cF[0], cF2[0], e, alist, ylist, cF[1], cF[2], muC, puCmax, puCmin]
                         corte = minEstC(mpr1, mpr2, muC, H, vu, vue, ylist, deList, min(l, m), h, b, dp, fy, fc, cS)
+                        if corte!=0:
+                            minor, e = costo, round(cF[1] / (cF[2] + 0.001), 3)
+                            optimo = [minor, h, b, j, k, l, m, fu, fu2, cuan, cF[0], cF2[0], e, alist, ylist, cF[1],
+                                      cF[2], muC, puCmax, puCmin]
                         salida=1
 
     if salida==1:
@@ -1177,7 +1178,7 @@ def minEstV(mpr1, mpr2, vuLsti,vueLsti,vuLstj,vueLstj, xList, deList, db, h, b, 
     srot = int(sRotV(h, dp, db))
     sL1 = [i for i in range(8, int(srot)+1)]
     sL2 = [i for i in range(8, int(smax)+1)]
-    vsL = vsLim(fc, b, h, dp)*1000
+    vsL = vsLim(fc, b, h, dp)*1000*1.1
     ramas = Lramas(xList)
     est = estribosV(xList, ramas)
     nRam = countram(ramas)
@@ -1208,8 +1209,6 @@ def minEstV(mpr1, mpr2, vuLsti,vueLsti,vuLstj,vueLstj, xList, deList, db, h, b, 
                     #[costo, dist rot, n° ramas, espaciamiento, n° estribos, dist de rotula al centro, n° ramas, espaciamiento, n° estribos, de]
                     Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de]
     return Lout
-
-dimV=[70,40,40,25]
 
 def optimusVig(mpp,mnn,es,eu,ey,b1,fc,fy,dp,dList,dimV,ai,lo,cH,cS,v,allVu,deList,wo):
     mnn=abs(mnn)
@@ -1333,16 +1332,12 @@ largosV=[[7,7,7],
          [7,7,7],
          [7,7,7]]
 
-dimV = [[[75,50,40,30],[75,50,40,30],[75,50,40,30]],
-        [[75,50,40,30],[75,50,40,30],[75,50,40,30]],
-        [[75,50,40,30],[75,50,40,30],[75,50,40,30]],
-        [[75,50,40,30],[75,50,40,30],[75,50,40,30]]]
+dimV = [[[80,50,40,30],[80,50,40,30],[80,50,40,30]],
+        [[80,50,40,30],[80,50,40,30],[80,50,40,30]],
+        [[80,50,40,30],[80,50,40,30],[80,50,40,30]],
+        [[80,50,40,30],[80,50,40,30],[80,50,40,30]]]
 
-# dimV = [[[90,25,90,25],[90,25,90,25],[90,25,90,25]],
-#         [[90,25,90,25],[90,25,90,25],[90,25,90,25]],
-#         [[90,25,90,25],[90,25,90,25],[90,25,90,25]]]
 
-#falta crear lista completa
 def matElemV(lista, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai, deList, v):
     #se itera en la lista
     listaV = []
@@ -1362,18 +1357,6 @@ def matElemV(lista, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai, deList, v):
             tempV.append(elem)
         listaV.append(tempV)
     return listaV
-
-# def matElemC(listaC, listaV, b1,dp,es,eu, ey, fc, fy, dList, cH, cS, H, deList):
-#     newMatC=critVC(listaV, listaC)
-#     lista=replMat(listaC, newMatC, 3)
-#     listaCol=[]
-#     for i in lista:
-#         tempC=[]
-#         for j in i:
-#             elem=optimusCol(b1,dp,es,eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH, cS, H, vu, vue, deList, 1)
-#             tempC.append(elem)
-#         listaCol.append(tempC)
-#     return listaCol
 
 cH, cS, b1, dp, es, ey, eu, fc, fy = 75000,7850000,0.85,5,2100000,0.002,0.003,250,4200
 dList, deList = [16,18,22,25,28,32,36],[10,12]
@@ -1423,36 +1406,15 @@ def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
             cont=0
             tempC.append(elem)
         detcol.append(tempC)
-    print(detcol)
-    print(detvig)
 
-    return 0
+    return [detcol,detvig]
 
 hColMax, hColMin = 80,40
 
 from time import time
 t1=time()
-# optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, deList, hColMax, hColMin)
-optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, deList, hColMax, hColMin)
+asd=optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, deList, hColMax, hColMin)
 t2=time()-t1
 print("tiempo de ejecución",round(t2,5),"segundos")
 
-# print(optimusVig(2.52,abs(-0.93),2100000,0.003,0.002,0.85,250,4200,5,[16,18,22,25,28,32,36],
-#                               [70, 40, 40, 25],1,7,75000,7850000,5,
-#                  [[2094.3, 4026.5], [2254.4, 4125.0, 411.1, 2281.6], [-2094.3, -4026.5], [-4125.0, -2254.4, -2281.6, -411.1]],
-#                  [10,12],3.19))
-
-# def matElemC(listaC, listaV, fc, fy, hmaxC, b1, dp, es, eu, ey, dList, cH, cS):
-#     matvig=extMat(listaV, 16)
-#     matcol=extMat(listaC, 3)
-#     newMatC=critVC(matvig, matcol)
-#     lista=replMat(listaC, newMatC, 3)
-#     listaCol=[]
-#     for i in lista:
-#         tempC=[]
-#         for j in i:
-#             elem=optimusCol(b1, dp, es, eu, ey, fc, fy, j[3], j[0], dList, hmaxC, cH, cS, 1)
-#             # optimusCol(b1,dp,es,eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH, cS, H, vu, vue, deList, iguales)
-#             tempC.append(elem)
-#         listaCol.append(tempC)
-#     return listaCol
+print(asd[0],"\n\n",asd[1])
