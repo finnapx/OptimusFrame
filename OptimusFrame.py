@@ -1161,10 +1161,10 @@ def minEstV(mpr1, mpr2, vuLsti,vueLsti,vuLstj,vueLstj, xList, deList, db, h, b, 
     x1 = 2*h
     x2 = lo/2-2*h
     Lout=[]
-    for n in range(x1, x1 + 25, 5):
+    for n in range(x1, x1 + 35, 5):
         xa1 = n
         xa2 = (x1 + x2) - xa1
-        vsB1 = V2vig(xa1,lo,vuLsti,vueLsti,vuLstj,vueLstj,vupr,Vc,0)
+        vsB1 = V2vig(0,lo,vuLsti,vueLsti,vuLstj,vueLstj,vupr,Vc,0)
         vsB2 = V2vig(xa1,lo,vuLsti,vueLsti,vuLstj,vueLstj,vupr,Vc,1)
         lista=[[i,j,k,l,m] for i in nRam for j in sL1 for k in deList for l in nRam
         for m in sL2 if vsB1/(fy*(h-dp))<=i*aCir(k)/j<=vsL/(fy*(h-dp))
@@ -1183,7 +1183,7 @@ def minEstV(mpr1, mpr2, vuLsti,vueLsti,vuLstj,vueLstj, xList, deList, db, h, b, 
                 if mini < minim:
                     minim = round(mini, 2)
                     #[costo, dist rot, n° ramas, espaciamiento, n° estribos, dist de rotula al centro, n° ramas, espaciamiento, n° estribos, de]
-                    Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de]
+                    Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de, vsB1, vsB2]
     return Lout
 
 def optimusVig(mpp,mnn,es,eu,ey,b1,fc,fy,dp,dList,dimV,ai,lo,cH,cS,v,allVu,deList,wo):
@@ -1245,7 +1245,7 @@ def optimusVig(mpp,mnn,es,eu,ey,b1,fc,fy,dp,dList,dimV,ai,lo,cH,cS,v,allVu,deLis
                 minim = costo
                 FU = round(max(mnn/cpn[1], mpp/cpnrev[1]) * 100, 1)
                 listaT = [minim, h, b, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev,c , round(abs(mnn),2), round(abs(mpp),2), L1, lis,\
-                         cpn[1], cpnrev[1], max(cpn[1],cpnrev[1]), lo]
+                         cpn[1], cpnrev[1], max(cpn[1],cpnrev[1]), lo, FU]
                 corte = minEstV(mpr1,mpr2,allVu[0],allVu[1],allVu[2],allVu[3],xlistV,deList, db,h,  b, lo, dp, fy, fc, cS, wo)
                 salida = 1
     if salida == 1:
@@ -1381,6 +1381,7 @@ def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
             cont=0
             tempC.append(elem)
         detcol.append(tempC)
+    print("\n")
     di=8
     ai=1
     cont=0
@@ -1390,7 +1391,7 @@ def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
             """ Identificador """
 
             cont+=1
-            print("\nViga n° ",cont,"\n\n")
+            print("Viga n° ",cont,"\n\n")
 
             """Dimensiones"""
 
@@ -1423,9 +1424,40 @@ def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
 
             """Refuerzo transversal"""
 
+            print("Refuerzo transversal")
+            print("Zonas de rótula plástica, de 0 -",j[1][1],"cm, y, de ",j[0][17]*100-j[1][1],"-",j[0][17]*100,"cm:")
+            print("Diámetro : ",j[1][9],"mm")
+            print("N° ramas : ",j[1][2])
+            #largo del estribo
+            print("Espaciamiento : ",j[1][3],"cm")
+            print("N° estribos : ",int(round(j[1][4]/2,0))," en cada extremo")
+            print("Zonas central, de ",j[1][1],"-",j[0][17]*100-j[1][1],"cm")
+            print("Diámetro : ", j[1][9], "mm")
+            print("N° ramas : ", j[1][6])
+            print("Espaciamiento : ", j[1][7],"cm")
+            print("N° estribos : ", j[1][8],"\n")
+
+            """Resultados"""
+
+            print("Resultados")
+            print("Flexión")
+            print("ØMn+ = ", j[0][15], "tf-m")
+            print("ØMn- = ", -j[0][14], "tf-m")
+            print("F.U. = ", j[0][18], "%\n")
+
+            phiVn1 = round(aCir(j[1][9])*j[1][2]*fy*(j[0][1]-dp)/j[1][3]*0.75,1)
+            print("ØVn1 = ",round(phiVn1/1000,1), "tf")
+            fuV1 = round(75*j[1][10]/(phiVn1),1)
+            print("F.U. Vs1 = ",fuV1, "%")
+            phiVn2 = round(aCir(j[1][9])*j[1][6]*fy*(j[0][1]-dp)/j[1][7]*0.75, 1)
+            print("ØVn2 = ",round(phiVn2/1000,1), "tf")
+            fuV2 = round(75*j[1][11]/phiVn2,1)
+            print("F.U. Vs2 = ",fuV2,"%")
+
+
             print("\n")
 
-
+    #[costo, dist rot, n° ramas, espaciamiento, n° estribos, dist de rotula al centro, n° ramas, espaciamiento, n° estribos, de]
     # minim, h, b, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev, c, round(abs(mnn), 2), round(abs(mpp), 2), L1, lis, cpn[1], cpnrev[1], max(cpn[1], cpnrev[1], lo
 
     return [detcol,detvig]
