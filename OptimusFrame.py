@@ -401,7 +401,6 @@ tabla = {
     ]
 }
 
-
 def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
     bars1=[[tab[i-1]+tab[i] for j in range(2) if j==1]
             for i in range(len(tab)) if i%2!=0]
@@ -959,14 +958,15 @@ def sCol(db):
     return min(0.6*db, 15)
 
 def cubEstV(h, dp, de, Le):
-    lista = []
+    lista1 = []
+    lista2 = []
     for i in Le:
         if len(i)%2 == 0:
             b = i[1]-i[0]
-            lista += [Lest(h, b, dp, de)]
+            lista1 += [Lest(h, b, dp, de)]
         else:
-            lista += [Ltrab(h, dp, de)]
-    return round(sum(lista)*aCir(de) ,1)
+            lista2 += [Ltrab(h, dp, de)]
+    return [round((sum(lista1)+sum(lista2))*aCir(de) ,1), lista1, lista2]
 
 def estribosC(xList):
     lista = []
@@ -1099,12 +1099,13 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     else:
         return 0
 
-def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, cH, cS, H, vu, vue, deList, min_e, iguales):
+def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, hmin, cH, cS, H, vu, vue, deList, min_e, iguales):
     puCmin = round(muC/min_e,2)
     salida=0
     minor = 9999999
+    hmin = hmin if hmin >= 30 else 30
     hmax = hmax if hmax>=30 else 30
-    hList = [i for i in range(30, hmax+5,5)]
+    hList = [i for i in range(hmin, hmax+5,5)]
     lista = ([b, h] for b in hList for h in hList if b == h)
     for b, h in lista:
         nH = [i for i in range(int((b-2*dp)/15)-1, int(round((b-2*dp)/10, 0)), 1)]
@@ -1177,13 +1178,16 @@ def minEstV(mpr1, mpr2, vuLsti,vueLsti,vuLstj,vueLstj, xList, deList, db, h, b, 
                 Lest2 = est[nRam.index(nr2)]
                 ns1=int((xa1*2)/s1)
                 ns2=int((xa2-0.01)*2/s2)+1
-                mini = (cubEstV(h, dp, de, Lest1)*ns1+cubEstV(h, dp, de, Lest2)*ns2)*cS/1000000
+                #separar esto
+                cub1=cubEstV(h, dp, de, Lest1)
+                cub2=cubEstV(h, dp, de, Lest2)
+                mini = (cub1[0]*ns1+cub2[0]*ns2)*cS/1000000
                 X1 = xa1-5 if xa1 > 2*h else 2*h
                 X2 = 2*((x1+x2)-X1)
                 if mini < minim:
                     minim = round(mini, 2)
                     #[costo, dist rot, n° ramas, espaciamiento, n° estribos, dist de rotula al centro, n° ramas, espaciamiento, n° estribos, de]
-                    Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de, vsB1, vsB2]
+                    Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de, vsB1, vsB2, cub1, cub2]
     return Lout
 
 def optimusVig(mpp,mnn,es,eu,ey,b1,fc,fy,dp,dList,dimV,ai,lo,cH,cS,v,allVu,deList,wo):
@@ -1336,6 +1340,246 @@ def matElemV(lista, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai, deList, v):
 cH, cS, b1, dp, es, ey, eu, fc, fy = 75000,7850000,0.85,5,2100000,0.002,0.003,250,4200
 dList, deList = [16,18,22,25,28,32,36],[10,12]
 
+def detVig(detvig):
+    di = 8
+    ai = 1
+    # npisos = len(detvig)
+    # lizq = [i+1 for i in range(0,npisos*nvig,nvig)]
+    # lder = [i+nvig-1 for i in lizq]
+    contv = 0
+    for i in detvig:
+        for j in i:
+
+            """ Identificador """
+
+            # FALTA:
+
+            #if cont in lizq or cont in lder:
+            #   dob=doblez()
+            #   largo, diámetro doblado, altura, posición, largo total
+            #   largo suple hasta columna 0.25lo
+
+            #   """posición"""
+            #   if y<=h/2:
+            #       abajo
+            #   else:
+            #       arriba
+
+            #else:
+                #largo total hasta columna 0.3lo
+
+            #   empalme
+            #   if is armadura superior:
+            #       from h/2 to lemp
+            #   elif is armadura inferior:
+            #       from rot1 to lemp
+            #   else:
+            #       from rot2 to rot2-lemp
+
+            ###################################################
+            #####                                         #####
+            #####  Armar lista de salida para cubicación  #####
+            #####                                         #####
+            ###################################################
+
+            contv+=1
+            print("Viga n° ",contv,"\n\n")
+
+            """Dimensiones"""
+
+            print("Dimensiones\n")
+            print("Largo : ", j[0][17], "m")
+            print("Alto : ",j[0][1], "cm")
+            print("Ancho : ",j[0][2], "cm\n")
+
+            """Refuerzo longitudinal"""
+
+            print("Refuerzo longitudinal\n")
+            print("Armadura superior principal")
+            numB2=" barras" if j[0][12][0][2]>1 else " barra"
+            barr2 = "" if j[0][12][0][2]==0 else ", "+str(j[0][12][0][2])+str(numB2)+" Ø "+str(j[0][12][0][3])+"mm en la posición y = "+str(j[0][4][0])+" cm, área = "+str(j[0][3][0])+" cm2"
+            print(j[0][12][0][0],"barras Ø",j[0][12][0][1],"mm",barr2)
+            print("\nArmadura suplementaria")
+            numB3 = " barras" if j[0][12][0][2] > 1 else " barra"
+            barr3 = "" if j[0][12][1][2] == 0 else ", " + str(j[0][12][1][2])+str(numB3)+" Ø "+str(j[0][12][1][3])+"mm en la posición y = "+str(j[0][4][1])+" cm, área = "+str(j[0][3][1])+" cm2"
+            print(j[0][12][1][0], "barras Ø", j[0][12][1][1],"mm",barr3)
+            if len(j[0][3])>3:
+                print("\nArmadura constructiva")
+                for i in range(len(j[0][3])-3, len(j[0][3])-1):
+                    print("2 barras Ø",di,"mm en la posición y = ",j[0][4][i],"cm, área = ",ai,"cm2")
+            print("\nArmadura inferior principal")
+            numB4 = " barras" if j[0][13][2] > 1 else " barra"
+            barr4 = "" if j[0][13][2] == 0 else ", " + str(j[0][13][2])+str(numB3)+" Ø "+str(j[0][13][3])+"mm en la posición y = "+str(j[0][4][-1])+" cm, área = "+str(j[0][3][-1])+" cm2"
+            print(j[0][13][0], "barras Ø", j[0][13][1],"mm",barr4,"\n")
+
+            """Cuantías"""
+
+            print("Cuantías")
+            print("Superior = ",j[0][5])
+            print("Inferior = ",j[0][6],"\n")
+
+            """Refuerzo transversal"""
+
+            print("Refuerzo transversal")
+            print("\nZonas de rótula plástica, de 0 a",j[1][1],"cm y ",j[0][17]*100-j[1][1],"a",j[0][17]*100,"cm:")
+            print("Diámetro : ",j[1][9],"mm")
+            print("N° ramas : ",j[1][2])
+            cont=0
+            print("Estribos cerrados =",len(j[1][12][1]))
+            for i in j[1][12][1]:
+                cont+=1
+                print("Largo de estribo cerrado n°",cont,"=",i,"cm")
+            if j[1][12][2]!=[]:
+                print("Traba central: si")
+                print("Largo de traba =",j[1][12][2][0],"cm")
+            else:
+                print("Traba central: no")
+            print("Espaciamiento : ",j[1][3],"cm")
+            print("N° estribos : ",int(round(j[1][4]/2,0))," en cada extremo")
+            print("\nZonas central, de ",j[1][1],"a",j[0][17]*100-j[1][1],"cm:")
+            print("Diámetro : ", j[1][9], "mm")
+            print("N° ramas : ", j[1][6])
+            cont=0
+            for i in j[1][13][1]:
+                cont+=1
+                print("largo de estribo n°",cont,"=",i,"cm")
+            if j[1][13][2]!=[]:
+                print("Traba central: si")
+                print("largo de traba =",j[1][13][2][0],"cm")
+            else:
+                print("Traba central: no")
+            print("Espaciamiento : ", j[1][7],"cm")
+            print("N° estribos : ", j[1][8],"\n")
+
+            """Resultados"""
+
+            print("Resultados\n")
+            print("Flexión")
+            print("ØMn+ = ", j[0][15], "tf-m")
+            print("ØMn- = ", -j[0][14], "tf-m")
+            print("F.U. mayor= ", j[0][18], "%\n")
+
+            print("Corte")
+            phiVn1 = round(aCir(j[1][9])*j[1][2]*fy*(j[0][1]-dp)/j[1][3]*0.75,1)
+            print("ØVn1 = ",round(phiVn1/1000,1), "tf")
+            fuV1 = round(75*j[1][10]/(phiVn1),1)
+            print("F.U.1 = ",fuV1, "%")
+            phiVn2 = round(aCir(j[1][9])*j[1][6]*fy*(j[0][1]-dp)/j[1][7]*0.75, 1)
+            print("ØVn2 = ",round(phiVn2/1000,1), "tf")
+            fuV2 = round(75*j[1][11]/phiVn2,1)
+            print("F.U.2 = ",fuV2,"%\n")
+            #falta cuantía de acero en refuerzo transversal
+            print("\n")
+
+def detCol(detcol):
+    cont = 0
+    npisos = len(detcol)
+    ncol = len(detcol[0])
+
+    for i in detcol:
+        for j in i:
+
+            """ Identificador """
+
+            cont+=1
+            print("Columna n° ",cont,"\n\n")
+
+            """Dimensiones"""
+
+            print("Dimensiones\n")
+            print("Largo : ", j[0][20], "m")
+            print("Alto : ",j[0][1], "cm")
+            print("Ancho : ",j[0][2], "cm\n")
+
+            """Refuerzo longitudinal"""
+
+            print("Refuerzo longitudinal")
+            print("Armadura superior principal")
+
+            # numB2=" barras" if j[0][12][0][2]>1 else " barra"
+            # barr2 = "" if j[0][12][0][2]==0 else ", "+str(j[0][12][0][2])+str(numB2)+" Ø "+str(j[0][12][0][3])+"mm en la posición y = "+str(j[0][4][0])+" cm, área = "+str(j[0][3][0])+" cm2"
+            # print(j[0][12][0][0],"barras Ø",j[0][12][0][1],"mm",barr2)
+            # print("\nArmadura suplementaria")
+            # numB3 = " barras" if j[0][12][0][2] > 1 else " barra"
+            # barr3 = "" if j[0][12][1][2] == 0 else ", " + str(j[0][12][1][2])+str(numB3)+" Ø "+str(j[0][12][1][3])+"mm en la posición y = "+str(j[0][4][1])+" cm, área = "+str(j[0][3][1])+" cm2"
+            # print(j[0][12][1][0], "barras Ø", j[0][12][1][1],"mm",barr3)
+            # if len(j[0][3])>3:
+            #     for i in range(len(j[0][3])-3, len(j[0][3])-1):
+            #         print("2 barras Ø",di,"mm en la posición y = ",j[0][4][i],"cm, área = ",ai,"cm2")
+            # print("\nArmadura inferior principal")
+            # numB4 = " barras" if j[0][13][2] > 1 else " barra"
+            # barr4 = "" if j[0][13][2] == 0 else ", " + str(j[0][13][2])+str(numB3)+" Ø "+str(j[0][13][3])+"mm en la posición y = "+str(j[0][4][-1])+" cm, área = "+str(j[0][3][-1])+" cm2"
+            # print(j[0][13][0], "barras Ø", j[0][13][1],"mm",barr4,"\n")
+
+
+            # return [listaT, corte]
+            # optimo = [minor, h, b, j, k, l, m, fu, fu2, cuan, cF[0], cF2[0], e, alist, ylist, cF[1],
+            #           cF[2], muC, puCmax, puCmin, H]
+            # return [costo_total] + lista1[1:] + lista2[1:] + lista3[1:]
+            # lista1 --> [n° ramas, de_externo, espaciamiento, de_interno, n° estribos, dist]
+            # lista2 --> [n° ramas, de, espaciamiento, n° estribos, dist]
+            # lista3 --> [n° ramas, de, espaciamiento, n° estribos, dist]
+
+            # """Cuantías"""
+            #
+            # print("Cuantías")
+            # print("Superior = ",j[0][5])
+            # print("Inferior = ",j[0][6],"\n")
+    #
+    #         """Refuerzo transversal"""
+    #
+    #         print("Refuerzo transversal")
+    #         print("\nZonas de rótula plástica, de 0 -",j[1][1],"cm y ",j[0][17]*100-j[1][1],"-",j[0][17]*100,"cm:")
+    #         print("Diámetro : ",j[1][9],"mm")
+    #         print("N° ramas : ",j[1][2])
+    #         cont=0
+    #         print("Estribos cerrados =",len(j[1][12][1]))
+    #         for i in j[1][12][1]:
+    #             cont+=1
+    #             print("Largo de estribo cerrado n°",cont,"=",i,"cm")
+    #         if j[1][12][2]!=[]:
+    #             print("Traba central: si")
+    #             print("Largo de traba =",j[1][12][2][0],"cm")
+    #         else:
+    #             print("Traba central: no")
+    #         print("Espaciamiento : ",j[1][3],"cm")
+    #         print("N° estribos : ",int(round(j[1][4]/2,0))," en cada extremo")
+    #         print("\nZonas central, de ",j[1][1],"-",j[0][17]*100-j[1][1],"cm")
+    #         print("Diámetro : ", j[1][9], "mm")
+    #         print("N° ramas : ", j[1][6])
+    #         cont=0
+    #         for i in j[1][13][1]:
+    #             cont+=1
+    #             print("largo de estribo n°",cont,"=",i,"cm")
+    #         if j[1][13][2]!=[]:
+    #             print("Traba central: si")
+    #             print("largo de traba =",j[1][13][2][0],"cm")
+    #         else:
+    #             print("Traba central: no")
+    #         print("Espaciamiento : ", j[1][7],"cm")
+    #         print("N° estribos : ", j[1][8],"\n")
+    #
+    #         """Resultados"""
+    #
+    #         print("Resultados\n")
+    #         print("Flexión")
+    #         print("ØMn+ = ", j[0][15], "tf-m")
+    #         print("ØMn- = ", -j[0][14], "tf-m")
+    #         print("F.U. mayor= ", j[0][18], "%\n")
+    #
+    #         print("Corte")
+    #         phiVn1 = round(aCir(j[1][9])*j[1][2]*fy*(j[0][1]-dp)/j[1][3],1)
+    #         print("ØVn1 = ",round(phiVn1/1000,1), "tf")
+    #         fuV1 = round(100*j[1][10]/(phiVn1),1)
+    #         print("F.U.1 = ",fuV1, "%")
+    #         phiVn2 = round(aCir(j[1][9])*j[1][6]*fy*(j[0][1]-dp)/j[1][7], 1)
+    #         print("ØVn2 = ",round(phiVn2/1000,1), "tf")
+    #         fuV2 = round(100*j[1][11]/phiVn2,1)
+    #         print("F.U.2 = ",fuV2,"%\n")
+    #         #falta cuantía de acero en refuerzo transversal
+    #         print("\n")
+            input()
+
 def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, deList, hColMax, hColMin):
     dList=[16,18,22,25,28,32,36]
     deList=[10,12]
@@ -1377,89 +1621,12 @@ def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
     for i in colDef:
         tempC=[]
         for j in i:
-            elem=optimusCol(b1, dp, es, eu, ey, fc, fy, j[4], j[1], j[0], dList,hColMax, cH, cS, j[5], j[2], j[3], deList, j[6], 1)
+            elem=optimusCol(b1, dp, es, eu, ey, fc, fy, j[4], j[1], j[0], dList,hColMax, hColMin, cH, cS, j[5], j[2], j[3], deList, j[6], 1)
             cont=0
             tempC.append(elem)
         detcol.append(tempC)
-    print("\n")
-    di=8
-    ai=1
-    cont=0
-    for i in detvig:
-        for j in i:
-
-            """ Identificador """
-
-            cont+=1
-            print("Viga n° ",cont,"\n\n")
-
-            """Dimensiones"""
-
-            print("Dimensiones")
-            print("Largo : ", j[0][17], "metros")
-            print("Alto : ",j[0][1], "centímetros")
-            print("Ancho : ",j[0][2], "centímetros\n")
-
-            """Refuerzo longitudinal"""
-
-            print("Refuerzo longitudinal")
-            numB2=" barras" if j[0][12][0][2]>1 else " barra"
-            barr2 = "" if j[0][12][0][2]==0 else ", "+str(j[0][12][0][2])+str(numB2)+" Ø "+str(j[0][12][0][3])+"mm en la posición y = "+str(j[0][4][0])+" cm, área = "+str(j[0][3][0])+" cm2"
-            print(j[0][12][0][0],"barras Ø",j[0][12][0][1],"mm",barr2)
-            numB3 = " barras" if j[0][12][0][2] > 1 else " barra"
-            barr3 = "" if j[0][12][1][2] == 0 else ", " + str(j[0][12][1][2])+str(numB3)+" Ø "+str(j[0][12][1][3])+"mm en la posición y = "+str(j[0][4][1])+" cm, área = "+str(j[0][3][1])+" cm2"
-            print(j[0][12][1][0], "barras Ø", j[0][12][1][1],"mm",barr3)
-            if len(j[0][3])>3:
-                for i in range(len(j[0][3])-3, len(j[0][3])-1):
-                    print("2 barras Ø",di,"mm en la posición y = ",j[0][4][i],"cm, área = ",ai,"cm2")
-            numB4 = " barras" if j[0][13][2] > 1 else " barra"
-            barr4 = "" if j[0][13][2] == 0 else ", " + str(j[0][13][2])+str(numB3)+" Ø "+str(j[0][13][3])+"mm en la posición y = "+str(j[0][4][-1])+" cm, área = "+str(j[0][3][-1])+" cm2"
-            print(j[0][13][0], "barras Ø", j[0][13][1],"mm",barr4,"\n")
-
-            """Cuantías"""
-
-            print("Cuantías")
-            print("Superior = ",j[0][5])
-            print("Inferior = ",j[0][6],"\n")
-
-            """Refuerzo transversal"""
-
-            print("Refuerzo transversal")
-            print("Zonas de rótula plástica, de 0 -",j[1][1],"cm, y, de ",j[0][17]*100-j[1][1],"-",j[0][17]*100,"cm:")
-            print("Diámetro : ",j[1][9],"mm")
-            print("N° ramas : ",j[1][2])
-            #largo del estribo
-            print("Espaciamiento : ",j[1][3],"cm")
-            print("N° estribos : ",int(round(j[1][4]/2,0))," en cada extremo")
-            print("Zonas central, de ",j[1][1],"-",j[0][17]*100-j[1][1],"cm")
-            print("Diámetro : ", j[1][9], "mm")
-            print("N° ramas : ", j[1][6])
-            print("Espaciamiento : ", j[1][7],"cm")
-            print("N° estribos : ", j[1][8],"\n")
-
-            """Resultados"""
-
-            print("Resultados")
-            print("Flexión")
-            print("ØMn+ = ", j[0][15], "tf-m")
-            print("ØMn- = ", -j[0][14], "tf-m")
-            print("F.U. = ", j[0][18], "%\n")
-
-            phiVn1 = round(aCir(j[1][9])*j[1][2]*fy*(j[0][1]-dp)/j[1][3]*0.75,1)
-            print("ØVn1 = ",round(phiVn1/1000,1), "tf")
-            fuV1 = round(75*j[1][10]/(phiVn1),1)
-            print("F.U. Vs1 = ",fuV1, "%")
-            phiVn2 = round(aCir(j[1][9])*j[1][6]*fy*(j[0][1]-dp)/j[1][7]*0.75, 1)
-            print("ØVn2 = ",round(phiVn2/1000,1), "tf")
-            fuV2 = round(75*j[1][11]/phiVn2,1)
-            print("F.U. Vs2 = ",fuV2,"%")
-
-
-            print("\n")
-
-    #[costo, dist rot, n° ramas, espaciamiento, n° estribos, dist de rotula al centro, n° ramas, espaciamiento, n° estribos, de]
-    # minim, h, b, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev, c, round(abs(mnn), 2), round(abs(mpp), 2), L1, lis, cpn[1], cpnrev[1], max(cpn[1], cpnrev[1], lo
-
+    detVig(detvig)
+    # detCol(detcol)
     return [detcol,detvig]
 
 hColMax, hColMin = 80,40
