@@ -1047,13 +1047,14 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
         l1 = Lest(h, ramas1[0][1]-ramas1[0][0], dp, j)
         l2 = sum([Lest(h, ramas1[m][1]-ramas1[m][0], dp, l) if len(ramas1[m])==2 else Ltrab(h, dp, l)
                   for m in range(1,len(ramas1))])
-        l2a=[Lest(h, ramas1[m][1] - ramas1[m][0], dp, l) if len(ramas1[m]) == 2 else Ltrab(h, dp, l)
-                  for m in range(1, len(ramas1))]
         s1 = int((lo-0.01)/k)+1
         costo = round(2*s1*(l1*aCir(j)+2*l2*aCir(l))*cS/1000000, 0)
         if costo<minimo:
             minimo=costo
-            lista1=[costo, nRam[i], j, k, l, s1, l1, l2a, l2, lo]
+            l2a = [Lest(h, ramas1[m][1] - ramas1[m][0], dp, l) if len(ramas1[m]) == 2 else Ltrab(h, dp, l)
+                   for m in range(1, len(ramas1))]
+            lram = ramas1
+            lista1=[costo, nRam[i], j, k, l, s1, l1, l2a, l2, lram, lo]
             salida1=1
     l_rot = lista1[3]
     l_emp = lEmp(fy, db)
@@ -1067,14 +1068,15 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
         l1 = Lest(h, ramas1[0][1] - ramas1[0][0], dp, j)
         l2 = sum([Lest(h, ramas1[m][1] - ramas1[m][0], dp, l) if len(ramas1[m]) == 2 else Ltrab(h, dp, l)
                   for m in range(1, len(ramas1))])
-        l2a=[Lest(h, ramas1[m][1] - ramas1[m][0], dp, l) if len(ramas1[m]) == 2 else Ltrab(h, dp, l)
-                  for m in range(1, len(ramas1))]
         s2 = int((H-2*lo-l_emp-0.01)/k)
         dist2 = H-2*lo-l_emp
         costo = round(s2*(l1*aCir(j)+2*l2*aCir(l))*cS/1000000, 0)
         if costo<minimo:
             minimo=costo
-            lista2=[costo, nRam[i], j, k, l, s2, l1, l2a, l2, dist2]
+            l2a = [Lest(h, ramas1[m][1] - ramas1[m][0], dp, l) if len(ramas1[m]) == 2 else Ltrab(h, dp, l)
+                   for m in range(1, len(ramas1))]
+            lram = ramas1
+            lista2=[costo, nRam[i], j, k, l, s2, l1, l2a, l2, lram, dist2]
             salida2=1
     semp = int(sEmp(h, dp))
     s3L = [[i, j, k, l] for i in range(len(nRam)) for j in deList for k in range(8, semp+1) for l in deList
@@ -1087,20 +1089,19 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
         l1 = Lest(h, ramas1[0][1] - ramas1[0][0], dp, j)
         l2 = sum([Lest(h, ramas1[m][1] - ramas1[m][0], dp, l) if len(ramas1[m]) == 2 else Ltrab(h, dp, l)
                   for m in range(1, len(ramas1))])
-        l2a=[Lest(h, ramas1[m][1] - ramas1[m][0], dp, l) if len(ramas1[m]) == 2 else Ltrab(h, dp, l)
-                  for m in range(1, len(ramas1))]
         s3 = int((l_emp-0.01)/k)+1
         costo = round(s3*(l1*aCir(j)+2*l2*aCir(l))*cS/1000000, 0)
         if costo < minimo:
             minimo = costo
-            lista3 = [costo, nRam[i], j, k, l, s3, l1, l2a, l2, l_emp]
+            l2a = [Lest(h, ramas1[m][1] - ramas1[m][0], dp, l) if len(ramas1[m]) == 2 else Ltrab(h, dp, l)
+                   for m in range(1, len(ramas1))]
+            lram = ramas1
+            lista3 = [costo, nRam[i], j, k, l, s3, l1, l2a, l2, lram, l_emp]
             salida3=1
     costo_total = lista1[0]+lista2[0]+lista3[0]
-    # lista1 --> [n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, dist]
-    # lista2 --> [n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, dist]
-    # lista3 --> [n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, dist]
-    # los estribos del empalme corresponden a los mismos de la zona ubicada fuera de la rótula plástica,
-    # solo varía su separación.
+    # lista1 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
+    # lista2 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
+    # lista3 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
     salida=salida1+salida2+salida3
     if salida == 3:
         return [lista1,lista2,lista3,costo_total]
@@ -1347,6 +1348,8 @@ cH, cS, b1, dp, es, ey, eu, fc, fy = 75000,7850000,0.85,5,2100000,0.002,0.003,25
 dList, deList = [16,18,22,25,28,32,36],[10,12]
 
 def detVig(detvig):
+    # agregar lista de barras horizontales
+
     di = 8
     ai = 1
     # npisos = len(detvig)
@@ -1433,10 +1436,10 @@ def detVig(detvig):
             print("Diámetro : ",j[1][9],"mm")
             print("N° ramas : ",j[1][2])
             cont=0
-            print("Estribos cerrados =",len(j[1][12][1]))
+            print("Estribos =",len(j[1][12][1]))
             for i in j[1][12][1]:
                 cont+=1
-                print("Largo de estribo cerrado n°",cont,"=",i,"cm")
+                print("Largo de estribo n°",cont,"=",i,"cm")
             if j[1][12][2]!=[]:
                 print("Traba central: si")
                 print("Largo de traba =",j[1][12][2][0],"cm")
@@ -1450,10 +1453,10 @@ def detVig(detvig):
             cont=0
             for i in j[1][13][1]:
                 cont+=1
-                print("largo de estribo n°",cont,"=",i,"cm")
+                print("Largo de estribo n°",cont,"=",i,"cm")
             if j[1][13][2]!=[]:
                 print("Traba central: si")
-                print("largo de traba =",j[1][13][2][0],"cm")
+                print("Largo de traba =",j[1][13][2][0],"cm")
             else:
                 print("Traba central: no")
             print("Espaciamiento : ", j[1][7],"cm")
@@ -1480,6 +1483,8 @@ def detVig(detvig):
             print("\n")
 
 def detCol(detcol):
+    #agregar lista de barras horizontales
+
     cont = 0
     npisos = len(detcol)
     ncol = len(detcol[0])
@@ -1489,7 +1494,7 @@ def detCol(detcol):
             """ Identificador """
 
             cont+=1
-            print("Columna n° ",cont,"\n\n")
+            print("\n\nColumna n° ",cont,"\n\n")
 
             """Dimensiones"""
 
@@ -1522,25 +1527,151 @@ def detCol(detcol):
             else:
                 print(2+j[0][3],"barras Ø",j[0][5],"mm en la posición y =",j[0][14][-1],"cm, área =",j[0][13][-1],"cm2")
 
-            # return [listaT, corte]
-            # optimo = [minor, h, b, nH, nV, nEsq, nLat, fu, fu2, cuan, cF[0], cF2[0], e, alist, ylist, cF[1],
-            #           cF[2], muC, puCmax, puCmin, H, iguales]
-            # return [costo_total] + lista1[1:] + lista2[1:] + lista3[1:]
-            # lista1 --> [n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, dist]
-            # lista2 --> [n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, dist]
-            # lista3 --> [n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, dist]
-
             """Cuantía"""
 
-            print("\nCuantía = ",j[0][9],"\n")
+            print("\nCuantía = ",j[0][9],"\n\n")
 
             """Refuerzo transversal"""
 
-            print("Refuerzo transversal")
-            print("\nZonas de rótula plástica, de 0 -",j[1][0][9],"cm y ",j[0][20]*100-j[1][0][9],"-",j[0][20]*100,"cm:")
+            print("Refuerzo transversal\n")
+
+            print("\nZonas de rótula plástica\n")
+
+            print("\nUbicación : de 0 -",j[1][0][10],"cm y ",j[0][20]*100-j[1][0][10],"-",j[0][20]*100,"cm:")
             print("N° ramas : ",j[1][0][1])
+            print("N° de estribos por extremo: ",j[1][0][5])
+            print("Espaciamiento : ",j[1][0][3],"cm")
+            print("\nRefuerzo exterior\n")
             print("Diámetro estribo exterior: ",j[1][0][2],"mm")
             print("Largo del estribo exterior",j[1][0][6],"cm")
+            print("Ubicación entre ejes de barras horizontales: x =",j[1][0][9][0][0],"cm y x =",j[1][0][9][0][1],"cm")
+            print("Ubicación entre ejes de barras verticales: y =",j[1][0][9][0][0],"cm e y =",j[1][0][9][0][1],"cm")
+            if j[1][0][1]>2:
+                print("\nRefuerzo interior\n")
+                if j[1][0][1]%2!=0:
+                    print("Diámetro de estribos y trabas interiores",j[1][0][4],"mm")
+                    if len(j[1][0][7])-1>0:
+                        for i in range(len(j[1][0][7])-1):
+                            print("Largo estribo interior n°",i+1,"=",j[1][0][7][i],"cm")
+                            print("Ubicación entre ejes de barras horizontales: x =", j[1][0][9][i+1][0], "cm y x =",
+                                  j[1][0][9][i+1][1], "cm")
+                            print("Ubicación entre ejes de barras verticales: y =", j[1][0][9][0][0], "cm e y =",
+                                  j[1][0][9][0][1], "cm")
+                    print("Largo de traba interior n°1 =",j[1][0][7][-1],"cm")
+                    print("Ubicación entre ejes de barras horizontales: x =", j[1][0][9][-1][0], "cm y x =",
+                          j[1][0][9][-1][1], "cm")
+                    print("Ubicación entre ejes de barras verticales: y =", j[1][0][9][0][0], "cm e y =",
+                          j[1][0][9][0][1], "cm")
+                else:
+                    print("Diámetro de estribos interiores",j[1][0][4],"mm")
+                    if len(j[1][0][7])-1>0:
+                        for i in range(len(j[1][0][7])-1):
+                            print("Largo estribo interior n°",i+1,"=",j[1][0][7][i],"cm")
+                            print("Ubicación entre ejes de barras horizontales: x =", j[1][0][9][i + 1][0], "cm y x =",
+                                  j[1][0][9][i + 1][1], "cm")
+                            print("Ubicación entre ejes de barras verticales: y =", j[1][0][9][0][0], "cm e y =",
+                                  j[1][0][9][0][1], "cm")
+                    print("Largo de estribo interior n°", len(j[1][0][7]), "=", j[1][0][7][-1], "cm")
+                    print("Ubicación entre ejes de barras horizontales: x =", j[1][0][9][-1][0], "cm y x =",
+                          j[1][0][9][-1][1], "cm")
+                    print("Ubicación entre ejes de barras verticales: y =", j[1][0][9][0][0], "cm e y =",
+                          j[1][0][9][0][1], "cm")
+
+            print("\n\nZona central\n")
+
+            print("\nUbicación : de",j[1][0][10],"-",j[1][0][10]+round(j[1][1][10]/2,1),"cm y de",j[0][20]*100-(j[1][0][10]+round(j[1][1][10]/2,1)),"-",j[0][20]*100-j[1][0][10],"cm")
+            print("N° ramas : ", j[1][1][1])
+            print("N° de estribos por extremo: ",int(round(j[1][1][5]/2,0)))
+            print("Espaciamiento : ", j[1][1][3], "cm")
+            print("\nRefuerzo exterior\n")
+            print("Diámetro estribo exterior: ", j[1][1][2], "mm")
+            print("Largo del estribo exterior", j[1][1][6], "cm")
+            print("Ubicación entre ejes de barras horizontales: x =", j[1][1][9][0][0], "cm y x =", j[1][1][9][0][1],
+                  "cm")
+            print("Ubicación entre ejes de barras verticales: y =", j[1][1][9][0][0], "cm e y =", j[1][1][9][0][1],
+                  "cm")
+            if j[1][1][1] > 2:
+                print("\nRefuerzo interior\n")
+                if j[1][1][1] % 2 != 0:
+                    print("Diámetro de estribos y trabas interiores", j[1][1][4], "mm")
+                    if len(j[1][1][7]) - 1 > 0:
+                        for i in range(len(j[1][1][7]) - 1):
+                            print("Largo estribo interior n°", i + 1, "=", j[1][1][7][i], "cm")
+                            print("Ubicación entre ejes de barras horizontales: x =", j[1][1][9][i + 1][0], "cm y x =",
+                                  j[1][1][9][i + 1][1], "cm")
+                            print("Ubicación entre ejes de barras verticales: y =", j[1][1][9][0][0], "cm e y =",
+                                  j[1][1][9][0][1], "cm")
+                    print("Largo de traba interior n°1 =", j[1][1][7][-1], "cm")
+                    print("Ubicación entre ejes de barras horizontales: x =", j[1][1][9][-1][0], "cm y x =",
+                          j[1][1][9][-1][1], "cm")
+                    print("Ubicación entre ejes de barras verticales: y =", j[1][1][9][0][0], "cm e y =",
+                          j[1][1][9][0][1], "cm")
+                else:
+                    print("Diámetro de estribos interiores", j[1][1][4], "mm")
+                    if len(j[1][1][7]) - 1 > 0:
+                        for i in range(len(j[1][1][7]) - 1):
+                            print("Largo estribo interior n°", i + 1, "=", j[1][1][7][i], "cm")
+                            print("Ubicación entre ejes de barras horizontales: x =", j[1][1][9][i + 1][0], "cm y x =",
+                                  j[1][1][9][i + 1][1], "cm")
+                            print("Ubicación entre ejes de barras verticales: y =", j[1][1][9][0][0], "cm e y =",
+                                  j[1][1][9][0][1], "cm")
+                    print("Largo de estribo interior n°", len(j[1][1][7]), "=", j[1][1][7][-1], "cm")
+                    print("Ubicación entre ejes de barras horizontales: x =", j[1][1][9][-1][0], "cm y x =",
+                          j[1][1][9][-1][1], "cm")
+                    print("Ubicación entre ejes de barras verticales: y =", j[1][1][9][0][0], "cm e y =",
+                          j[1][1][9][0][1], "cm")
+
+            print("\n\nEmpalme central\n")
+
+            print("\nUbicación : de",j[1][0][10]+round(j[1][1][10]/2,1),"-",j[0][20]*100-(j[1][0][10]+round(j[1][1][10]/2,1)),"cm")
+            print("N° ramas : ", j[1][2][1])
+            print("N° de estribos : ",j[1][2][5])
+            print("Espaciamiento : ", j[1][2][3], "cm")
+            print("\nRefuerzo exterior\n")
+            print("Diámetro estribo exterior: ", j[1][2][2], "mm")
+            print("Largo del estribo exterior", j[1][2][6], "cm")
+            print("Ubicación entre ejes de barras horizontales: x =", j[1][2][9][0][0], "cm y x =", j[1][2][9][0][1],
+                  "cm")
+            print("Ubicación entre ejes de barras verticales: y =", j[1][2][9][0][0], "cm e y =", j[1][2][9][0][1],
+                  "cm")
+            if j[1][2][1] > 2:
+                print("\nRefuerzo interior\n")
+                if j[1][2][1] % 2 != 0:
+                    print("Diámetro de estribos y trabas interiores", j[1][2][4], "mm")
+                    if len(j[1][2][7]) - 1 > 0:
+                        for i in range(len(j[1][2][7]) - 1):
+                            print("Largo estribo interior n°", i + 1, "=", j[1][2][7][i], "cm")
+                            print("Ubicación entre ejes de barras horizontales: x =", j[1][2][9][i+1][0], "cm y x =",
+                                  j[1][2][9][i + 1][1], "cm")
+                            print("Ubicación entre ejes de barras verticales: y =", j[1][2][9][0][0], "cm e y =",
+                                  j[1][2][9][0][1], "cm")
+                    print("Largo de traba interior n°1 =", j[1][2][7][-1], "cm")
+                    print("Ubicación entre ejes de barras horizontales: x =", j[1][2][9][-1][0], "cm y x =",
+                          j[1][2][9][-1][1], "cm")
+                    print("Ubicación entre ejes de barras verticales: y =", j[1][2][9][0][0], "cm e y =",
+                          j[1][2][9][0][1], "cm")
+                else:
+                    print("Diámetro de estribos interiores", j[1][2][4], "mm")
+                    if len(j[1][2][7]) - 1 > 0:
+                        for i in range(len(j[1][2][7]) - 1):
+                            print("Largo estribo interior n°", i + 1, "=", j[1][2][7][i], "cm")
+                            print("Ubicación entre ejes de barras horizontales: x =", j[1][2][9][i+1][0], "cm y x =",
+                                  j[1][2][9][i+1][1], "cm")
+                            print("Ubicación entre ejes de barras verticales: y =", j[1][2][9][0][0], "cm e y =",
+                                  j[1][2][9][0][1], "cm")
+                    print("Largo de estribo interior n°", len(j[1][2][7]), "=", j[1][2][7][-1], "cm")
+                    print("Ubicación entre ejes de barras horizontales: x =", j[1][2][9][-1][0], "cm y x =",
+                          j[1][2][9][-1][1], "cm")
+                    print("Ubicación entre ejes de barras verticales: y =", j[1][2][9][0][0], "cm e y =",
+                          j[1][2][9][0][1], "cm")
+
+            # return [listaT, corte]
+            # optimo = [minor, h, b, nH, nV, nEsq, nLat, fu, fu2, cuan, cF[0], cF2[0], e, alist, ylist, cF[1],
+            #           cF[2], muC, puCmax, puCmin, H, iguales]
+            # return [lista1,lista2,lista3,costo_total]
+            # lista1 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
+            # lista2 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
+            # lista3 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
 
             # cont=0
             # print("Estribos cerrados =",len(j[1][12][1]))
