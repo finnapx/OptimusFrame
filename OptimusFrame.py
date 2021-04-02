@@ -1484,7 +1484,8 @@ def detVig(detvig):
 
 def detCol(detcol):
     #agregar lista de barras horizontales
-
+    print("\nNota: todas las columnas son simétricas, por lo tanto, su ancho y alto es igual.")
+    print("Por otro lado, las trabas y/o estribos interiores perpendiculares al eje x se replican al eje y")
     cont = 0
     npisos = len(detcol)
     ncol = len(detcol[0])
@@ -1558,8 +1559,8 @@ def detCol(detcol):
                             print("Ubicación entre ejes de barras verticales: y =", j[1][0][9][0][0], "cm e y =",
                                   j[1][0][9][0][1], "cm")
                     print("Largo de traba interior n°1 =",j[1][0][7][-1],"cm")
-                    print("Ubicación entre ejes de barras horizontales: x =", j[1][0][9][-1][0], "cm y x =",
-                          j[1][0][9][-1][1], "cm")
+                    #Revisar
+                    print("Ubicación entre ejes de barras horizontales: x =", j[1][0][9][-1][0], "cm")
                     print("Ubicación entre ejes de barras verticales: y =", j[1][0][9][0][0], "cm e y =",
                           j[1][0][9][0][1], "cm")
                 else:
@@ -1602,8 +1603,7 @@ def detCol(detcol):
                             print("Ubicación entre ejes de barras verticales: y =", j[1][1][9][0][0], "cm e y =",
                                   j[1][1][9][0][1], "cm")
                     print("Largo de traba interior n°1 =", j[1][1][7][-1], "cm")
-                    print("Ubicación entre ejes de barras horizontales: x =", j[1][1][9][-1][0], "cm y x =",
-                          j[1][1][9][-1][1], "cm")
+                    print("Ubicación entre ejes de barras horizontales: x =", j[1][0][9][-1][0], "cm")
                     print("Ubicación entre ejes de barras verticales: y =", j[1][1][9][0][0], "cm e y =",
                           j[1][1][9][0][1], "cm")
                 else:
@@ -1616,8 +1616,8 @@ def detCol(detcol):
                             print("Ubicación entre ejes de barras verticales: y =", j[1][1][9][0][0], "cm e y =",
                                   j[1][1][9][0][1], "cm")
                     print("Largo de estribo interior n°", len(j[1][1][7]), "=", j[1][1][7][-1], "cm")
-                    print("Ubicación entre ejes de barras horizontales: x =", j[1][1][9][-1][0], "cm y x =",
-                          j[1][1][9][-1][1], "cm")
+                    # print("Ubicación entre ejes de barras horizontales: x =", j[1][1][9][-1][0], "cm y x =",
+                    #       j[1][1][9][-1][1], "cm")
                     print("Ubicación entre ejes de barras verticales: y =", j[1][1][9][0][0], "cm e y =",
                           j[1][1][9][0][1], "cm")
 
@@ -1640,28 +1640,26 @@ def detCol(detcol):
                     print("Diámetro de estribos y trabas interiores", j[1][2][4], "mm")
                     if len(j[1][2][7]) - 1 > 0:
                         for i in range(len(j[1][2][7]) - 1):
-                            print("Largo estribo interior n°", i + 1, "=", j[1][2][7][i], "cm")
+                            print("\nLargo estribo interior n°", i + 1, "=", j[1][2][7][i], "cm")
                             print("Ubicación entre ejes de barras horizontales: x =", j[1][2][9][i+1][0], "cm y x =",
                                   j[1][2][9][i + 1][1], "cm")
                             print("Ubicación entre ejes de barras verticales: y =", j[1][2][9][0][0], "cm e y =",
                                   j[1][2][9][0][1], "cm")
-                    print("Largo de traba interior n°1 =", j[1][2][7][-1], "cm")
-                    print("Ubicación entre ejes de barras horizontales: x =", j[1][2][9][-1][0], "cm y x =",
-                          j[1][2][9][-1][1], "cm")
+                    print("\nLargo de traba interior n°1 =", j[1][2][7][-1], "cm")
+                    print("Ubicación entre ejes de barras horizontales: x =", j[1][0][9][-1][0], "cm")
                     print("Ubicación entre ejes de barras verticales: y =", j[1][2][9][0][0], "cm e y =",
                           j[1][2][9][0][1], "cm")
                 else:
                     print("Diámetro de estribos interiores", j[1][2][4], "mm")
                     if len(j[1][2][7]) - 1 > 0:
                         for i in range(len(j[1][2][7]) - 1):
-                            print("Largo estribo interior n°", i + 1, "=", j[1][2][7][i], "cm")
+                            print("\nLargo estribo interior n°", i + 1, "=", j[1][2][7][i], "cm")
                             print("Ubicación entre ejes de barras horizontales: x =", j[1][2][9][i+1][0], "cm y x =",
                                   j[1][2][9][i+1][1], "cm")
                             print("Ubicación entre ejes de barras verticales: y =", j[1][2][9][0][0], "cm e y =",
                                   j[1][2][9][0][1], "cm")
-                    print("Largo de estribo interior n°", len(j[1][2][7]), "=", j[1][2][7][-1], "cm")
-                    print("Ubicación entre ejes de barras horizontales: x =", j[1][2][9][-1][0], "cm y x =",
-                          j[1][2][9][-1][1], "cm")
+                    print("\nLargo de estribo interior n°", len(j[1][2][7]), "=", j[1][2][7][-1], "cm")
+                    print("Ubicación entre ejes de barras horizontales: x =", j[1][0][9][-1][0], "cm")
                     print("Ubicación entre ejes de barras verticales: y =", j[1][2][9][0][0], "cm e y =",
                           j[1][2][9][0][1], "cm")
 
@@ -1719,7 +1717,7 @@ def detCol(detcol):
     #         print("F.U.2 = ",fuV2,"%\n")
     #         #falta cuantía de acero en refuerzo transversal
     #         print("\n")
-            input()
+    #         input()
 
 def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, deList, hColMax, hColMin):
     dList=[16,18,22,25,28,32,36]
