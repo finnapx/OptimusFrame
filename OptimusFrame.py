@@ -1137,19 +1137,23 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, hmi
                 cuan = round(aS/(b*h), 5)
                 mpr1 = max(pmC(alist, b, b1, cF[0], es, eu, ey, fc, fy*1.25, h, ylist)[1],
                            pmC(alist, b, b1, cF2[0], es, eu, ey, fc, fy*1.25, h, ylist)[1])
-                # print(pmC(alist, b, b1, cF[0], es, eu, ey, fc, fy*1.25, h, ylist)[1],
-                #            pmC(alist, b, b1, cF2[0], es, eu, ey, fc, fy*1.25, h, ylist)[1])
                 mpr2 = mpr1
                 #agregar a entrada H, vu, vue, deList
                 if fu < 95 and fu2 < 95 and 0.01 <= cuan <= 0.06:
-                    costo = round((aS*cS+(b*h-aS)*cH)/10000, 0)
-                    if costo < minor:
-                        corte = minEstC(mpr1, mpr2, muC, H, vu, vue, ylist, deList, min(l, m), h, b, dp, fy, fc, cS)
-                        if corte!=0:
+                    corte1 = minEstC(mpr1, mpr2, muC, H, vu, vue, ylist, deList, min(l, m), h, b, dp, fy, fc, cS)
+                    if corte1 != 0:
+                        costo1 = round((aS*cS+(b*h-aS)*cH)/10000, 0)*(corte1[2][10]+H*100)/100
+                        costo2 = corte1[3]
+                        costo = costo1+costo2
+                        if costo < minor:
+                            # corte = minEstC(mpr1, mpr2, muC, H, vu, vue, ylist, deList, min(l, m), h, b, dp, fy, fc, cS)
                             minor, e = costo, round(cF[1] / (cF[2] + 0.001), 3)
                             optimo = [minor, h, b, j, k, l, m, fu, fu2, cuan, cF[0], cF2[0], e, alist, ylist, cF[1],
-                                      cF[2], muC, puCmax, puCmin, H, iguales]
-                        salida=1
+                                      cF[2], muC, puCmax, puCmin, H, iguales, min_e, cF2[1], cF2[2], costo1, costo2]
+                            salida=1
+                            corte=corte1
+                    else:
+                        continue
     if salida==1:
         return [optimo, corte]
     else:
@@ -1198,9 +1202,10 @@ def minEstV(mpr1, mpr2, vuLsti,vueLsti,vuLstj,vueLstj, xList, deList, db, h, b, 
     return Lout
 
 def optimusVig(mpp,mnn,es,eu,ey,b1,fc,fy,dp,dList,dimV,ai,lo,cH,cS,v,allVu,deList,wo):
+    # fact = 0.55 if tipo==1 else 0.6
     mnn=abs(mnn)
     salida=0
-    minim = 99999999
+    minim = 999999999
     hmax = dimV[0] if dimV[0]>=30 else 30
     bmax = dimV[1] if dimV[1]>=25 else 25
     hmin = dimV[2] if dimV[2]<=30 else 30
@@ -1248,8 +1253,9 @@ def optimusVig(mpp,mnn,es,eu,ey,b1,fc,fy,dp,dList,dimV,ai,lo,cH,cS,v,allVu,deLis
                  ,lis[3] if lis[3]>0 else 99])
         sup=L1[0]
         xlistV = xLst(sup, 30, 5)[1]
+        FU = round(max(mnn / cpn[1], mpp / cpnrev[1]) * 100, 1)
         if 0.025 >= cuan1 >= cumin and 0.025 >= cuan2 >= cumin\
-                and cpn[1] >= mnn and cpnrev[1] >= mpp:
+                and cpn[1] >= mnn and cpnrev[1] >= mpp and 85<=FU<=95:
             cond = True
             costo = round((sum(aSLst)*cS+(h*b-sum(aSLst))*cH)/10000, 0)
             if costo < minim and cond != False:
@@ -1319,10 +1325,10 @@ largosV=[[7,7,7],
          [7,7,7],
          [7,7,7]]
 
-dimV = [[[80,50,40,30],[80,50,40,30],[80,50,40,30]],
-        [[80,50,40,30],[80,50,40,30],[80,50,40,30]],
-        [[80,50,40,30],[80,50,40,30],[80,50,40,30]],
-        [[80,50,40,30],[80,50,40,30],[80,50,40,30]]]
+dimV = [[[70,40,30,30],[70,40,30,30],[70,40,30,30]],
+        [[70,40,30,30],[70,40,30,30],[70,40,30,30]],
+        [[70,40,30,30],[70,40,30,30],[70,40,30,30]],
+        [[70,40,30,30],[70,40,30,30],[70,40,30,30]]]
 
 def matElemV(lista, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai, deList, v):
     #se itera en la lista
@@ -1468,7 +1474,7 @@ def detVig(detvig):
             print("Flexión")
             print("ØMn+ = ", j[0][15], "tf-m")
             print("ØMn- = ", -j[0][14], "tf-m")
-            print("F.U. mayor= ", j[0][18], "%\n")
+            print("F.U. mayor = ", j[0][18], "%\n")
 
             print("Corte")
             phiVn1 = round(aCir(j[1][9])*j[1][2]*fy*(j[0][1]-dp)/j[1][3]*0.75,1)
@@ -1486,6 +1492,7 @@ def detCol(detcol):
     #agregar lista de barras horizontales
     print("\nNota: todas las columnas son simétricas, por lo tanto, su ancho y alto es igual.")
     print("Por otro lado, las trabas y/o estribos interiores perpendiculares al eje x se replican al eje y")
+
     cont = 0
     npisos = len(detcol)
     ncol = len(detcol[0])
@@ -1616,8 +1623,8 @@ def detCol(detcol):
                             print("Ubicación entre ejes de barras verticales: y =", j[1][1][9][0][0], "cm e y =",
                                   j[1][1][9][0][1], "cm")
                     print("Largo de estribo interior n°", len(j[1][1][7]), "=", j[1][1][7][-1], "cm")
-                    # print("Ubicación entre ejes de barras horizontales: x =", j[1][1][9][-1][0], "cm y x =",
-                    #       j[1][1][9][-1][1], "cm")
+                    print("Ubicación entre ejes de barras horizontales: x =", j[1][1][9][-1][0], "cm y x =",
+                          j[1][1][9][-1][1], "cm")
                     print("Ubicación entre ejes de barras verticales: y =", j[1][1][9][0][0], "cm e y =",
                           j[1][1][9][0][1], "cm")
 
@@ -1671,41 +1678,28 @@ def detCol(detcol):
             # lista2 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
             # lista3 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
 
-            # cont=0
-            # print("Estribos cerrados =",len(j[1][12][1]))
-            # for i in j[1][12][1]:
-            #     cont+=1
-            #     print("Largo de estribo cerrado n°",cont,"=",i,"cm")
-            # if j[1][12][2]!=[]:
-            #     print("Traba central: si")
-            #     print("Largo de traba =",j[1][12][2][0],"cm")
-            # else:
-            #     print("Traba central: no")
-            # print("Espaciamiento : ",j[1][3],"cm")
-            # print("N° estribos : ",int(round(j[1][4]/2,0))," en cada extremo")
-            # print("\nZonas central, de ",j[1][1],"-",j[0][17]*100-j[1][1],"cm")
-            # print("Diámetro : ", j[1][9], "mm")
-            # print("N° ramas : ", j[1][6])
-            # cont=0
-            # for i in j[1][13][1]:
-            #     cont+=1
-            #     print("largo de estribo n°",cont,"=",i,"cm")
-            # if j[1][13][2]!=[]:
-            #     print("Traba central: si")
-            #     print("largo de traba =",j[1][13][2][0],"cm")
-            # else:
-            #     print("Traba central: no")
-            # print("Espaciamiento : ", j[1][7],"cm")
-            # print("N° estribos : ", j[1][8],"\n")
+            """Resultados"""
 
-    #         """Resultados"""
-    #
-    #         print("Resultados\n")
-    #         print("Flexión")
-    #         print("ØMn+ = ", j[0][15], "tf-m")
-    #         print("ØMn- = ", -j[0][14], "tf-m")
-    #         print("F.U. mayor= ", j[0][18], "%\n")
-    #
+            print("\n\nResultados\n")
+            print("Flexión\n")
+            print("Mayor excentricidad", j[0][22] * 100, "cm\n")
+            print("Momentos\n")
+            print("Mu_max = ", j[0][17], "tf-m")
+            print("Momento nominal ajustado a Mu y Pu máximos")
+            print("ØMn1 = ", j[0][15], "tf-m")
+            print("Momento nominal ajustado a Mu máximo debido a mayor excentricidad:")
+            print("ØMn2 = ", j[0][23], "tf-m\n")
+
+            print("Cargas\n")
+            print("Pu_max = ", j[0][18], "tf")
+            print("Pu_min = ", j[0][19], "tf")
+            print("Carga nominal que verifica Pu_max:")
+            print("ØPn1 = ", j[0][16], "tf")
+            print("Carga nominal que verifica Pu_min:")
+            print("ØPn2 = ", j[0][24], "tf\n")
+            print("F.U. 1 = ", j[0][7], "%")
+            print("F.U. 2 = ", j[0][8], "%\n")
+
     #         print("Corte")
     #         phiVn1 = round(aCir(j[1][9])*j[1][2]*fy*(j[0][1]-dp)/j[1][3],1)
     #         print("ØVn1 = ",round(phiVn1/1000,1), "tf")
@@ -1766,9 +1760,10 @@ def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
         detcol.append(tempC)
     # print(sum([detcol[i][j][1][3] for i in range(len(detcol)) for j in range(len(detcol[0]))]))
 
-    # detVig(detvig)
-    print(detcol)
-    detCol(detcol)
+    # print(detcol)
+    # detCol(detcol)
+    print(detvig)
+    detVig(detvig)
     return [detcol,detvig]
 
 hColMax, hColMin = 80, 40
