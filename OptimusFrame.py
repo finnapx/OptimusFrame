@@ -533,7 +533,9 @@ def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
             lista2.append(lista1)
         listaC.append(lista2)
     # return [listaV,listaVmax, listaC, listaCmax]
+
     return [listaV, listaC, exC]
+
 
 # print(filtroCV(combis, combi_e, combi_s, tab, largosV, largosC))
 
@@ -912,12 +914,14 @@ def estribosV(xList, ramas):
         Lestrib.append(estribos)
     return Lestrib
 
+def ldC(fy,fc,db):
+    return max(0.075*fy*0.1*db/(fc)**0.5, 0.0044*fy*0.1*db)
+
 def ldV(db, fc, fy):
     if db<19:
-        ld = 0.1*db*fy/(3.46*(fc)**0.5)
+        return 0.1*db*fy/(3.46*(fc)**0.5)
     else:
-        ld = 0.1*db*fy/(4.4*(fc)**0.5)
-    return ld
+        return 0.1*db*fy/(4.4*(fc)**0.5)
 
 def lempV(db, fc, fy):
     if db<19:
@@ -932,10 +936,10 @@ def ldhV(fy, db, fc):
 def lGanchoC(db, fc, fy, h, dp):
     if db<19:
         ld = round(max(0.1*db*fy/(3.46*(fc)**0.5), 2.5*db+10),1)
-        return [round((h-dp)+0.6*3.1416/4*db+ld,1), ld]
+        return [round(ldC(fy,fc,db)+0.6*3.1416/4*db+ld,1), ld]
     else:
         ld = round(max(0.1*db*fy/(4.4*(fc)**0.5), 2.5*db+10))
-        return [round((h-dp)+0.6*3.1416/4*db+ld,1), ld]
+        return [round(ldC(fy,fc,db)+0.6*3.1416/4*db+ld,1), ld]
 
 def lGanchoV(fy, db, fc):
     return ldhV(fy,db,fc)+0.6*3.1416*db/4+12*db
@@ -1150,8 +1154,8 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     else:
         return 0
 
-def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, hmin, cH, cS, H, vu, vue, deList, min_e, iguales):
-    puCmin = round(muC/min_e,2)
+def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, hmin, cH, cS, H, vu, vue, deList, max_e, iguales):
+    puCmin = round(muC/max_e,2)
     salida=0
     minor = 9999999
     hmin = hmin if hmin >= 30 else 30
@@ -1191,7 +1195,7 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, hmi
                             # corte = minEstC(mpr1, mpr2, muC, H, vu, vue, ylist, deList, min(l, m), h, b, dp, fy, fc, cS)
                             minor, e = costo, round(cF[1] / (cF[2] + 0.001), 3)
                             optimo = [minor, h, b, j, k, l, m, fu, fu2, cuan, cF[0], cF2[0], e, alist, ylist, cF[1],
-                                      cF[2], muC, puCmax, puCmin, H, iguales, min_e, cF2[1], cF2[2], costo1, costo2, dp]
+                                      cF[2], muC, puCmax, puCmin, H, iguales, max_e, cF2[1], cF2[2], costo1, costo2, dp]
                             salida=1
                             corte=corte1
                     else:
@@ -1759,7 +1763,7 @@ def detCol(detcol):
 
     # return [listaT, corte]
     # optimo = [minor, h, b, nH, nV, nEsq, nLat, fu, fu2, cuan, cF[0], cF2[0], e, alist, ylist, cF[1],
-    #           cF[2], muC, puCmax, puCmin, H, iguales, min_e, cF2[1], cF2[2], costo1, costo2, dp]
+    #           cF[2], muC, puCmax, puCmin, H, iguales, max_e, cF2[1], cF2[2], costo1, costo2, dp]
     # return [lista1,lista2,lista3,costo_total,vu1,vu2]
     # lista1 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
     # lista2 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
@@ -1791,9 +1795,30 @@ def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
     wo2 = [[wo1[j] for i in range(len(listaV[0]))] for j in range(len(listaV))]
     minLo = [min(i) for i in largosV]
     maxLo = [max(i) for i in largosV]
-    listaVig = [[[mpp2[i][j],mnn2[i][j],wo2[i][j],largosV[i][j],allVuL[i][j], dimV[i][j]]
+    lV = []
+    for i in allVuL:
+        a=[[],[],[],[]]
+        a[0].append(max([i[j][0][0] for j in range(len(i))]))
+        a[0].append(max([i[j][0][1] for j in range(len(i))]))
+        a[1].append(max([i[j][1][0] for j in range(len(i))]))
+        a[1].append(max([i[j][1][1] for j in range(len(i))]))
+        a[1].append(min([i[j][1][2] for j in range(len(i))]))
+        a[1].append(max([i[j][1][3] for j in range(len(i))]))
+        a[2].append(min([i[j][2][0] for j in range(len(i))]))
+        a[2].append(min([i[j][2][1] for j in range(len(i))]))
+        a[3].append(min([i[j][3][0] for j in range(len(i))]))
+        a[3].append(min([i[j][3][1] for j in range(len(i))]))
+        a[3].append(min([i[j][3][2] for j in range(len(i))]))
+        a[3].append(max([i[j][3][3] for j in range(len(i))]))
+        lV.append(a)
+    lV2=[[i for j in range(len(allVuL[0]))] for i in lV]
+
+    listaVig = [[[mpp2[i][j],mnn2[i][j],wo2[i][j],largosV[i][j],lV2[i][j], dimV[i][j]]
        for j in range(len(listaV[0]))] for i in range(len(listaV))]
-    detvig=matElemV(listaVig, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, 1, deList, 5)
+    listaVig2 = [[listaVig[i][0]] for i in range(len(listaVig))]
+    detvig2=matElemV(listaVig2, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, 1, deList, 5)
+    detvig = [[detvig2[j] for i in range(len(listaVig[0]))] for j in range(len(listaVig))]
+
     listaCol =[[[max(abs(listaC[i][j][0][k]), abs(listaC[i][j][1][k])) for k in range(6)]
                 for j in range(len(listaC[0]))] for i in range(len(listaC))]
     tempCol = extMat(listaCol, 4)
@@ -1814,8 +1839,8 @@ def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
 
     # print(detcol)
     # detCol(detcol)
-    print(detvig)
-    detVig(detvig)
+    # print(detvig)
+    # detVig(detvig)
     return [detcol,detvig]
 
 hColMax, hColMin = 80, 40
@@ -1826,5 +1851,5 @@ asd=optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
 t2=time()-t1
 print("tiempo de ejecución",round(t2,5),"segundos")
 
-print(asd[0],"\n\n",asd[1])
+# print(asd[0],"\n\n",asd[1])
 
