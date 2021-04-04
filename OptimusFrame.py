@@ -912,6 +912,9 @@ def estribosV(xList, ramas):
         Lestrib.append(estribos)
     return Lestrib
 
+def aminV(fc,b,fy):
+    return max(0.2*(fc)**0.5*b/fy,3.5*b/fy)
+
 def countram(ramas):
     nramas=[]
     for i in ramas:
@@ -1034,11 +1037,13 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
         ramitas = ramas[0]
         aux1=[ramitas[i]-ramitas[i-1] for i in range(1,len(ramitas))]
         srotL =  [int(sRotC(h, b, db, max(aux1)))]
-    sash = round(ashS(h, b, dp, fc, fy), 3)
-    sreq = lambda nRam, de: int((nRam*aCir(de))/sash)
-    s1L = [[i, j, k, l] for i in range(len(nRam)) for j in deList
-           for k in range(8, int(sRotC(h, b, db, srotL[i])+1)) for l in deList
-           if vu1 <= round((2*aCir(j)+(nRam[i]-2)*aCir(l))*fy*(h-dp)/k, 1) <= vslim and l <= j]
+
+    sash = round(max(ashS(h, b, dp, fc, fy),aminV(fc,b,fy)), 3)
+
+    s1L = [[i, j, k, l] for i in range(len(nRam)) for j in deList for l in deList if l <= j
+           for k in range(8, min(int(sRotC(h, b, db, srotL[i])), int(round(100/((sash * 100 / (2 * aCir(j) + (nRam[i] - 2) * aCir(l)))-1), 1))+1))
+           if vu1 <= round((2*aCir(j)+(nRam[i]-2)*aCir(l))*fy*(h-dp)/k, 1) <= vslim]
+
     if s1L==[]:
         return 0
     minimo = 99999999
@@ -1058,8 +1063,11 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
             salida1=1
     l_rot = lista1[3]
     l_emp = lEmp(fy, db)
-    s2L = [[i, j, k, l] for i in range(len(nRam)) for j in deList for k in range(10, s+1) for l in deList
-           if vu2<=round((2*aCir(j)+(nRam[i]-2)*aCir(l))*fy*(h-dp)/k, 1) <= vslim and l <= j]
+    # s2L = [[i, j, k, l] for i in range(len(nRam)) for j in deList for k in range(10, s+1) for l in deList
+    #        if vu2<=round((2*aCir(j)+(nRam[i]-2)*aCir(l))*fy*(h-dp)/k, 1) <= vslim and l <= j]
+    s2L = [[i, j, k, l] for i in range(len(nRam)) for j in deList for l in deList if l <= j
+           for k in range(10, min(int(s), int(round(100/((sash * 100 / (2 * aCir(j) + (nRam[i] - 2) * aCir(l)))-1), 1)))+1)
+           if vu2 <= round((2*aCir(j)+(nRam[i]-2)*aCir(l))*fy*(h-dp)/k, 1) <= vslim]
     if s2L==[]:
         return 0
     minimo = 99999999
@@ -1079,8 +1087,11 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
             lista2=[costo, nRam[i], j, k, l, s2, l1, l2a, l2, lram, dist2]
             salida2=1
     semp = int(sEmp(h, dp))
-    s3L = [[i, j, k, l] for i in range(len(nRam)) for j in deList for k in range(8, semp+1) for l in deList
-           if vu2<=round((2*aCir(j)+(nRam[i]-2)*aCir(l))*fy*(h-dp)/k, 1) <= vslim and l <= j]
+    # s3L = [[i, j, k, l] for i in range(len(nRam)) for j in deList for k in range(8, semp+1) for l in deList
+    #        if vu2<=round((2*aCir(j)+(nRam[i]-2)*aCir(l))*fy*(h-dp)/k, 1) <= vslim and l <= j]
+    s3L = [[i, j, k, l] for i in range(len(nRam)) for j in deList for l in deList if l <= j
+           for k in range(8, min(int(semp), int(round(100/((sash * 100 / (2 * aCir(j) + (nRam[i] - 2) * aCir(l)))-1), 1))+1))
+           if vu2 <= round((2*aCir(j)+(nRam[i]-2)*aCir(l))*fy*(h-dp)/k, 1) <= vslim]
     if s3L==[]:
         return 0
     minimo = 99999999
@@ -1104,7 +1115,7 @@ def minEstC(mpr1, mpr2, Nu, H, vu, vue, yList, deList, db, h, b, dp, fy, fc, cS)
     # lista3 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
     salida=salida1+salida2+salida3
     if salida == 3:
-        return [lista1,lista2,lista3,costo_total]
+        return [lista1,lista2,lista3,costo_total,vu1,vu2]
     else:
         return 0
 
@@ -1149,7 +1160,7 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, puCmin, puCmax, dList, hmax, hmi
                             # corte = minEstC(mpr1, mpr2, muC, H, vu, vue, ylist, deList, min(l, m), h, b, dp, fy, fc, cS)
                             minor, e = costo, round(cF[1] / (cF[2] + 0.001), 3)
                             optimo = [minor, h, b, j, k, l, m, fu, fu2, cuan, cF[0], cF2[0], e, alist, ylist, cF[1],
-                                      cF[2], muC, puCmax, puCmin, H, iguales, min_e, cF2[1], cF2[2], costo1, costo2]
+                                      cF[2], muC, puCmax, puCmin, H, iguales, min_e, cF2[1], cF2[2], costo1, costo2, dp]
                             salida=1
                             corte=corte1
                     else:
@@ -1173,6 +1184,7 @@ def minEstV(mpr1, mpr2, vuLsti,vueLsti,vuLstj,vueLstj, xList, deList, db, h, b, 
     nRam = countram(ramas)
     x1 = 2*h
     x2 = lo/2-2*h
+    amin=aminV(fc,b,fy)
     Lout=[]
     for n in range(x1, x1 + 35, 5):
         xa1 = n
@@ -1181,7 +1193,7 @@ def minEstV(mpr1, mpr2, vuLsti,vueLsti,vuLstj,vueLstj, xList, deList, db, h, b, 
         vsB2 = V2vig(xa1,lo,vuLsti,vueLsti,vuLstj,vueLstj,vupr,Vc,1)
         lista=[[i,j,k,l,m] for i in nRam for j in sL1 for k in deList for l in nRam
         for m in sL2 if vsB1/(fy*(h-dp))<=i*aCir(k)/j<=vsL/(fy*(h-dp))
-        and vsB2/(fy*(h-dp))<=l*(aCir(k))/m<=vsL/(fy*(h-dp))]
+        and vsB2/(fy*(h-dp))<=l*(aCir(k))/m<=vsL/(fy*(h-dp)) and i*aCir(k)>amin]
         minim = 999999999
         if lista!=[]:
             for i in lista:
@@ -1477,22 +1489,21 @@ def detVig(detvig):
             print("F.U. mayor = ", j[0][18], "%\n")
 
             print("Corte")
-            phiVn1 = round(aCir(j[1][9])*j[1][2]*fy*(j[0][1]-dp)/j[1][3]*0.75,1)
+            phiVn1 = round(aCir(j[1][9])*j[1][2]*fy*(j[0][1]-dp)/j[1][3],1)
             print("ØVn1 = ",round(phiVn1/1000,1), "tf")
-            fuV1 = round(75*j[1][10]/(phiVn1),1)
+            fuV1 = round(100*j[1][10]/(phiVn1),1)
             print("F.U.1 = ",fuV1, "%")
-            phiVn2 = round(aCir(j[1][9])*j[1][6]*fy*(j[0][1]-dp)/j[1][7]*0.75, 1)
+            phiVn2 = round(aCir(j[1][9])*j[1][6]*fy*(j[0][1]-dp)/j[1][7], 1)
             print("ØVn2 = ",round(phiVn2/1000,1), "tf")
-            fuV2 = round(75*j[1][11]/phiVn2,1)
+            fuV2 = round(100*j[1][11]/phiVn2,1)
             print("F.U.2 = ",fuV2,"%\n")
             #falta cuantía de acero en refuerzo transversal
             print("\n")
 
 def detCol(detcol):
-    #agregar lista de barras horizontales
+
     print("\nNota: todas las columnas son simétricas, por lo tanto, su ancho y alto es igual.")
     print("Por otro lado, las trabas y/o estribos interiores perpendiculares al eje x se replican al eje y")
-
     cont = 0
     npisos = len(detcol)
     ncol = len(detcol[0])
@@ -1670,19 +1681,11 @@ def detCol(detcol):
                     print("Ubicación entre ejes de barras verticales: y =", j[1][2][9][0][0], "cm e y =",
                           j[1][2][9][0][1], "cm")
 
-            # return [listaT, corte]
-            # optimo = [minor, h, b, nH, nV, nEsq, nLat, fu, fu2, cuan, cF[0], cF2[0], e, alist, ylist, cF[1],
-            #           cF[2], muC, puCmax, puCmin, H, iguales]
-            # return [lista1,lista2,lista3,costo_total]
-            # lista1 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
-            # lista2 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
-            # lista3 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
-
             """Resultados"""
 
             print("\n\nResultados\n")
             print("Flexión\n")
-            print("Mayor excentricidad", j[0][22] * 100, "cm\n")
+            print("Mayor excentricidad", round(j[0][22] * 100,1), "cm\n")
             print("Momentos\n")
             print("Mu_max = ", j[0][17], "tf-m")
             print("Momento nominal ajustado a Mu y Pu máximos")
@@ -1700,18 +1703,36 @@ def detCol(detcol):
             print("F.U. 1 = ", j[0][7], "%")
             print("F.U. 2 = ", j[0][8], "%\n")
 
-    #         print("Corte")
-    #         phiVn1 = round(aCir(j[1][9])*j[1][2]*fy*(j[0][1]-dp)/j[1][3],1)
-    #         print("ØVn1 = ",round(phiVn1/1000,1), "tf")
-    #         fuV1 = round(100*j[1][10]/(phiVn1),1)
-    #         print("F.U.1 = ",fuV1, "%")
-    #         phiVn2 = round(aCir(j[1][9])*j[1][6]*fy*(j[0][1]-dp)/j[1][7], 1)
-    #         print("ØVn2 = ",round(phiVn2/1000,1), "tf")
-    #         fuV2 = round(100*j[1][11]/phiVn2,1)
-    #         print("F.U.2 = ",fuV2,"%\n")
-    #         #falta cuantía de acero en refuerzo transversal
-    #         print("\n")
+            print("Corte")
+
+            print("\nCorte en zona de rótula plástica")
+            phiVn1 = round((2*aCir(j[1][0][2])+aCir(j[1][0][4])*(j[1][0][1]-2))*fy*(j[0][1]-j[0][27])/j[1][0][3],1)
+            print("ØVn1 = ",round(phiVn1/1000,1), "tf")
+            fuV1 = round(100*j[1][4]/(phiVn1),1)
+            print("F.U.1 = ",fuV1, "%\n")
+
+            print("Corte en zona central")
+            phiVn2 = round((2*aCir(j[1][1][2])+aCir(j[1][1][4])*(j[1][1][1]-2))*fy*(j[0][1]-j[0][27])/j[1][1][3],1)
+            print("ØVn2 = ",round(phiVn2/1000,1), "tf")
+            fuV2 = round(100*j[1][5]/phiVn2,1)
+            print("F.U.2 = ",fuV2,"%\n")
+
+            print("Corte en zona de empalme")
+            phiVn3 = round((2*aCir(j[1][2][2])+aCir(j[1][2][4])*(j[1][2][1]-2))*fy*(j[0][1]-j[0][27])/j[1][2][3],1)
+            print("ØVn3 = ",round(phiVn3/1000,1), "tf")
+            fuV3 = round(100*j[1][5]/phiVn3,1)
+            print("F.U.3 = ",fuV3,"%\n")
+            #falta cuantía de acero en refuerzo transversal
+            print("\n")
     #         input()
+
+    # return [listaT, corte]
+    # optimo = [minor, h, b, nH, nV, nEsq, nLat, fu, fu2, cuan, cF[0], cF2[0], e, alist, ylist, cF[1],
+    #           cF[2], muC, puCmax, puCmin, H, iguales, min_e, cF2[1], cF2[2], costo1, costo2, dp]
+    # return [lista1,lista2,lista3,costo_total,vu1,vu2]
+    # lista1 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
+    # lista2 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
+    # lista3 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
 
 def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, deList, hColMax, hColMin):
     dList=[16,18,22,25,28,32,36]
