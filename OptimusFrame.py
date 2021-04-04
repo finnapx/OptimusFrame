@@ -912,6 +912,37 @@ def estribosV(xList, ramas):
         Lestrib.append(estribos)
     return Lestrib
 
+def ldV(db, fc, fy):
+    if db<19:
+        ld = 0.1*db*fy/(3.46*(fc)**0.5)
+    else:
+        ld = 0.1*db*fy/(4.4*(fc)**0.5)
+    return ld
+
+def lempV(db, fc, fy):
+    if db<19:
+        ld = 0.1*db*fy/(6.6*(fc)**0.5)
+    else:
+        ld = 0.1*db*fy/(5.34*(fc)**0.5)
+    return ld
+
+def ldhV(fy, db, fc):
+    return fy*db/(170*(fc)**0.5)
+
+def lGanchoC(db, fc, fy, h, dp):
+    if db<19:
+        ld = round(max(0.1*db*fy/(3.46*(fc)**0.5), 2.5*db+10),1)
+        return [round((h-dp)+0.6*3.1416/4*db+ld,1), ld]
+    else:
+        ld = round(max(0.1*db*fy/(4.4*(fc)**0.5), 2.5*db+10))
+        return [round((h-dp)+0.6*3.1416/4*db+ld,1), ld]
+
+def lGanchoV(fy, db, fc):
+    return ldhV(fy,db,fc)+0.6*3.1416*db/4+12*db
+
+def rematC(db, ldV, h, dp):
+    return max(2.5*db+10, ldV+dp-h)
+
 def aminV(fc,b,fy):
     return max(0.2*(fc)**0.5*b/fy,3.5*b/fy)
 
