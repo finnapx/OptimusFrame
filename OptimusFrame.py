@@ -908,7 +908,7 @@ def estribosV(xList, ramas):
     return Lestrib
 
 def ldC(fy,fc,db):
-    return max(0.075*fy*0.1*db/(fc)**0.5, 0.0044*fy*0.1*db)
+    return round(max(0.075*fy*0.1*db/(fc)**0.5, 0.0044*fy*0.1*db),1)
 
 def ldV(db, fc, fy):
     if db<19:
@@ -935,7 +935,7 @@ def lGanchoC(db, fc, fy, h, dp):
         return [round(ldC(fy,fc,db)+0.6*3.1416/4*db+ld,1), ld]
 
 def lGanchoV(fy, db, fc):
-    return ldhV(fy,db,fc)+0.6*3.1416*db/4+12*db
+    return round(ldhV(fy,db,fc)+1.05*db-5,1)
 
 def rematC(db, ldV, h, dp):
     return max(2.5*db+10, ldV+dp-h)
@@ -1197,7 +1197,7 @@ def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, muCmin, puCmin, puCmax, dList, h
     else:
         return 0
 
-def minEstV(mpr1, mpr2, vuLsti,vueLsti,vuLstj,vueLstj, xList, deList, db, h, b, lo, dp, fy, fc, cS, wo):
+def minEstV(mpr1, mpr2, vuLsti,vueLsti,vuLstj,vueLstj, xList, deList, db, h, b, lo, dp, fy, fc, cS, wo, yLst):
     lo*=100
     Vc = vc(fc, b, h, dp)*1000
     vupr = round(vprV(h, b, lo, mpr1, mpr2,wo),3)*1000
@@ -1227,21 +1227,23 @@ def minEstV(mpr1, mpr2, vuLsti,vueLsti,vuLstj,vueLstj, xList, deList, db, h, b, 
                 nr1, s1, de, nr2, s2 = i
                 Lest1 = est[nRam.index(nr1)]
                 Lest2 = est[nRam.index(nr2)]
+                LestH = Ltrab(b, dp, de)
                 ns1=int((xa1*2)/s1)
                 ns2=int((xa2-0.01)*2/s2)+1
+                nsH=ns1+ns2
+                numH=len(yLst)-2
                 cub1=cubEstV(h, dp, de, Lest1)
                 cub2=cubEstV(h, dp, de, Lest2)
-                mini = (cub1[0]*ns1+cub2[0]*ns2)*cS/1000000
+                mini = (cub1[0]*ns1+cub2[0]*ns2+LestH*nsH*numH)*cS/1000000
                 X1 = xa1-5 if xa1 > 2*h else 2*h
                 X2 = 2*((x1+x2)-X1)
                 if mini < minim:
                     minim = round(mini, 2)
                     #[costo, dist rot, n° ramas, espaciamiento, n° estribos, dist de rotula al centro, n° ramas, espaciamiento, n° estribos, de]
-                    Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de, vsB1, vsB2, cub1, cub2]
+                    Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de, vsB1, vsB2, cub1, cub2, nsH, numH, LestH]
     return Lout
 
 def optimusVig(mpp,mnn,es,eu,ey,b1,fc,fy,dp,dList,dimV,ai,lo,cH,cS,v,allVu,deList,wo):
-    # fact = 0.55 if tipo==1 else 0.6
     mnn=abs(mnn)
     salida=0
     minim = 999999999
@@ -1271,6 +1273,13 @@ def optimusVig(mpp,mnn,es,eu,ey,b1,fc,fy,dp,dList,dimV,ai,lo,cH,cS,v,allVu,deLis
         if lis==[]:
             continue
         db = max(L1[0][1], L1[0][3])
+        db2 = max(L2[0][1], L2[0][3])
+        gancho = round(lGanchoV(fy, db, fc),1)
+        db12 = round(1.2*db,1)
+        nbarG = L1[0][0]+L1[0][2]+L1[1][0]+L1[1][2]+lis[0]+lis[2]
+        traslp1=round(lempV(db, fc, fy),1)
+        traslp2=round(lempV(db2, fc, fy),1)
+        remate=round(ldC(fy,fc,db),1)
         ylst = list(yLstV(h, dp, db))
         ylstrev = [(h-i) for i in reversed(ylst)]
         aSLst = [L1[0][4], L1[1][4]]+[ai for i in range(len(ylst)-3)]+[lis[4]]
@@ -1300,9 +1309,10 @@ def optimusVig(mpp,mnn,es,eu,ey,b1,fc,fy,dp,dList,dimV,ai,lo,cH,cS,v,allVu,deLis
             if costo < minim and cond != False:
                 minim = costo
                 FU = round(max(mnn/cpn[1], mpp/cpnrev[1]) * 100, 1)
-                listaT = [minim, h, b, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev,c , round(abs(mnn),2), round(abs(mpp),2), L1, lis,\
-                         cpn[1], cpnrev[1], max(cpn[1],cpnrev[1]), lo, FU]
-                corte = minEstV(mpr1,mpr2,allVu[0],allVu[1],allVu[2],allVu[3],xlistV,deList, db,h,  b, lo, dp, fy, fc, cS, wo)
+                listaT = [minim, h, b, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev,c , round(abs(mnn),2),
+                          round(abs(mpp),2), L1, lis, cpn[1], cpnrev[1], max(cpn[1],cpnrev[1]), lo, FU,
+                          db2, gancho, db12, nbarG, traslp1, traslp2, remate]
+                corte = minEstV(mpr1,mpr2,allVu[0],allVu[1],allVu[2],allVu[3],xlistV,deList, db,h,  b, lo, dp, fy, fc, cS, wo, ylst)
                 salida = 1
     if salida == 1:
         return [listaT, corte]
@@ -1350,8 +1360,8 @@ def XYplotCurv(alst, b, h, dp, eu, fy, fc, b1, es, ey, ylst, ce, mu, pu, mn, pn,
     plt.title(titulo)
     plt.legend()
     plt.grid()
-    plt.show()
-    fig.savefig(titulo)
+    # plt.show()
+    # fig.savefig(titulo)
     return 0
 
 
@@ -1365,10 +1375,12 @@ largosV=[[7,7,7],
          [7,7,7],
          [7,7,7]]
 
-dimV = [[[90,50,25,25],[90,50,25,25],[90,50,25,25]],
-        [[90,50,25,25],[90,50,25,25],[90,50,25,25]],
-        [[90,50,25,25],[90,50,25,25],[90,50,25,25]],
-        [[90,50,25,25],[90,50,25,25],[90,50,25,25]]]
+dimV = [[[65,40,25,25],[65,40,25,25],[65,40,25,25]],
+        [[65,40,25,25],[65,40,25,25],[65,40,25,25]],
+        [[65,40,25,25],[65,40,25,25],[65,40,25,25]],
+        [[65,40,25,25],[65,40,25,25],[65,40,25,25]]]
+
+nbahias=len(largosV[0])
 
 def matElemV(lista, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai, deList, v):
     #se itera en la lista
@@ -1377,6 +1389,7 @@ def matElemV(lista, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai, deList, v):
         # se filtra la lista por piso
         tempV=[]
         for j in range(len(lista[0])):
+            ultimo = 1 if i == len(lista)-1 else 0
             elem = optimusVig(lista[i][j][0],lista[i][j][1],es,eu,ey,b1,fc,fy,dp,dList,
                               lista[i][j][5],ai,lista[i][j][3],cH,cS,v,lista[i][j][4],deList,lista[i][j][2])
             cont=0
@@ -1395,12 +1408,8 @@ dList, deList = [16,18,22,25,28,32,36],[10,12]
 
 def detVig(detvig):
     # agregar lista de barras horizontales
-
     di = 8
     ai = 1
-    # npisos = len(detvig)
-    # lizq = [i+1 for i in range(0,npisos*nvig,nvig)]
-    # lder = [i+nvig-1 for i in lizq]
     contv = 0
     print("cantidad pisos",len(detvig))
     print("cantidad vigas tipo por piso",len(detvig[0]))
@@ -1409,40 +1418,9 @@ def detVig(detvig):
 
             """ Identificador """
 
-            # FALTA:
-
-            #agregar traba horizontal en nivel de suples
-
-            #if cont in lizq or cont in lder:
-            #   dob=doblez()
-            #   largo, diámetro doblado, altura, posición, largo total
-            #   largo suple hasta columna 0.25lo
-
-            #   """posición"""
-            #   if y<=h/2:
-            #       abajo
-            #   else:
-            #       arriba
-
-            #else:
-                #largo total hasta columna 0.3lo
-
-            #   empalme
-            #   if is armadura superior:
-            #       from h/2 to lemp
-            #   elif is armadura inferior:
-            #       from rot1 to lemp
-            #   else:
-            #       from rot2 to rot2-lemp
-
-            ###################################################
-            #####                                         #####
-            #####  Armar lista de salida para cubicación  #####
-            #####                                         #####
-            ###################################################
-
             contv+=1
-            print("Viga n° ",contv,"\n\n")
+            print("Viga n° ",contv)
+            print("Viga tipo del piso", contv,"\n\n")
 
             """Dimensiones"""
 
@@ -1456,11 +1434,17 @@ def detVig(detvig):
             print("Refuerzo longitudinal\n")
             print("Armadura superior principal")
             numB2=" barras" if j[0][12][0][2]>1 else " barra"
-            barr2 = "" if j[0][12][0][2]==0 else ", "+str(j[0][12][0][2])+str(numB2)+" Ø "+str(j[0][12][0][3])+"mm en la posición y = "+str(j[0][4][0])+" cm, área = "+str(j[0][3][0])+" cm2"
+            barr2 = "" if j[0][12][0][2]==0 else ", "+str(j[0][12][0][2])+str(numB2)+" Ø "+\
+                                                 str(j[0][12][0][3])+"mm en la posición y = "+\
+                                                 str(j[0][4][0])+" cm, área = "+str(j[0][3][0])+" cm2"
             print(j[0][12][0][0],"barras Ø",j[0][12][0][1],"mm",barr2)
+            print("Traslapo superior=", j[0][23], "cm")
+
             print("\nArmadura suplementaria")
             numB3 = " barras" if j[0][12][0][2] > 1 else " barra"
-            barr3 = "" if j[0][12][1][2] == 0 else ", " + str(j[0][12][1][2])+str(numB3)+" Ø "+str(j[0][12][1][3])+"mm en la posición y = "+str(j[0][4][1])+" cm, área = "+str(j[0][3][1])+" cm2"
+            barr3 = "" if j[0][12][1][2] == 0 else ", " + str(j[0][12][1][2])+str(numB3)+\
+                                                   " Ø "+str(j[0][12][1][3])+"mm en la posición y = "+\
+                                                   str(j[0][4][1])+" cm, área = "+str(j[0][3][1])+" cm2"
             print(j[0][12][1][0], "barras Ø", j[0][12][1][1],"mm",barr3)
             if len(j[0][3])>3:
                 print("\nArmadura lateral")
@@ -1468,8 +1452,19 @@ def detVig(detvig):
                     print("2 barras Ø",di,"mm en la posición y = ",j[0][4][i],"cm, área = ",ai,"cm2")
             print("\nArmadura inferior principal")
             numB4 = " barras" if j[0][13][2] > 1 else " barra"
-            barr4 = "" if j[0][13][2] == 0 else ", " + str(j[0][13][2])+str(numB3)+" Ø "+str(j[0][13][3])+"mm en la posición y = "+str(j[0][4][-1])+" cm, área = "+str(j[0][3][-1])+" cm2"
+            barr4 = "" if j[0][13][2] == 0 else ", " + str(j[0][13][2])+str(numB3)+" Ø "+str(j[0][13][3])+\
+                                                "mm en la posición y = "+str(j[0][4][-1])+" cm, área = "+\
+                                                str(j[0][3][-1])+" cm2"
             print(j[0][13][0], "barras Ø", j[0][13][1],"mm",barr4,"\n")
+            print("Traslapo inferior=", j[0][24], "cm\n")
+
+            print("En zonas donde termina solo con columna\n")
+            print("Desarrollo total de remate de gancho : ",j[0][20],"cm")
+            print("Con desarrollo bajo la curva (12db) de: ",j[0][21],"cm\n")
+
+            print("Lagos de suples\n")
+            print("0.25lo = ", round(25*j[0][17],1),"cm")
+            print("0.3lo = ",round(30*j[0][17],1),"cm\n")
 
             """Cuantías"""
 
@@ -1510,6 +1505,11 @@ def detVig(detvig):
             print("Espaciamiento : ", j[1][7],"cm")
             print("N° estribos : ", j[1][8],"\n")
 
+            print("Trabas Horizontales")
+            print("N° Trabas por estribo = ",j[1][15])
+            print("N° de estribos donde va traba = ",j[1][14])
+            print("Largo trabas = ",j[1][16],"cm")
+
             """Resultados"""
 
             print("Resultados\n")
@@ -1527,7 +1527,6 @@ def detVig(detvig):
             print("ØVn2 = ",round(phiVn2/1000,1), "tf")
             fuV2 = round(100*j[1][11]/phiVn2,1)
             print("F.U.2 = ",fuV2,"%\n")
-            #falta cuantía de acero en refuerzo transversal
             print("\n")
 
 def detCol(detcol):
@@ -1543,7 +1542,12 @@ def detCol(detcol):
             """ Identificador """
 
             cont+=1
-            print("\n\nColumna n° ",cont,"\n\n")
+            piso=npisos if cont%npisos==0 else cont%npisos
+            tipo = 2 if cont>npisos else 1
+
+            print("\n\nColumna n° ",cont)
+            print("Piso N°",piso)
+            print("Tipo",tipo,"\n\n")
 
             """Dimensiones"""
 
@@ -1559,7 +1563,8 @@ def detCol(detcol):
             if j[0][21]!=1:
                 print("Armadura superior")
                 if j[0][3]>0:
-                    print("2 barras Ø",j[0][5],"mm y",j[0][3],"barras Ø",j[0][6],"mm en la posición y =",j[0][14][0],"cm, área =",j[0][13][0],"cm2")
+                    print("2 barras Ø",j[0][5],"mm y",j[0][3],"barras Ø",j[0][6],"mm en la posición y =",j[0][14][0],
+                          "cm, área =",j[0][13][0],"cm2")
                 else:
                     print("2 barras Ø",j[0][5],"mm en la posición y =",j[0][14][0],"cm, área =",j[0][13][0],"cm2")
             else:
@@ -1570,7 +1575,8 @@ def detCol(detcol):
             if j[0][21]!=1:
                 print("Armadura superior")
                 if j[0][3]>0:
-                    print("2 barras Ø",j[0][5],"mm y",j[0][3],"barras Ø",j[0][6],"mm en la posición y =",j[0][14][-1],"cm, área =",j[0][13][-1],"cm2")
+                    print("2 barras Ø",j[0][5],"mm y",j[0][3],"barras Ø",j[0][6],
+                          "mm en la posición y =",j[0][14][-1],"cm, área =",j[0][13][-1],"cm2")
                 else:
                     print("2 barras Ø",j[0][5],"mm en la posición y =",j[0][14][-1],"cm, área =",j[0][13][-1],"cm2")
             else:
@@ -1580,9 +1586,65 @@ def detCol(detcol):
 
             print("\nCuantía = ",j[0][9],"\n\n")
 
+            """Uniones y remates"""
+            print("Uniones y remates\n")
+
+            if piso!=npisos and piso>1:
+                if cont>npisos:
+                    print("Columna para zonas centrales\n")
+                    print("Para unión superior\n")
+                    ldc = ldC(fy, fc, j[0][5])
+                    print("Longitud de empalme unión viga-columna = ", ldc, "cm\n")
+                    print("Para unión inferior\n")
+                    print("Longitud de gancho-remate = ", lG, "cm")
+                    ldc = ldC(fy, fc, j[0][5])
+                else:
+                    print("Columna para zonas laterales\n")
+                    print("Para unión superior\n")
+                    ldc = ldC(fy, fc, j[0][5])
+                    print("Longitud de empalme unión viga-columna = ", ldc, "cm\n")
+                    lG = lGanchoC(j[0][5], fc, fy, j[0][1], dp)
+                    print("Longitud de gancho-remate = ",lG,"cm")
+                    print("Para unión inferior\n")
+                    ldc = ldC(fy, fc, j[0][5])
+                    print("Longitud de empalme unión viga-columna = ", ldc, "cm\n")
+
+            elif piso==1:
+                if cont>npisos:
+                    print("Columna para zonas centrales\n")
+                    print("Para unión superior\n")
+                    ldc = ldC(fy, fc, j[0][5])
+                    print("Longitud de empalme unión viga-columna = ", ldc, "cm\n")
+
+                else:
+                    print("Columna para zonas laterales\n")
+                    print("Para unión superior\n")
+                    ldc = ldC(fy, fc, j[0][5])
+                    print("Longitud de empalme unión viga-columna = ", ldc, "cm\n")
+                    lG = lGanchoC(j[0][5], fc, fy, j[0][1], dp)
+                    print("Longitud de gancho-remate = ",lG,"cm")
+
+            else:
+                if cont>npisos:
+                    print("Columna para zonas centrales\n")
+                    print("Para unión superior\n")
+                    lG = lGanchoC(j[0][5], fc, fy, j[0][1], dp)
+                    print("Longitud de gancho-remate = ",lG,"cm")
+                    print("Para unión inferior\n")
+                    lG = lGanchoC(j[0][5], fc, fy, j[0][1], dp)
+                    print("Longitud de gancho-remate = ", lG, "cm")
+                else:
+                    print("Columna para zonas laterales\n")
+                    print("Para unión superior\n")
+                    lG = lGanchoC(j[0][5], fc, fy, j[0][1], dp)
+                    print("Longitud de gancho-remate = ",lG,"cm")
+                    print("Para unión inferior\n")
+                    ldc = ldC(fy, fc, j[0][5])
+                    print("Longitud de empalme unión viga-columna = ", ldc, "cm\n")
+
             """Refuerzo transversal"""
 
-            print("Refuerzo transversal\n")
+            print("\n\nRefuerzo transversal\n")
 
             print("\nZonas de rótula plástica\n")
 
@@ -1628,7 +1690,8 @@ def detCol(detcol):
 
             print("\n\nZona central\n")
 
-            print("\nUbicación : de",j[1][0][10],"-",j[1][0][10]+round(j[1][1][10]/2,1),"cm y de",j[0][20]*100-(j[1][0][10]+round(j[1][1][10]/2,1)),"-",j[0][20]*100-j[1][0][10],"cm")
+            print("\nUbicación : de",j[1][0][10],"-",j[1][0][10]+round(j[1][1][10]/2,1),
+                  "cm y de",j[0][20]*100-(j[1][0][10]+round(j[1][1][10]/2,1)),"-",j[0][20]*100-j[1][0][10],"cm")
             print("N° ramas : ", j[1][1][1])
             print("N° de estribos por extremo: ",int(round(j[1][1][5]/2,0)))
             print("Espaciamiento : ", j[1][1][3], "cm")
@@ -1671,7 +1734,8 @@ def detCol(detcol):
 
             print("\n\nEmpalme central\n")
 
-            print("\nUbicación : de",j[1][0][10]+round(j[1][1][10]/2,1),"-",j[0][20]*100-(j[1][0][10]+round(j[1][1][10]/2,1)),"cm")
+            print("\nUbicación : de",j[1][0][10]+round(j[1][1][10]/2,1),"-",
+                  j[0][20]*100-(j[1][0][10]+round(j[1][1][10]/2,1)),"cm")
             print("N° ramas : ", j[1][2][1])
             print("N° de estribos : ",j[1][2][5])
             print("Espaciamiento : ", j[1][2][3], "cm")
@@ -1752,17 +1816,7 @@ def detCol(detcol):
             print("ØVn3 = ",round(phiVn3/1000,1), "tf")
             fuV3 = round(100*j[1][5]/phiVn3,1)
             print("F.U.3 = ",fuV3,"%\n")
-            #falta cuantía de acero en refuerzo transversal
             print("\n")
-    #         input()
-
-    # return [listaT, corte]
-    # optimo = [minor, h, b, nH, nV, nEsq, nLat, fu, fu2, cuan, cF[0], cF2[0], e, alist, ylist, cF[1],
-    #           cF[2], muC, puCmax, puCmin, H, iguales, max_e, cF2[1], cF2[2], costo1, costo2, dp]
-    # return [lista1,lista2,lista3,costo_total,vu1,vu2]
-    # lista1 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
-    # lista2 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
-    # lista3 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
 
 def max_ind(lista,ind):
     temp=[]
@@ -1816,6 +1870,7 @@ def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
         a[3].append(min([i[j][3][2] for j in range(len(i))]))
         a[3].append(max([i[j][3][3] for j in range(len(i))]))
         lV.append(a)
+
     lV2=[[i for j in range(len(allVuL[0]))] for i in lV]
     listaVig = [[[mpp2[i][j],mnn2[i][j],wo2[i][j],largosV[i][j],lV2[i][j], dimV[i][j]]
        for j in range(len(listaV[0]))] for i in range(len(listaV))]
@@ -1824,12 +1879,12 @@ def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
     detvig = [[detvig2[j] for i in range(len(listaVig[0]))] for j in range(len(listaVig))]
     listaCol =[[[max(abs(listaC[i][j][0][k]), abs(listaC[i][j][1][k])) for k in range(6)]
                 for j in range(len(listaC[0]))] for i in range(len(listaC))]
-
     exc_col=[[exc_col[i][j][0] for j in range(len(exc_col[0]))] for i in range(len(exc_col))]
     exc1=max_ind([[exc_col[i][0],exc_col[i][-1]]  for i in range(len(exc_col))],2)
     exc2 = max_ind([exc_col[i][1:-1] for i in range(len(exc_col))],2)
     tempCol = extMat(listaCol, 4)
-    tempVig = [[[abs(listaVig[i][j][0]),abs(listaVig[i][j][1])] for j in range(len(listaVig[0]))] for i in range(len(listaVig))]
+    tempVig = [[[abs(listaVig[i][j][0]),abs(listaVig[i][j][1])]
+                for j in range(len(listaVig[0]))] for i in range(len(listaVig))]
     colDef=replMat(listaCol,critVC(tempVig, tempCol),4)
 
     lC1 = []
@@ -1838,29 +1893,70 @@ def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
         col2=[max([colDef[i][k][j] for k in range(len(colDef[0])-2)]) for j in range(len(colDef[0][0]))]+exc2[i]
         lC1.append([col1, col2])
     detcol=[]
-    hmax=hColMax
-    hmin=hColMin
+    hmax1=hColMax
+    hmax2=hmax1
+    hmin1=hColMin
+    hmin2=hmin1
+    cont=0
+    listC_bh1 = []
+    listC_bh2 = []
     for j in range(len(lC1[0])):
         tempC=[]
         for i in range(len(lC1)):
-            if i==0:
-                elem=optimusCol(b1, dp, es, eu, ey, fc, fy, lC1[i][j][4], round(lC1[i][j][7]/1000,1), round(lC1[i][j][6]/1000,1), lC1[i][j][0], dList, hColMax, hColMin, cH, cS, lC1[i][j][5], lC1[i][j][2], lC1[i][j][3], deList, 1)
+            if j==0:
+                cont+=1
+                elem=optimusCol(b1, dp, es, eu, ey, fc, fy, lC1[i][j][4], round(lC1[i][j][7]/1000,1),
+                                round(lC1[i][j][6]/1000,1), lC1[i][j][0], dList, hmax1, hmin1, cH,
+                                cS, lC1[i][j][5], lC1[i][j][2], lC1[i][j][3], deList, 1)
+                titulo = str("Columna tipo "+ str(j+1)+ " del piso " + str(i+1))
+                XYplotCurv(elem[0][13], elem[0][2], elem[0][1], dp, eu, fy, fc, b1, es, ey, elem[0][14], elem[0][10], lC1[i][j][4], lC1[i][j][0], elem[0][15], elem[0][16], titulo)
+
+                # optimusCol(b1, dp, es, eu, ey, fc, fy, muC, muCmin, puCmin, puCmax, dList, hmax, hmin, cH, cS, H, vu,
+                #            vue, deList, iguales)
+
+                # optimo = [minor0, h1, b2, j3, k4, l5, m6, fu7, fu2 8, cuan9, cF[0]10, cF2[0]11, e12,
+                # alist13, ylist14, cF[1]15, cF[2]16, muC17, puCmax18, puCmin19, H20, iguales21, round(muCmin / puCmin, 3)22,
+                # cF2[1]23, cF2[2]24, costo1 25, costo2 26, dp27]
                 tempC.append(elem)
-                hmax=elem[0][1]
-                hmin=hmax-5
+                hmax1=elem[0][1]
+                hmin1=hmax1-5
+                listC_bh1.append([elem[0][2],elem[0][1]])
             else:
+                cont+=1
                 elem = optimusCol(b1, dp, es, eu, ey, fc, fy, lC1[i][j][4], round(lC1[i][j][7] / 1000, 1),
-                                  round(lC1[i][j][6] / 1000, 1), lC1[i][j][0], dList, hmax, hmin, cH, cS,
+                                  round(lC1[i][j][6] / 1000, 1), lC1[i][j][0], dList, hmax2, hmin2, cH, cS,
                                   lC1[i][j][5], lC1[i][j][2], lC1[i][j][3], deList, 1)
-                hmax=elem[0][1]
-                hmin=hmax-5
+                # optimusCol(b1, dp, es, eu, ey, fc, fy, muC, muCmin, puCmin, puCmax, dList, hmax, hmin, cH, cS, H, vu,
+                #            vue, deList, iguales)
+
+                titulo = str("Columna tipo "+ str(j+1)+ " del piso " + str(i+1))
+                XYplotCurv(elem[0][13], elem[0][2], elem[0][1], dp, eu, fy, fc, b1, es, ey, elem[0][14], elem[0][10],
+                           lC1[i][j][4], lC1[i][j][0], elem[0][15], elem[0][16], titulo)
+                hmax2=elem[0][1]
+                hmin2=hmax2-5
+                listC_bh2.append([elem[0][2],elem[0][1]])
                 tempC.append(elem)
         detcol.append(tempC)
-
-    # detCol(detcol)
-    # detVig(detvig2)
-    return [detcol,detvig]
-
+    listC_bh=[]
+    cont=0
+    for i in range(len(listaC)):
+        for j in range(len(listaC[0])):
+            if j==0 or j==len(listaC):
+                cont+=1
+                listC_bh.append((listC_bh1[i][0],listC_bh1[i][1]))
+            else:
+                cont += 1
+                listC_bh.append((listC_bh1[i][0],listC_bh1[i][1]))
+    listV_bh=[]
+    cont=0
+    for i in detvig:
+        for j in i:
+            cont+=1
+            listV_bh.append((j[0][0][2],j[0][0][1]))
+    detCol(detcol)
+    detVig(detvig2)
+    list_bh = listC_bh+listV_bh
+    return [detcol,detvig2, list_bh]
 
 hColMax, hColMin = 90, 30
 
@@ -1870,5 +1966,6 @@ asd=optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, 
 t2=time()-t1
 print("tiempo de ejecución",round(t2,5),"segundos")
 
-print(asd[0],"\n\n",asd[1])
-
+# cols = [[(0, asd[0][0][j][i][2], asd[0][0][j][i][0][1]) for i in range(asd[0])] for j in range(len(asd[0][0]))]
+# print(cols)
+# #
