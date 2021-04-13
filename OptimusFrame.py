@@ -2,12 +2,15 @@ import matplotlib.pyplot as plt
 import _pera as p
 def optijandro():
     tabla=p.tabla['body']
+
     def filtroCV(combis, combi_e, combi_s, tab, largosV, largosC):
+
         bars1=[[tab[i-1]+tab[i] for j in range(2) if j==1]
                 for i in range(len(tab)) if i%2!=0]
         bars2=[bars1[i][0] for i in range(len(bars1))]
         bars=[[bars2[i] for i in range(combis*j, combis*j+combis)]
                 for j in range(int(len(bars2)/combis))]
+
         exc=[]
         for i in range(len(bars)):
             temp1=[]
@@ -143,7 +146,13 @@ def optijandro():
                          largosC[i][j],mat_col_s[i][j][1],mat_col_e[i][j][1]]]
                 lista2.append(lista1)
             listaC.append(lista2)
+        # lista_aux=[listaC[-1][j][:6] for j in range(len(listaC[0]))]
+        # return [listaV,listaVmax, listaC, listaCmax]
         return [listaV, listaC, exc]
+        # return [listaV, listaC, exC, lista_aux]
+
+
+    # print(filtroCV(combis, combi_e, combi_s, tab, largosV, largosC))
 
     def V2vig(x1, lo, vuLsti, vueLsti, vuLstj, vueLstj, vupr, vc, state):
         vc = vc if state==1 else 0
@@ -274,7 +283,6 @@ def optijandro():
         return Y + [h - dp] if Y[-1] < (h-dp) else Y
 
     # función para el cálculo de área requerida asegurando et>=0.005
-    # considerar cambiar dp por 2.5db al evaluar si hay más de un nivel de área
     def areaV(mu, b, b1, h, fc, fy, dp):
         muu = round(mu/(0.9*0.85/100000*fc*b*(h-dp)**2), 3)
         muu = 0.5 if muu > 0.5 else muu
@@ -391,8 +399,10 @@ def optijandro():
         return lista1
 
     def matElemV(lista, bmaxV, hmaxV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai, deList, v):
+        #se itera en la lista
         listaV = []
         for i in lista:
+            # se filtra la lista por piso
             tempV=[]
             for j in i:
                 elem = optimusVig(j[2],j[3],es,eu,ey,b1,fc,fy,dp,dList,hmaxV,bmaxV,ai,j[5],cH,cS,v)
@@ -497,21 +507,18 @@ def optijandro():
             Lestrib.append(estribos)
         return Lestrib
 
+
     def ldC(fy,fc,db):
         return round(max(0.075*fy*0.1*db/(fc)**0.5, 0.0044*fy*0.1*db),1)
 
+#traslapo vigas
     def ldV(db, fc, fy):
         if db<19:
-            return 0.1*db*fy/(3.46*(fc)**0.5)
+            return 0.1*db*fy/(21*(fc/10)**0.5)
         else:
-            return 0.1*db*fy/(4.4*(fc)**0.5)
+            return 0.1*db*fy/(17*(fc/10)**0.5)
+    print("asdfghjk", ldV(25,250,4200))
 
-    def lempV(db, fc, fy):
-        if db<19:
-            ld = 0.1*db*fy/(6.6*(fc)**0.5)
-        else:
-            ld = 0.1*db*fy/(5.34*(fc)**0.5)
-        return ld
 
     def ldhV(fy, db, fc):
         return fy*db/(170*(fc)**0.5)
@@ -733,9 +740,8 @@ def optijandro():
         else:
             return 0
 
-    def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, muCmin, puCmin, puCmax, dList,
-                   hmax, hmin, cH, cS, Ho, vu, vue, deList, iguales, hvig=0):
-        H=Ho-hvig/100
+    def optimusCol(b1, dp, es, eu, ey, fc, fy, muC, muCmin, puCmin, puCmax, dList, hmax,
+                   hmin, cH, cS, H, vu, vue, deList, iguales, h):
         salida=0
         minor = 9999999
         hmin = hmin if hmin >= 30 else 30
@@ -764,17 +770,18 @@ def optijandro():
                     mpr1 = max(pmC(alist, b, b1, cF[0], es, eu, ey, fc, fy*1.25, h, ylist)[1],
                                pmC(alist, b, b1, cF2[0], es, eu, ey, fc, fy*1.25, h, ylist)[1])
                     mpr2 = mpr1
-                    if fu<99.9 and fu2<99.9 and 0.01 <= cuan <= 0.06:
+                    #agregar a entrada H, vu, vue, deList
+                    if fu < 95 and fu2 < 95 and 0.01 <= cuan <= 0.06:
                         corte1 = minEstC(mpr1, mpr2, muC, H, vu, vue, ylist, deList, min(l, m), h, b, dp, fy, fc, cS)
                         if corte1 != 0:
                             costo1 = round((aS*cS+(b*h-aS)*cH)/10000, 0)*(corte1[2][10]+H*100)/100
                             costo2 = corte1[3]
                             costo = costo1+costo2
                             if costo < minor:
+                                # corte = minEstC(mpr1, mpr2, muC, H, vu, vue, ylist, deList, min(l, m), h, b, dp, fy, fc, cS)
                                 minor, e = costo, round(cF[1] / (cF[2] + 0.001), 3)
                                 optimo = [minor, h, b, j, k, l, m, fu, fu2, cuan, cF[0], cF2[0], e, alist, ylist, cF[1],
-                                          cF[2], muC, puCmax, puCmin, H, iguales, round(muCmin/puCmin,3), cF2[1], cF2[2],
-                                          costo1, costo2, dp]
+                                          cF[2], muC, puCmax, puCmin, H, iguales, round(muCmin/puCmin,3), cF2[1], cF2[2], costo1, costo2, dp]
                                 salida=1
                                 corte=corte1
                         else:
@@ -785,8 +792,8 @@ def optijandro():
         else:
             return 0
 
-    def minEstV(mpr1, mpr2, vuLsti,vueLsti,vuLstj,vueLstj, xList, deList, db, h, b, lo, dp, fy, fc, cS, wo, yLst):
-        lo*=100-lEmp(fy,db)
+    def minEstV(mpr1, mpr2, vuLsti,vueLsti,vuLstj,vueLstj, xList, deList, db, h, b, lo, dp, fy, fc, cS, wo, yLst,hcol, emp1,emp2):
+        lo*=100
         Vc = vc(fc, b, h, dp)*1000
         vupr = round(vprV(h, b, lo, mpr1, mpr2,wo),3)*1000
         smax = sMax(fc, b, h, dp, 20)
@@ -801,7 +808,7 @@ def optijandro():
         x2 = lo/2-2*h
         amin=aminV(fc,b,fy)
         Lout=[]
-        for n in range(x1, x1 + 35, 5):
+        for n in range(x1, x1 + 5, 5):
             xa1 = n
             xa2 = (x1 + x2) - xa1
             vsB1 = V2vig(0,lo,vuLsti,vueLsti,vuLstj,vueLstj,vupr,Vc,0)
@@ -817,7 +824,13 @@ def optijandro():
                     Lest2 = est[nRam.index(nr2)]
                     LestH = Ltrab(b, dp, de)
                     ns1=int((xa1*2)/s1)
-                    ns2=int((xa2-0.01)*2/s2)+1
+                    if s2>10:
+                        ns2=int((xa2-(emp1+emp2)/2-0.01)*2/s2)+1
+                        ns3=int(((emp1+emp2)-0.01)/10)
+                        ns4 = ns2 if ns2>0 else 0
+                        ns2=ns4+ns3
+                    else:
+                        ns2 = int((xa2-0.01)*2 / s2) + 1
                     nsH=ns1+ns2
                     numH=len(yLst)-2
                     cub1=cubEstV(h, dp, de, Lest1)
@@ -825,14 +838,18 @@ def optijandro():
                     mini = (cub1[0]*ns1+cub2[0]*ns2+LestH*nsH*numH)*cS/1000000
                     X1 = xa1-5 if xa1 > 2*h else 2*h
                     X2 = 2*((x1+x2)-X1)
+                    X3 = emp1+emp2
+                    X2 = round(X2-X3,1) if X2-X3>0 else 0
+                    # if s2 > 10:
                     if mini < minim:
                         minim = round(mini, 2)
                         #[costo, dist rot, n° ramas, espaciamiento, n° estribos, dist de rotula al centro, n° ramas, espaciamiento, n° estribos, de]
-                        Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de, vsB1, vsB2, cub1, cub2, nsH, numH, LestH]
+                        Lout = [minim, X1, nr1, s1, ns1, X2, nr2, s2, ns2, de, vsB1, vsB2, cub1, cub2, nsH, numH,
+                                LestH,X3,emp1,emp2]
         return Lout
 
-    def optimusVig(mpp,mnn,es,eu,ey,b1,fc,fy,dp,dList,dimV,ai,Lo,cH,cS,v,allVu,deList,wo,hcol=0):
-        lo=Lo-hcol/100
+    def optimusVig(mpp,mnn,es,eu,ey,b1,fc,fy,dp,dList,dimV,ai,lo,cH,cS,v,allVu,deList,wo,nbahias,hcol):
+        lo-=hcol/100
         di = round((ai*200/3.1416)**0.5,1)
         mnn=abs(mnn)
         salida=0
@@ -846,7 +863,9 @@ def optijandro():
         lista = ([i, j] for i in hList if i >= 100*lo/16 for j in bList if i >= j and j >= 0.4*i)
         for h, b in lista:
             A1 = areaV(mpp, b, b1, h, fc, fy, dp)
+            # print(A1)
             A2 = areaV(mnn, b, b1, h, fc, fy, dp)
+            # print(A2)
             L1 = listadiam(A1, b, dp, h, dList, v)
             if L1==[]:
                 continue
@@ -861,17 +880,32 @@ def optijandro():
             if lis==[]:
                 continue
             db = max(L1[0][1], L1[0][3])
-            db2 = max(L2[0][1], L2[0][3])
-            gancho = round(lGanchoV(fy, db, fc),1)
+            db2 = max(L1[1][1], L1[1][3])
+            db3 = di
+            db4 = max(L2[0][1], L2[0][3])
+            gancho1 = round(lGanchoV(fy, db, fc),1)
             gancho2 = round(lGanchoV(fy, db2, fc), 1)
-            gancho3 = round(lGanchoV(fy, di, fc),1)
-            db12 = round(1.2*db,1)
-            db122 = round(1.2 * db2, 1)
-            nbarG = L1[0][0]+L1[0][2]+L1[1][0]+L1[1][2]+lis[0]+lis[2]
-            traslp1=round(lempV(db, fc, fy),1)
-            traslp2=round(lempV(db2, fc, fy),1)
-            remate=round(ldC(fy,fc,db),1)
-            remate2=round(ldC(fy,fc,db2),1)
+            gancho3 = round(lGanchoV(fy, db3,fc),1)
+            gancho4 = round(lGanchoV(fy, db4, fc),1)
+            traslp1=round(ldV(db, fc, fy)*1.3,1)
+            traslp2 = round(ldV(db2, fc, fy) * 1.3, 1)
+            traslp3=round(ldV(db3, fc, fy),1)
+            traslp4=round(ldV(db4, fc, fy),1)
+            ldh1 = round(ldhV(fy,db,fc),1)
+            ldh2 = round(ldhV(fy, db2, fc),1)
+            ldh3 = round(ldhV(fy, db3, fc),1)
+            ldh4 = round(ldhV(fy, db4, fc),1)
+            suple1 = max(0.25*lo*100,ldV(db2, fc, fy))
+            suple2 = max(0.3*lo*100,ldV(db2, fc, fy))
+            volSup = (2*(suple1+gancho2)+(nbahias-1)*(suple2+hcol))*L1[1][4]
+            volBar = L1[0][4]*(nbahias*lo*100+(nbahias-1)*hcol+2*gancho1+lEmp(fy,db))\
+                     +ai*(nbahias*lo*100+(nbahias-1)*hcol+2*gancho3+lEmp(fy,db3))\
+                     +lis[4]*(nbahias*lo*100+(nbahias-1)*hcol+2*gancho4+lEmp(fy,db4))
+            lDetail = [[db, 1.2*db, gancho1, traslp1, ldh1],
+                       [db2, 1.2*db2, gancho2, traslp2, ldh2],
+                       [db3, 1.2*db3, gancho3, traslp3, ldh3],
+                       [db4, 1.2*db4, gancho4, traslp4, ldh4],
+                       [suple1, suple2, volSup, volBar, hcol]]
             ylst = list(yLstV(h, dp, db))
             ylstrev = [(h-i) for i in reversed(ylst)]
             aSLst = [L1[0][4], L1[1][4]]+[ai for i in range(len(ylst)-3)]+[lis[4]]
@@ -895,17 +929,17 @@ def optijandro():
             xlistV = xLst(sup, 30, 5)[1]
             FU = round(max(mnn / cpn[1], mpp / cpnrev[1]) * 100, 1)
             if 0.025 >= cuan1 >= cumin and 0.025 >= cuan2 >= cumin\
-                    and cpn[1] >= mnn and cpnrev[1] >= mpp and 75<=FU<=99.9:
+                    and cpn[1] >= mnn and cpnrev[1] >= mpp and 85<=FU<=95:
                 cond = True
-                #agregar lEmp en el costo y tod-o lo demás restando 1 estribo
-                costo = round((sum(aSLst)*cS+(h*b-sum(aSLst))*cH)/10000, 0)
+                corte1 = minEstV(mpr1, mpr2, allVu[0], allVu[1], allVu[2], allVu[3], xlistV, deList, db, h, b, lo, dp,
+                                fy, fc, cS, wo, ylst,hcol,traslp1,traslp4)
+                costo = round((volSup + volBar) * cS / 1000000 + (h * b) * nbahias * cH / 10000 + corte1[0]*nbahias, 0)
                 if costo < minim and cond != False:
                     minim = costo
                     FU = round(max(mnn/cpn[1], mpp/cpnrev[1]) * 100, 1)
+                    corte=corte1
                     listaT = [minim, h, b, aSLst, ylst, cuan1, cuan2, ylstrev, alstrev,c , round(abs(mnn),2),
-                              round(abs(mpp),2), L1, lis, cpn[1], cpnrev[1], max(cpn[1],cpnrev[1]), lo, FU,
-                              db2, gancho, db12, nbarG, traslp1, traslp2, remate, db122, remate2, gancho2, xlistV]
-                    corte = minEstV(mpr1,mpr2,allVu[0],allVu[1],allVu[2],allVu[3],xlistV,deList, db,h,  b, lo, dp, fy, fc, cS, wo, ylst)
+                              round(abs(mpp),2), L1, lis, cpn[1], cpnrev[1], max(cpn[1],cpnrev[1]), lo, FU, lDetail, xlistV]
                     salida = 1
         if salida == 1:
             return [listaT, corte]
@@ -957,8 +991,17 @@ def optijandro():
         # fig.savefig(titulo)
         return 0
 
+    hminv = 25
+    bminv = 25
+    hmaxv = 70
+    bmaxv = 50
+
     ncol = 16
+    cvig = 12
+
     listadim=p.tabla['perfiles']
+
+    # print(listadim)
     npisos=4
     nbahias=3
     # dimCol = [[[listadim[:ncol][(i)+j*(nbahias+1)][1],listadim[:ncol][(i)+j*(nbahias+1)][0]] for i in range(nbahias+1)] for j in range(npisos)]
@@ -974,6 +1017,8 @@ def optijandro():
               int(round((listadim[:ncol][(i)+j*(nbahias+1)][0])/5,1))*5]
                for i in range(nbahias+1)] for j in range(npisos)]
 
+    # print(listadim[ncol:])
+    # print(dimV,"\n\n",dimC)
 
     largosC=[[3,3,3,3],
              [3,3,3,3],
@@ -1004,41 +1049,43 @@ def optijandro():
 
     nbahias=len(largosV[0])
 
-    def matElemV(lista, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai, deList, v, dimC):
+    def matElemV(lista, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai, deList, v, nbahias, dimC):
         #se itera en la lista
         listaV = []
         for i in range(len(lista)):
             # se filtra la lista por piso
             tempV=[]
             for j in range(len(lista[0])):
+
                 ultimo = 1 if i == len(lista)-1 else 0
                 elem = optimusVig(lista[i][j][0],lista[i][j][1],es,eu,ey,b1,fc,fy,dp,dList,
                                   lista[i][j][5],ai,lista[i][j][3],cH,cS,v,lista[i][j][4],
-                                  deList,lista[i][j][2],(dimC[i][0][0]+dimC[i][0][1])/2)
+                                  deList,lista[i][j][2],nbahias,dimC[i][1][0])
                 cont=0
                 while elem == 0 and cont<10:
                     cont+=1
                     lista[i][j][0]=lista[i][j][0]*1.1
                     lista[i][j][1]=lista[i][j][1]*1.1
                     elem = optimusVig(lista[i][j][0], lista[i][j][1], es, eu, ey, b1, fc, fy, dp, dList,
-                                      lista[i][j][5], ai, lista[i][j][3], cH, cS, v, lista[i][j][4],
-                                      deList, lista[i][j][2],(dimC[i][0][0]+dimC[i][0][1])/2)
+                                      lista[i][j][5], ai, lista[i][j][3], cH, cS, v, lista[i][j][4], deList,
+                                      lista[i][j][2],nbahias,dimC[i][1][0])
                 tempV.append(elem)
             listaV.append(tempV)
         return listaV
 
     cH, cS, b1, dp, es, ey, eu, fc, fy = 75000,7850000,0.85,5,2100000,0.002,0.003,250,4200
-    dList, deList = [16,18,22,25,28,32,36],[10,12]
+    dList, deList = [16,18,22,25,28,32,36],[10,12,16]
 
     def detVig(detvig, nbahias, hCol):
         # agregar lista de barras horizontales
-        di = 8
-        ai = 1
+        di = 12
+        ai = 2.26
         contv = 0
         npisos=len(detvig)
         print("Reporte de diseño y cubicación de la estructura")
         print("\ncantidad pisos",npisos)
         print("cantidad vigas tipo por piso",len(detvig[0]), "\n\n")
+        acum=0
         for i in detvig:
             for j in i:
 
@@ -1066,7 +1113,6 @@ def optijandro():
                                                      str(j[0][12][0][3])+"[mm] en la posición y = "+\
                                                      str(j[0][4][0])+" [cm], área = "+str(j[0][3][0])+" [cm2]"
                 print(j[0][12][0][0],"barras Ø",j[0][12][0][1],"[cm]",barr2)
-                print("Traslapo superior=", j[0][23], "cm")
 
                 print("\nArmadura suplementaria")
                 numB3 = " barras" if j[0][12][0][2] > 1 else " barra"
@@ -1085,54 +1131,63 @@ def optijandro():
                                                     str(j[0][3][-1])+" [cm2]"
                 print(j[0][13][0], "barras Ø", j[0][13][1],"[cm]",barr4,"\n")
 
+
                 """Cuantías"""
 
                 print("\nCuantías")
                 print("Superior = ",j[0][5])
                 print("Inferior = ",j[0][6],"\n")
 
+                det=j[0][19]
+
                 print("Cubicación de acero en barras longitudinales.\n")
 
                 print("Largos de suples : ")
-                print("0.25lo : ", round(25*j[0][17],1),"[cm]")
-                print("0.3lo : ",round(30*j[0][17],1),"[cm]")
-                print("Ancho columnas : ", hcol, "[cm]")
-                rem = 0 if contv < npisos else round(j[0][25]-j[0][21],1)
-                lSupl = 2*(round(0.25 * j[0][17], 1)+j[0][20]/100)+(nbahias-1)*round(hcol/100+0.3*j[0][17],1)
-                print("Longitud total de suples superiores : ",round(lSupl*100,1),"[cm]")
-                print("Área de barras pertenecientes a suples : ",j[0][12][1][4],"[cm2]")
-                print("Volumen de acero de suples : ",round(lSupl*100,1)*j[0][12][1][4],"[cm3]\n")
+
+                print("0.25lo : ", round(det[4][0],1),"[cm]")
+                print("0.3lo : ",round(det[4][1],1),"[cm]")
+                print("kg de barras de suples : ",round(det[4][2]*0.007850,1) ,"[kg]")
+                print("kg de otras barras : ", round(det[4][3] * 0.007850,1), "[kg]\n")
+                vHorm=j[0][1]*j[0][2]*nbahias*(j[0][17])/10000
+                print("Volumen de hormigón : ", vHorm,"[m3]\n")
+                cAc=round(det[4][2]*0.007850+det[4][3] * 0.007850,1)*1000
+                print("Costo de acero: $",cAc)
+                cHorm=75000 * j[0][1] * j[0][2] * nbahias * (j[0][17]) / 10000
+                print("Costo de hormigón :  $", cHorm,"\n")
+
+                # rem = 0 if contv < npisos else round(j[0][25]-j[0][21],1)
+
+                print("Barras superiores : \n")
+
+                print("Longitud de traslapo de armadura superior : ",det[0][3],"[cm]")
+                print("Desarrollo de gancho : ",det[0][4],"[cm]")
+                print("Gancho : ", det[0][2], "[cm]")
+                print("Diámetro : ", det[0][0], "[mm]")
+                print("12db : ", det[0][1], "[cm]\n")
+
+                print("Barras suplementarias : \n")
 
 
-                Larm1 = round(2*j[0][20]+(j[0][23]+j[0][17]*100)*nbahias+(nbahias-1)*hcol,1)
-                Larm2 = round(2*j[0][28]+(j[0][24]+j[0][17]*100)*nbahias+(nbahias-1)*hcol,1)
-                print("Longitud de armadura superior : ",Larm1,"[cm]")
-                print("Longitud de traslapo de armadura superior : ",j[0][23],"[cm]\n")
-                print("Desarrollo total de remate de gancho : ",j[0][20],"[cm]")
-                print("Área de barras de la armadura superior : ", j[0][12][0][4], "[cm2]")
-                print("Volumen de acero de armadura superior : ",round(Larm1*j[0][12][0][4],1),"[cm3]\n")
+                print("Desarrollo de gancho : ", det[1][4], "[cm]")
+                print("Gancho : ", det[1][2], "[cm]")
+                print("Diámetro : ", det[1][0], "[mm]")
+                print("12db : ", det[1][1], "[cm]\n")
 
-                print("Longitud de armadura inferior : ", Larm2, "[cm]")
-                print("Longitud de traslapo de armadura inferior : ", j[0][24], "[cm]")
-                print("Desarrollo total de remate de gancho : ", j[0][27], "[cm]")
-                print("Área de barras de la armadura superior : ", j[0][13][4], "[cm2]")
-                print("Volumen de acero de armadura superior : ", round(Larm2*j[0][13][4],1),"[cm3]\n")
+                print("Barras laterales : \n")
 
+                print("Longitud de traslapo de armadura lateral : ", det[2][3], "[cm]")
+                print("Desarrollo de gancho : ", det[2][4], "[cm]")
+                print("Gancho : ", det[2][2], "[cm]")
+                print("Diámetro : ", det[2][0], "[mm]")
+                print("12db : ", det[2][1], "[cm]\n")
 
-                print("Por simplificación del cálculo tendrá la misma longitud que la armadura superior.")
-                print("Longitud de armadura lateral : ", Larm1, "[cm]")
-                print("Longitud de traslapo de armadura lateral : ",j[0][23],"[cm]")
-                print("Área de barras laterales : ", ai*(len(j[0][3])-3), "[cm2]")
-                print("Volumen de acero de armadura lateral : ", round(Larm1*ai*(len(j[0][3])-3),1), "[cm3]")
+                print("Barras inferiores : \n")
 
-                volLong = round((lSupl*100*j[0][12][1][4]+Larm1*j[0][12][0][4]+Larm2*j[0][13][4]+Larm1*ai*(len(j[0][3])-3))/1000000,3)
-
-                pAs = 7850
-                pesoLong = round(pAs*volLong,1)
-
-                print("Volumen total del barras longitudinales en el piso : ",volLong,"[m3]")
-                print("Peso del acero : ",pesoLong,"[kg]\n")
-
+                print("Longitud de traslapo de armadura inferior : ", det[3][3], "[cm]")
+                print("Desarrollo de gancho : ", det[3][4], "[cm]")
+                print("Gancho : ", det[3][2], "[cm]")
+                print("Diámetro : ", det[3][0], "[mm]")
+                print("12db : ", det[3][1], "[cm]\n")
 
                 """Refuerzo transversal"""
 
@@ -1153,12 +1208,18 @@ def optijandro():
                 print("Espaciamiento : ",j[1][3],"[cm]")
                 print("N° estribos : ",int(round(j[1][4]/2,0))," en cada extremo")
                 # vol1t=
-                print("Volumen de acero en zona de rótulas plásticas : ", j[1][12][0]*j[1][4],"[cm3]")
-                print("Peso del acero",round(j[1][12][0]*j[1][4]*0.00785,1),"[kg]\n")
+                print("Volumen de acero en zona de rótulas plásticas : ", round(j[1][12][0]*j[1][4],1),"[cm3]")
+                p1=round(j[1][12][0]*j[1][4]*0.00785,1)
+                print("Peso del acero", p1,"[kg]\n")
 
                 print("\nZonas central, de ",j[1][1],"a",j[0][17]*100-j[1][1],"[cm]:")
                 print("Diámetro : ", j[1][9], "[cm]")
                 print("N° ramas : ", j[1][6])
+                print("longitud de empalme barras inferiores : ",j[1][18],"[cm]")
+                print("longitud de empalme barras superiores : ",j[1][19],"[cm]")
+                print("espaciamiento normal :",j[1][7],"[cm]")
+                print("espaciamiento zona de empalme : 10[cm]")
+
                 cont=0
                 for i in j[1][13][1]:
                     cont+=1
@@ -1171,22 +1232,30 @@ def optijandro():
                 print("Espaciamiento : ", j[1][7],"[cm]")
                 print("N° estribos : ", j[1][8])
                 print("Volumen de acero en zona central : ", j[1][13][0] * j[1][8], "[cm3]")
-                print("Peso del acero", round(j[1][12][0] * j[1][8] * 0.00785,1),"[kg]\n")
+                p2=round(j[1][12][0] * j[1][8] * 0.00785,1)
+                print("Peso del acero", p2,"[kg]\n")
 
                 print("Trabas Horizontales")
                 print("N° Trabas por estribo = ",j[1][15])
                 print("N° de estribos donde va traba = ",j[1][14])
                 print("Largo trabas = ",j[1][16],"[cm]")
                 print("Volumen de acero en trabas horizontales : ", round(j[1][15]*j[1][14]*j[1][16]*ai*0.5,1), "[cm3]")
-                print("Peso del acero : ", round(j[1][15]*j[1][14]*j[1][16]*ai*0.5*0.00785,1),"[kg]\n")
-                pEst_as=round(j[1][15]*j[1][14]*j[1][16]*ai*0.5*0.00785,1)+round(j[1][12][0] * j[1][8] * 0.00785,1)+round(j[1][12][0]*j[1][4]*0.00785,1)
-                print("Peso total de acero en estribos : ",pEst_as,"[kg]\n\n")
+                p3=round(j[1][15]*j[1][14]*j[1][16]*ai*0.5*0.00785,1)
+                print("Peso del acero : ", p3,"[kg]\n")
 
-                print("Peso total de acero en vigas del piso analizado : ",pEst_as+pesoLong,"[kg]\n\n")
+                print("Acero total : ",round(p1+p2+p3,1),"[kg]")
+                print("Hormigón total : ",round(vHorm,2),"[m3]")
+                print("Costo hormigón : $", cHorm)
+                print("Costo acero : $", cAc+(p1+p2+p3)*1000)
+                print("Costo total de vigas por piso : $",cAc+(p1+p2+p3)*1000+cHorm)
+                acum+=cAc+(p1+p2+p3)*1000+cHorm
 
                 # listaT = [minim0, h1, b2, aSLst3, ylst4, cuan1 5, cuan2 6, ylstrev7, alstrev8, c9, round(abs(mnn), 2)10,
                 #           round(abs(mpp), 2)11, L1 12, lis 13, cpn[1]14, cpnrev[1]15, max(cpn[1], cpnrev[1])16, lo17, FU18,
                 #           db2 19, gancho20, db12 21, nbarG 22, traslp1 23, traslp2 24, remate25, db122 26, remate2 27, gancho2 28, xlistV 29]
+                # Lout = [minim0, X11, nr12, s13, ns41, X52, nr26, s27, ns28, de9, vsB110, vsB211, cub112, cub213,
+                # nsH14, numH15,
+                #         LestH16, X317, emp118, emp219]
 
                 """Resultados"""
 
@@ -1206,6 +1275,7 @@ def optijandro():
                 fuV2 = round(100*j[1][11]/phiVn2,1)
                 print("F.U.2 = ",fuV2,"%\n")
                 print("\n")
+        return acum
 
 
     def detCol(detcol):
@@ -1215,6 +1285,7 @@ def optijandro():
         cont = 0
         npisos = len(detcol)
         ncol = len(detcol[0])
+        acum=0
         for i in detcol:
             for j in i:
 
@@ -1260,15 +1331,6 @@ def optijandro():
                         print("2 barras Ø",j[0][5],"[mm] en la posición y =",j[0][14][-1],"[cm], área =",j[0][13][-1],"[cm2]")
                 else:
                     print(2+j[0][3],"barras Ø",j[0][5],"[mm] en la posición y =",j[0][14][-1],"[cm], área =",j[0][13][-1],"[[cm]2]")
-
-                # optimo = [minor0, h1, b2, nH3, nV4, nEsq5, nLat6, fu7, fu2 8, cuan9, cF[0]10, cF2[0]11, e12, alist13, ylist14, cF[1]15,
-                #           cF[2]16, muC17, puCmax18, puCmin19, H20, iguales21, round(muCmin / puCmin, 3)22, cF2[1]23, cF2[2]24, costo1 25, costo2 26,
-                #           dp 27]
-
-                # [lista1, lista2, lista3, costo_total, vu1, vu2]
-                # lista1 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
-                # lista2 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
-                # lista3 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
 
 
                 """Cuantía"""
@@ -1421,6 +1483,17 @@ def optijandro():
                         print("Ubicación entre ejes de barras verticales: y =", j[1][1][9][0][0], "[cm] e y =",
                               j[1][1][9][0][1], "[cm]")
 
+                # optimo = [minor0, h1, b2, nH3, nV4, nEsq5, nLat6, fu7, fu2 8, cuan9, cF[0]10, cF2[0]11, e12, alist13, ylist14, cF[1]15,
+                #           cF[2]16, muC17, puCmax18, puCmin19, H20, iguales21, round(muCmin / puCmin, 3)22, cF2[1]23, cF2[2]24, costo1 25, costo2 26,
+                #           dp 27]
+
+                # [lista1, lista2, lista3, costo_total, vu1, vu2]
+                # lista1 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
+                # lista2 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
+                # lista3 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
+
+
+
                 print("\n\nEmpalme central\n")
 
                 print("\nUbicación : de",j[1][0][10]+round(j[1][1][10]/2,1),"-",
@@ -1506,6 +1579,9 @@ def optijandro():
                 fuV3 = round(100*j[1][5]/phiVn3,1)
                 print("F.U.3 = ",fuV3,"%\n")
                 print("\n")
+                # acum+=costoT
+
+        return acum
 
     def max_ind(lista,ind):
         temp=[]
@@ -1518,8 +1594,8 @@ def optijandro():
             temp.append(list1)
         return temp
 
-    def optimusFrame(tabla, largosC, largosV, dimV, dimC, cH, cS, b1, dp, es, ey,
-                     eu, fc, fy, dList, deList, hColMax, hColMin):
+    def optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, deList, hColMax, hColMin):
+        ai=2.26
         dList=[16,18,22,25,28,32,36]
         deList=[10,12]
         combis = 7
@@ -1565,7 +1641,7 @@ def optijandro():
         listaVig = [[[mpp2[i][j],mnn2[i][j],wo2[i][j],largosV[i][j],lV2[i][j], dimV[i][j]]
            for j in range(len(listaV[0]))] for i in range(len(listaV))]
         listaVig2 = [[listaVig[i][0]] for i in range(len(listaVig))]
-        detvig2=matElemV(listaVig2, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, 1, deList, 5, dimC)
+        detvig2=matElemV(listaVig2, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, ai, deList, 5, nbahias, dimC)
         detvig = [[detvig2[j] for i in range(len(listaVig[0]))] for j in range(len(listaVig))]
         listaCol =[[[max(abs(listaC[i][j][0][k]), abs(listaC[i][j][1][k])) for k in range(6)]
                     for j in range(len(listaC[0]))] for i in range(len(listaC))]
@@ -1576,6 +1652,7 @@ def optijandro():
         tempVig = [[[abs(listaVig[i][j][0]),abs(listaVig[i][j][1])]
                     for j in range(len(listaVig[0]))] for i in range(len(listaVig))]
         colDef=replMat(listaCol,critVC(tempVig, tempCol),4)
+
         lC1 = []
         for i in range(len(colDef)):
             col1=[max(colDef[i][0][j],colDef[i][-1][j]) for j in range(len(colDef[0][0]))]+exc1[i]
@@ -1593,14 +1670,14 @@ def optijandro():
             tempC=[]
             for i in range(len(lC1)):
                 if j==0:
+
                     cont+=1
-                    hcol = (dimV[i][0][0] - 5) / 2 if i != 0 else dimV[i][0][0] - 5
                     elem=optimusCol(b1, dp, es, eu, ey, fc, fy, lC1[i][j][4], round(lC1[i][j][7]/1000,1),
                                     round(lC1[i][j][6]/1000,1), lC1[i][j][0], dList, hmax1, hmin1, cH,
-                                    cS, lC1[i][j][5], lC1[i][j][2], lC1[i][j][3], deList, 1, hcol)
+                                    cS, lC1[i][j][5], lC1[i][j][2], lC1[i][j][3], deList, 1)
                     titulo = str("Columna tipo "+ str(j+1)+ " del piso " + str(i+1))
-                    # XYplotCurv(elem[0][13], elem[0][2], elem[0][1], dp, eu, fy, fc, b1, es, ey, elem[0][14],
-                    #            elem[0][10], lC1[i][j][4], lC1[i][j][0], elem[0][15], elem[0][16], titulo)
+                    # XYplotCurv(elem[0][13], elem[0][2], elem[0][1], dp, eu, fy, fc, b1, es, ey,
+                    # elem[0][14], elem[0][10], lC1[i][j][4], lC1[i][j][0], elem[0][15], elem[0][16], titulo)
 
                     # optimusCol(b1, dp, es, eu, ey, fc, fy, muC, muCmin, puCmin, puCmax, dList, hmax, hmin, cH, cS, H, vu,
                     #            vue, deList, iguales)
@@ -1614,10 +1691,9 @@ def optijandro():
                     listC_bh1.append([elem[0][2],elem[0][1]])
                 else:
                     cont+=1
-                    hcol=(dimV[i][0][0]-5)/2 if i!=0 else dimV[i][0][0]-5
                     elem = optimusCol(b1, dp, es, eu, ey, fc, fy, lC1[i][j][4], round(lC1[i][j][7] / 1000, 1),
                                       round(lC1[i][j][6] / 1000, 1), lC1[i][j][0], dList, hmax2, hmin2, cH, cS,
-                                      lC1[i][j][5], lC1[i][j][2], lC1[i][j][3], deList, 1, hcol)
+                                      lC1[i][j][5], lC1[i][j][2], lC1[i][j][3], deList, 1)
                     # optimusCol(b1, dp, es, eu, ey, fc, fy, muC, muCmin, puCmin, puCmax, dList, hmax, hmin, cH, cS, H, vu,
                     #            vue, deList, iguales)
 
@@ -1641,9 +1717,14 @@ def optijandro():
                     listC_bh.append((listC_bh1[i][0],listC_bh1[i][1]))
         listV_bh=[]
         cont=0
-        # detCol(detcol)
-        # print(detvig2)
-        # detVig(detvig2,nbahias,listV_bh)
+        for i in detvig:
+            for j in i:
+                cont+=1
+                listV_bh.append((j[0][0][2],j[0][0][1]))
+        print(detcol)
+        detCol(detcol)
+        print(detvig2)
+        detVig(detvig2,nbahias,listV_bh)
 
         list_bh = listC_bh+listV_bh
 
@@ -1651,13 +1732,18 @@ def optijandro():
 
     from time import time
     t1=time()
-    asd=optimusFrame(tabla, largosC, largosV, dimV,dimC, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, deList, hColMax, hColMin)
+    asd=optimusFrame(tabla, largosC, largosV, dimV, cH, cS, b1, dp, es, ey, eu, fc, fy, dList, deList, hColMax, hColMin)
     t2=time()-t1
-    print("tiempo de ejecución",round(t2,5),"segundos")
-    # print(asd[0],"\n",asd[1])
+    # print("tiempo de ejecución",round(t2,5),"segundos")
+    print(asd[0],"\n",asd[1])
     # print(asd[2])
     # print(listadim)
     # print(listadim==asd[2])
+
+
+
+
+
     # cols = [[(0, asd[0][0][j][i][2], asd[0][0][j][i][0][1]) for i in range(asd[0])] for j in range(len(asd[0][0]))]
     # print(cols)
     # #
@@ -1666,6 +1752,6 @@ def optijandro():
     #
     # listacolumnas2=[[[[393790.75, 70, 70, 4, 4, 18, 18, 91.0, 16.2, 0.01039, 18.46, 52.77, 0.608, [15.27, 5.09, 5.09, 5.09, 5.09, 15.27], [5, 17, 29, 41, 53, 65], 95.7, 157.4, 87.01, 143.17, 78.8, 3, 1, 0.152, 74.2, 488.6, 270953.75, 122837.0, 5], [[58037.0, 4, 10, 9, 10, 8, 260.21, [164.21], 164.21, [[5, 65], [29, 41]], 70], [39409.0, 4, 12, 11, 10, 9, 265.25, [164.21], 164.21, [[5, 65], [29, 41]], 105.0], [25391.0, 4, 10, 8, 10, 7, 260.21, [164.21], 164.21, [[5, 65], [29, 41]], 55.0], 122837.0, 56716.7, 56716.7]], [[378244.1, 65, 65, 4, 4, 18, 18, 51.9, 6.9, 0.01205, 23.04, 41.53, 0.442, [15.27, 5.09, 5.09, 5.09, 5.09, 15.27], [5, 16, 27, 38, 49, 60], 90.4, 204.7, 46.93, 106.09, 24.2, 3, 1, 0.198, 69.2, 349.0, 252980.1, 125264.0, 5], [[64853.0, 4, 12, 9, 10, 8, 245.25, [152.21], 152.21, [[5, 60], [27, 38]], 65], [36918.0, 4, 10, 10, 10, 11, 240.21, [152.21], 152.21, [[5, 60], [27, 38]], 115.0], [23493.0, 4, 10, 8, 10, 7, 240.21, [152.21], 152.21, [[5, 60], [27, 38]], 55.0], 125264.0, 99902.3, 52835.6]], [[300780.0, 60, 60, 3, 3, 18, 18, 75.8, 8.2, 0.01131, 14.09, 42.05, 0.648, [12.725, 5.09, 5.09, 5.09, 12.725], [5, 18, 30, 42, 55], 58.0, 89.5, 43.95, 67.72, 27.3, 3, 1, 0.15, 50.0, 332.9, 208243.0, 92537.0, 5], [[42454.0, 3, 12, 9, 10, 7, 225.25, [83.78], 83.78, [[5, 55], [30]], 60], [33356.0, 3, 12, 11, 10, 11, 225.25, [83.78], 83.78, [[5, 55], [30]], 125.0], [16727.0, 3, 10, 8, 10, 7, 220.21, [83.78], 83.78, [[5, 55], [30]], 55.0], 92537.0, 71404.4, 39933.3]], [[296559.0, 60, 60, 3, 3, 18, 18, 89.4, 3.4, 0.01131, 10.59, 58.86, 1.349, [12.725, 5.09, 5.09, 5.09, 12.725], [5, 18, 30, 42, 55], 47.9, 35.5, 42.82, 31.76, 16.5, 3, 1, 0.061, 29.4, 482.9, 208243.0, 88316.0, 5], [[38233.0, 3, 10, 8, 10, 8, 220.21, [83.78], 83.78, [[5, 55], [30]], 60], [33356.0, 3, 12, 11, 10, 11, 225.25, [83.78], 83.78, [[5, 55], [30]], 125.0], [16727.0, 3, 10, 8, 10, 7, 220.21, [83.78], 83.78, [[5, 55], [30]], 55.0], 88316.0, 50240.0, 31616.7]]], [[[420491.0, 70, 70, 5, 5, 18, 18, 79.0, 83.7, 0.01247, 25.81, 15.9, 0.462, [17.815, 5.09, 5.09, 5.09, 5.09, 5.09, 17.815], [5, 15, 25, 35, 45, 55, 65], 115.3, 249.3, 91.0, 197.01, 90.6, 3, 1, 0.886, 95.9, 108.3, 299052.0, 121439.0, 5], [[56172.0, 3, 12, 9, 10, 8, 265.25, [93.78], 93.78, [[5, 65], [35]], 70], [40692.0, 3, 12, 10, 12, 10, 265.25, [96.54], 96.54, [[5, 65], [35]], 105.0], [24575.0, 3, 12, 8, 10, 7, 265.25, [93.78], 93.78, [[5, 65], [35]], 55.0], 121439.0, 71591.1, 63516.7]], [[367089.1, 65, 65, 4, 4, 18, 18, 67.0, 87.9, 0.01205, 25.09, 12.72, 0.398, [15.27, 5.09, 5.09, 5.09, 5.09, 15.27], [5, 16, 27, 38, 49, 60], 87.8, 220.7, 58.78, 147.78, 56.3, 3, 1, 1.073, 68.7, 64.1, 252980.1, 114109.0, 5], [[53698.0, 4, 10, 9, 10, 8, 240.21, [152.21], 152.21, [[5, 60], [27, 38]], 65], [36918.0, 4, 10, 10, 10, 11, 240.21, [152.21], 152.21, [[5, 60], [27, 38]], 115.0], [23493.0, 4, 10, 8, 10, 7, 240.21, [152.21], 152.21, [[5, 60], [27, 38]], 55.0], 114109.0, 61050.0, 61050.0]], [[296559.0, 60, 60, 3, 3, 18, 18, 80.4, 61.3, 0.01131, 16.77, 13.66, 0.516, [12.725, 5.09, 5.09, 5.09, 12.725], [5, 18, 30, 42, 55], 63.5, 123.0, 51.05, 98.76, 51.0, 3, 1, 0.684, 56.9, 83.2, 208243.0, 88316.0, 5], [[38233.0, 3, 10, 8, 10, 8, 220.21, [83.78], 83.78, [[5, 55], [30]], 60], [33356.0, 3, 12, 11, 10, 11, 225.25, [83.78], 83.78, [[5, 55], [30]], 125.0], [16727.0, 3, 10, 8, 10, 7, 220.21, [83.78], 83.78, [[5, 55], [30]], 55.0], 88316.0, 49833.3, 49833.3]], [[296559.0, 60, 60, 3, 3, 18, 18, 94.1, 23.7, 0.01131, 11.68, 24.33, 0.966, [12.725, 5.09, 5.09, 5.09, 12.725], [5, 18, 30, 42, 55], 51.3, 53.1, 48.29, 49.73, 46.1, 3, 1, 0.338, 65.7, 194.5, 208243.0, 88316.0, 5], [[38233.0, 3, 10, 8, 10, 8, 220.21, [83.78], 83.78, [[5, 55], [30]], 60], [33356.0, 3, 12, 11, 10, 11, 225.25, [83.78], 83.78, [[5, 55], [30]], 125.0], [16727.0, 3, 10, 8, 10, 7, 220.21, [83.78], 83.78, [[5, 55], [30]], 55.0], 88316.0, 39716.7, 39716.7]]]]
     # print(listacolumnas1==listacolumnas2)
-    return asd[2]
+    # return
 
 optijandro()
