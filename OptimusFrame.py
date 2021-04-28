@@ -777,6 +777,61 @@ def optijandro(papiro):
         # lista3 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
         salida=salida1+salida2+salida3
         if salida == 3:
+            salidaCC={'Ubicacion nodo y rotula1'
+                      'Ubicacion rotula2'
+                      'N° ramas rotula'
+                      'N° estribos'
+                      'espaciamiento rotula'
+                      
+                      'Diametro estribo exterior rotula'
+                      'Largo diametro exterior'
+                      'Ubicacion ramas horizontales exteriores rotula'
+                      'Ubicacion ramas verticales exteriores rotula'
+                    
+                      'Diametro estribo interior rotula'
+                      'Lista largos interiores rotula'
+                      'Lista ubicaciones horizontales interiores rotula'
+                      'Lista ubicaciones verticales interiores rotula'
+            
+                      'Ubicacion zona libre superior'
+                      'Ubicacion zona libre inferior'
+                      'N° ramas zona libre'
+                      'N° estribos zona libre'
+                      'Espaciamiento zona libre'
+
+                      'Diametro exterior zona libre'
+                      'Largo exterior zona libre'
+                      'Ubicacion ramas horizontales exteriores zona libre'
+                      'Ubicacion ramas verticales exteriores zona libre'
+                      
+                      'Diametro estribo interior zona libre'
+                      'Lista largos interiores zona libre'
+                      'Lista ubicaciones horizontales interiores zona libre'
+                      'Lista ubicaciones verticales interiores zona libre'
+
+                      'Ubicación empalme:'
+                      'N° Ramas empalme'
+                      'N° Estribos empalme'
+                      'Espaciamiento empalme'
+
+                      'Diámetro estribo exterior empalme'
+                      'Largo diámetro exterior empalme'
+                      'Ubicación entre ejes de barras horizontales empalme'
+                      'Ubicación entre ejes de barras verticales empalme'
+
+                      'Diámetro estribos interiores empalme'
+                      'Lista largos interiores empalme'
+                      'Lista ubicaciones horizontales interiores empalme'
+                      'Lista ubicaciones verticales interiores empalme'
+            }
+
+            resCC={'phiVn1'
+                   'FU1'
+                   'phiVn2'
+                   'FU2'
+                   'phiVn3'
+                   'FU3'
+            }
             return [lista1,lista2,lista3,costo_total,vu1,vu2,hvig]
         else:
             return 0
@@ -830,6 +885,33 @@ def optijandro(papiro):
                             continue
 
         if salida==1:
+            salidaCF={'Datos generales'
+                      'Nombre'
+                      'Tipo '
+                      'Piso'
+                      'H'
+                      'h'
+                      'b'
+                      'lEmp'
+                      'Gancho'
+                      'Largo gancho'
+                      'Refuerzo longitudinal'
+                      'Lista Niveles' 
+                      'Cuantia'
+            }
+
+            resCF={'Mayor excentricidad'
+                   'Mu_max'
+                   'phiMn1'
+                   'phiMn2'
+                   'Pu_max'
+                   'Pu_min'
+                   'phiPn1'
+                   'FU1'
+                   'phiPn2'
+                   'FU2'
+            }
+
             return [optimo, corte]
         else:
             return 0
