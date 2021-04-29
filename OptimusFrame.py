@@ -772,66 +772,73 @@ def optijandro(papiro):
                 lista3 = [costo, nRam[i], j, k, l, s3, l1, l2a, l2, lram, l_emp]
                 salida3=1
         costo_total = lista1[0]+lista2[0]+lista3[0]
+                        # 0        1        2            3             4             5       6        7          8         9      10
         # lista1 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
         # lista2 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
         # lista3 --> [costo, n° ramas, de_externo, espaciamiento, de_interno, n° estribos, largo1, largos2, largo_tot2, d_ramas, dist]
         salida=salida1+salida2+salida3
         if salida == 3:
-            salidaCC={'Ubicacion nodo y rotula1'
-                      'Ubicacion rotula2'
-                      'N° ramas rotula'
-                      'N° estribos'
-                      'espaciamiento rotula'
+            lLibre = round((H - 2 * lo - l_emp) / 2)
+            pos1 = H
+            pos2 = pos1 - lo
+            pos3 = pos2 - lLibre
+            pos4 = pos3 - l_emp
+            pos5 = lo
+            ubc1 = lista1[9][1:-1] if len(lista1[9][1:-1]) >= 1 else []
+            ubc2 = lista2[9][1:-1] if len(lista2[9][1:-1]) >= 1 else []
+            ubc3 = lista3[9][1:-1] if len(lista3[9][1:-1]) >= 1 else []
+
+            salidaCC={'Ubicacion nodo y rotula1':[pos2, pos1],
+                      'Ubicacion rotula2':[0,pos5],
+                      'N° ramas rotula':lista1[1],
+                      'N° estribos':lista1[5],
+                      'espaciamiento rotula':lista1[3],
                       
-                      'Diametro estribo exterior rotula'
-                      'Largo diametro exterior'
-                      'Ubicacion ramas horizontales exteriores rotula'
-                      'Ubicacion ramas verticales exteriores rotula'
-                    
-                      'Diametro estribo interior rotula'
-                      'Lista largos interiores rotula'
-                      'Lista ubicaciones horizontales interiores rotula'
-                      'Lista ubicaciones verticales interiores rotula'
-            
-                      'Ubicacion zona libre superior'
-                      'Ubicacion zona libre inferior'
-                      'N° ramas zona libre'
-                      'N° estribos zona libre'
-                      'Espaciamiento zona libre'
+                      'Diametro estribo exterior rotula':lista1[2],
+                      'Largo diametro exterior':lista1[6],
 
-                      'Diametro exterior zona libre'
-                      'Largo exterior zona libre'
-                      'Ubicacion ramas horizontales exteriores zona libre'
-                      'Ubicacion ramas verticales exteriores zona libre'
-                      
-                      'Diametro estribo interior zona libre'
-                      'Lista largos interiores zona libre'
-                      'Lista ubicaciones horizontales interiores zona libre'
-                      'Lista ubicaciones verticales interiores zona libre'
 
-                      'Ubicación empalme:'
-                      'N° Ramas empalme'
-                      'N° Estribos empalme'
-                      'Espaciamiento empalme'
+                      'Diametro estribo interior rotula':lista1[4],
+                      'Lista largos interiores rotula':lista1[7],
+                      'Lista ubicaciones horizontales exteriores rotula': lista1[9][0],
+                      'Lista ubicaciones horizontales interiores rotula':ubc1,
 
-                      'Diámetro estribo exterior empalme'
-                      'Largo diámetro exterior empalme'
-                      'Ubicación entre ejes de barras horizontales empalme'
-                      'Ubicación entre ejes de barras verticales empalme'
+                      'Ubicacion zona libre superior':[pos3, pos2],
+                      'Ubicacion zona libre inferior':[pos5, pos4],
+                      'N° ramas zona libre':lista2[1],
+                      'N° estribos zona libre':lista2[5],
+                      'Espaciamiento zona libre':lista2[3],
 
-                      'Diámetro estribos interiores empalme'
-                      'Lista largos interiores empalme'
-                      'Lista ubicaciones horizontales interiores empalme'
-                      'Lista ubicaciones verticales interiores empalme'
+                      'Diametro exterior zona libre':lista2[2],
+                      'Largo exterior zona libre':lista2[6],
+
+                      'Diametro estribo interior zona libre':lista2[4],
+                      'Lista largos interiores zona libre':lista2[7],
+                      'Lista ubicaciones horizontales interiores zona libre':lista2[9][0],
+                      'Lista ubicaciones horizontales interiores zona libre':ubc2,
+
+                      'Ubicación empalme:':[pos3, pos4],
+                      'N° Ramas empalme':lista3[1],
+                      'N° Estribos empalme':lista3[5],
+                      'Espaciamiento empalme':lista3[3],
+
+                      'Diámetro estribo exterior empalme':lista3[2],
+                      'Largo diámetro exterior empalme':lista3[6],
+
+
+                      'Diámetro estribos interiores empalme':lista3[4],
+                      'Lista largos interiores empalme':lista3[7],
+                      'Lista ubicaciones horizontales exteriores empalme':lista3[9][0],
+                      'Lista ubicaciones horizontales interiores empalme':ubc3
             }
 
-            resCC={'phiVn1'
-                   'FU1'
-                   'phiVn2'
-                   'FU2'
-                   'phiVn3'
-                   'FU3'
-            }
+            # resCC={'phiVn1'
+            #        'FU1'
+            #        'phiVn2'
+            #        'FU2'
+            #        'phiVn3'
+            #        'FU3'
+            # }
             return [lista1,lista2,lista3,costo_total,vu1,vu2,hvig]
         else:
             return 0
@@ -910,6 +917,9 @@ def optijandro(papiro):
                    'FU1'
                    'phiPn2'
                    'FU2'
+                   'Volumen hormigon'
+                   'Peso acero longitudinal'
+                   'Peso acero transversal'
             }
 
             return [optimo, corte]
@@ -1005,6 +1015,7 @@ def optijandro(papiro):
                'phiVn2':phiVn2,
                'fuV2':fuV2,
         }
+
 
         return Lout,salidaVC,resVC
 
@@ -1175,7 +1186,6 @@ def optijandro(papiro):
             salidaV.update(salidaC[0])
             salidaV.update(salidaC[1])
             salidaV.update(resVF)
-
             return [listaT, corte, salidaV]
         else:
             return 0
